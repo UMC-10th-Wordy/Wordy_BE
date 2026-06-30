@@ -18,36 +18,31 @@ Wordy 백엔드 리포지토리입니다.
 
 ```text
 .
-├── modules
-│   ├── auth
-│   ├── users
-│   ├── profiles
-│   ├── projectTags
-│   ├── tasks
-│   │   ├── task.controller.ts
-│   │   ├── task.service.ts
-│   │   ├── task.repository.ts
-│   │   ├── task.dto.ts
-│   │   └── task.routes.ts
-│   ├── dailyEntries
-│   ├── ai
-│   └── dashboard
+├── src
+│   ├── modules
+│   │   ├── auth
+│   │   ├── users
+│   │   ├── profiles
+│   │   ├── projectTags
+│   │   ├── tasks
+│   │   │   ├── task.controller.ts
+│   │   │   ├── task.service.ts
+│   │   │   ├── task.repository.ts
+│   │   │   ├── task.request.dto.ts
+│   │   │   ├── task.response.dto.ts
+│   │   │   └── task.routes.ts
+│   │   ├── dailyEntries
+│   │   ├── ai
+│   │   └── dashboard
+│   │
+│   ├── common
+│   ├── config
+│   ├── app.ts
+│   └── server.ts
 │
-├── common
-│   ├── errors
-│   ├── middlewares
-│   ├── responses
-│   ├── validators
-│   └── utils
-│
-├── config
-│   ├── env.config.ts
-│   ├── db.config.ts
-│   ├── auth.config.ts
-│   └── ai.config.ts
-│
-├── app.ts
-└── server.ts
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
 ---
