@@ -9,6 +9,8 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { ValidateError } from 'tsoa';
 import { RegisterRoutes } from './generated/routes';
+import { ErrorCode } from './common/errors/error.code';
+import { ApiError } from './common/errors/api.error';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,30 +34,31 @@ app.use('/api/v1', apiRouter);
 
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof ValidateError) {
-    const fieldMessages = Object.entries(err.fields)
-      .map(([field, fieldError]) => `${field}: ${fieldError.message}`)
-      .join(', ');
-    res.status(400).json({
+    return res.status(ErrorCode.BAD_REQUEST.status).json({
       success: false,
-      statusCode: 400,
-      message: `요청 형식이 올바르지 않습니다. (${fieldMessages})`,
-      data: null,
+      code: ErrorCode.BAD_REQUEST.code,
+      message: "요청 형식이 올바르지 않습니다.",
+      result: err.fields,
     });
-    return;
   }
 
-  if (err instanceof Error) {
-    console.error(err);
-    res.status(500).json({
+  if (err instanceof ApiError) {
+    return res.status(err.status).json({
       success: false,
-      statusCode: 500,
-      message: '서버 오류가 발생했습니다.',
-      data: null,
+      code: err.code,
+      message: err.message,
+      result: null,
     });
-    return;
   }
 
-  next(err);
+  console.error(err);
+
+  return res.status(ErrorCode.INTERNAL_SERVER_ERROR.status).json({
+    success: false,
+    code: ErrorCode.INTERNAL_SERVER_ERROR.code,
+    message: ErrorCode.INTERNAL_SERVER_ERROR.message,
+    result: null,
+  });
 });
 
 app.listen(port, () => {

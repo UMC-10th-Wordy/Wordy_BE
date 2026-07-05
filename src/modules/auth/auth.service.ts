@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AuthProvider } from '../../generated/prisma/client';
+import { AuthProvider } from '../../generated/prisma/enums';
 import {
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
@@ -11,43 +11,58 @@ import {
 import { AuthRepository } from './auth.repository';
 import { sendVerificationEmail } from '../../mailer';
 import { AgreementInput, AgreementType } from './auth.dto';
+import { ApiError } from '../../common/errors/api.error';
+import { ErrorCode } from '../../common/errors/error.code';
 
 const REQUIRED_AGREEMENT_TYPES = Object.values(AgreementType).filter(
   (type) => type !== AgreementType.MARKETING,
 );
 
-export class DuplicateEmailError extends Error {
+export class DuplicateEmailError extends ApiError {
   constructor() {
-    super('이미 가입된 이메일입니다.');
-    this.name = 'DuplicateEmailError';
+    super(409, "E409", "이미 가입된 이메일입니다.");
   }
 }
 
-export class InvalidAgreementError extends Error {
+export class InvalidAgreementError extends ApiError {
   constructor() {
-    super('필수 약관에 모두 동의해야 합니다.');
-    this.name = 'InvalidAgreementError';
+    super(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      "필수 약관에 모두 동의해야 합니다."
+    );
   }
 }
 
-export class InvalidTokenError extends Error {
+export class InvalidTokenError extends ApiError {
   constructor(expired: boolean) {
-    super(expired ? '인증 링크가 만료되었습니다.' : '유효하지 않은 인증 링크입니다.');
-    this.name = 'InvalidTokenError';
+    super(
+      ErrorCode.UNAUTHORIZED.status,
+      ErrorCode.UNAUTHORIZED.code,
+      expired
+        ? "인증 링크가 만료되었습니다."
+        : "유효하지 않은 인증 링크입니다."
+    );
   }
 }
 
-export class InvalidCredentialsError extends Error {
+export class InvalidCredentialsError extends ApiError {
   constructor() {
-    super('이메일 또는 비밀번호가 올바르지 않습니다.');
-    this.name = 'InvalidCredentialsError';
+    super(
+      ErrorCode.UNAUTHORIZED.status,
+      ErrorCode.UNAUTHORIZED.code,
+      "이메일 또는 비밀번호가 올바르지 않습니다."
+    );
   }
 }
 
-export class InvalidRefreshTokenError extends Error {
+export class InvalidRefreshTokenError extends ApiError {
   constructor() {
-    super('유효하지 않은 리프레시 토큰입니다.');
-    this.name = 'InvalidRefreshTokenError';
+    super(
+      ErrorCode.UNAUTHORIZED.status,
+      ErrorCode.UNAUTHORIZED.code,
+      "유효하지 않은 리프레시 토큰입니다."
+    );
   }
 }
 
