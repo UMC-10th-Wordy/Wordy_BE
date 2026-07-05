@@ -1,0 +1,694 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"ApiResponse__userId-string--email-string__": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"properties": {
+							"email": {
+								"type": "string"
+							},
+							"userId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"email",
+							"userId"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"YearsOfService": {
+				"enum": [
+					"UNDER_1",
+					"ONE_TO_3",
+					"THREE_TO_5",
+					"FIVE_TO_10",
+					"OVER_10"
+				],
+				"type": "string"
+			},
+			"JobRole": {
+				"enum": [
+					"PRODUCT_PLANNING",
+					"DEVELOPMENT",
+					"DESIGN",
+					"MARKETING_SALES",
+					"DATA_ANALYSIS",
+					"CUSTOMER_SUPPORT",
+					"HR",
+					"FINANCE_ACCOUNTING",
+					"EDUCATION_RESEARCH",
+					"FREELANCER",
+					"STUDENT",
+					"ETC"
+				],
+				"type": "string"
+			},
+			"CompleteProfileRequest": {
+				"properties": {
+					"userName": {
+						"type": "string"
+					},
+					"profileImgUrl": {
+						"type": "string"
+					},
+					"yearsOfService": {
+						"$ref": "#/components/schemas/YearsOfService"
+					},
+					"jobRole": {
+						"$ref": "#/components/schemas/JobRole"
+					}
+				},
+				"required": [
+					"userName",
+					"yearsOfService",
+					"jobRole"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserProfileData": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"userName": {
+						"type": "string",
+						"nullable": true
+					},
+					"profileImgUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"yearsOfService": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/YearsOfService"
+							}
+						],
+						"nullable": true
+					},
+					"jobRole": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/JobRole"
+							}
+						],
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"userId",
+					"email",
+					"userName",
+					"profileImgUrl",
+					"yearsOfService",
+					"jobRole",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_UserProfileData_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/UserProfileData"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_null_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"anyOf": [],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__email-string__": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"properties": {
+							"email": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"email"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AgreementType": {
+				"enum": [
+					"TERMS_OF_SERVICE",
+					"PRIVACY_POLICY",
+					"AGE_OVER_14",
+					"MARKETING"
+				],
+				"type": "string"
+			},
+			"AgreementInput": {
+				"properties": {
+					"type": {
+						"$ref": "#/components/schemas/AgreementType"
+					},
+					"isAgreed": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"type",
+					"isAgreed"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SignupRequest": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					},
+					"agreements": {
+						"items": {
+							"$ref": "#/components/schemas/AgreementInput"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"email",
+					"password",
+					"agreements"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__accessToken-string--refreshToken-string--email-string__": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"properties": {
+							"email": {
+								"type": "string"
+							},
+							"refreshToken": {
+								"type": "string"
+							},
+							"accessToken": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"email",
+							"refreshToken",
+							"accessToken"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"LoginRequest": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"email",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"LogoutRequest": {
+				"properties": {
+					"refreshToken": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"refreshToken"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__accessToken-string--refreshToken-string__": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"properties": {
+							"refreshToken": {
+								"type": "string"
+							},
+							"accessToken": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"refreshToken",
+							"accessToken"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RefreshRequest": {
+				"properties": {
+					"refreshToken": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"refreshToken"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "wordy_be",
+		"version": "1.0.0",
+		"description": "Wordy 백엔드 리포지토리입니다.",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"paths": {
+		"/users/profile": {
+			"post": {
+				"operationId": "CompleteProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__userId-string--email-string__"
+								}
+							}
+						}
+					}
+				},
+				"description": "프로필 등록 - 이메일 인증 후 발급된 액세스 토큰으로 인증",
+				"summary": "프로필 등록",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CompleteProfileRequest"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetMyProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_UserProfileData_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "프로필 조회 성공",
+											"result": {
+												"userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+												"email": "hong@example.com",
+												"userName": "홍길동",
+												"profileImgUrl": "https://example.com/profile.jpg",
+												"yearsOfService": "ONE_TO_3",
+												"jobRole": "DEVELOPMENT",
+												"createdAt": "2026-06-20T16:00:00.000Z"
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "인증이 필요합니다.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "사용자 프로필을 찾을 수 없습니다.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								}
+							}
+						}
+					}
+				},
+				"description": "JWT 토큰의 사용자 ID를 기준으로 내 프로필 정보 조회",
+				"summary": "내 프로필 조회",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/auth/signup": {
+			"post": {
+				"operationId": "Signup",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__email-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "회원가입",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SignupRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/verify-email": {
+			"get": {
+				"operationId": "VerifyEmail",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "이메일 인증",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "token",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "로그인",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/logout": {
+			"post": {
+				"operationId": "Logout",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								}
+							}
+						}
+					}
+				},
+				"summary": "로그아웃",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LogoutRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/refresh": {
+			"post": {
+				"operationId": "Refresh",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "액세스 토큰 재발급",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RefreshRequest"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

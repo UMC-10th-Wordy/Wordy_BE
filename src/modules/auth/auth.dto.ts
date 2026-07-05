@@ -28,10 +28,3 @@ export interface RefreshRequest {
 export interface LogoutRequest {
   refreshToken: string;
 }
-
-export interface AuthResponseDto<T> {
-  success: boolean;
-  statusCode: number;
-  message: string;
-  data: T;
-}
