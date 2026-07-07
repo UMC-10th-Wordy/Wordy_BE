@@ -13,7 +13,7 @@ export class AuthRepository {
 
   public async createUser(
     email: string,
-    password: string,
+    password: string | null,
     provider: AuthProvider,
     agreements: AgreementInput[],
   ) {

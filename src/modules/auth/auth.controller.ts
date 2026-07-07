@@ -1,10 +1,12 @@
-import { Controller, Post, Get, Route, Tags, Body, Query } from "tsoa";
+import { Controller, Post, Get, Route, Tags, Body, Query, Res, TsoaResponse } from "tsoa";
 import { AuthService } from "./auth.service";
 import {
   SignupRequest,
   LoginRequest,
   LogoutRequest,
   RefreshRequest,
+  GoogleCompleteSignupRequest,
+  GoogleCallbackResult,
 } from "./auth.dto";
 
 import { ApiResponse } from "../../common/responses/api.response";
@@ -110,6 +112,56 @@ export class AuthController extends Controller {
     return success(
       SuccessCode.OK.code,
       "토큰이 재발급되었습니다.",
+      data
+    );
+  }
+
+  /** @summary 구글 로그인 시작 */
+  @Get("google")
+  public async googleLogin(
+    @Res() redirect: TsoaResponse<302, void>,
+  ): Promise<void> {
+    const url = this.authService.getGoogleAuthUrl();
+    redirect(302, undefined, { Location: url });
+  }
+
+  /** @summary 구글 로그인 콜백 */
+  @Get("google/callback")
+  public async googleCallback(
+    @Query() code: string,
+  ): Promise<ApiResponse<GoogleCallbackResult>> {
+    const data = await this.authService.googleCallback(code);
+
+    return success(
+      SuccessCode.OK.code,
+      data.status === "login"
+        ? "구글 로그인이 완료되었습니다."
+        : "약관 동의 후 회원가입을 완료해주세요.",
+      data
+    );
+  }
+
+  /** @summary 구글 회원가입 완료 */
+  @Post("google/complete")
+  public async completeGoogleSignup(
+    @Body() body: GoogleCompleteSignupRequest,
+  ): Promise<
+    ApiResponse<{
+      accessToken: string;
+      refreshToken: string;
+      email: string;
+    }>
+  > {
+    const data = await this.authService.completeGoogleSignup(
+      body.token,
+      body.agreements
+    );
+
+    this.setStatus(201);
+
+    return success(
+      SuccessCode.CREATED.code,
+      "회원가입이 완료되었습니다. 프로필을 입력해주세요.",
       data
     );
   }

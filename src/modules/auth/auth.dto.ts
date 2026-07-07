@@ -28,3 +28,12 @@ export interface RefreshRequest {
 export interface LogoutRequest {
   refreshToken: string;
 }
+
+export interface GoogleCompleteSignupRequest {
+  token: string;
+  agreements: AgreementInput[];
+}
+
+export type GoogleCallbackResult =
+  | { status: "login"; accessToken: string; refreshToken: string; email: string }
+  | { status: "pending"; pendingToken: string; email: string };
