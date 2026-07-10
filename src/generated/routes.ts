@@ -6,6 +6,8 @@ import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UsersController } from './../modules/users/users.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DashboardController } from './../modules/dashboard/dashboard.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
@@ -78,6 +80,100 @@ const models: TsoaRoute.Models = {
             "code": {"dataType":"string","required":true},
             "message": {"dataType":"string","required":true},
             "result": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":[null]},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EligibilityResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "eligible": {"dataType":"boolean","required":true},
+            "journalDays": {"dataType":"double","required":true},
+            "requiredDays": {"dataType":"double","required":true},
+            "weekStart": {"dataType":"string","required":true},
+            "weekEnd": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardListItem": {
+        "dataType": "refObject",
+        "properties": {
+            "dashboardId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+            "createdAt": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Insight": {
+        "dataType": "refObject",
+        "properties": {
+            "journalDays": {"dataType":"double","required":true},
+            "performanceCount": {"dataType":"double","required":true},
+            "tagCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Kpi": {
+        "dataType": "refObject",
+        "properties": {
+            "kpiName": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "progress": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TagAnalysis": {
+        "dataType": "refObject",
+        "properties": {
+            "goal": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "expectedOutcome": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "taskCount": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "periodStart": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "periodEnd": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "achievementStatus": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "WeeklyReflection": {
+        "dataType": "refObject",
+        "properties": {
+            "workSummary": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "resourcesUsed": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "learning": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardDetail": {
+        "dataType": "refObject",
+        "properties": {
+            "dashboardId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+            "journalDays": {"dataType":"double","required":true},
+            "performanceCount": {"dataType":"double","required":true},
+            "tagCount": {"dataType":"double","required":true},
+            "insights": {"dataType":"array","array":{"dataType":"refObject","ref":"Insight"},"required":true},
+            "kpis": {"dataType":"array","array":{"dataType":"refObject","ref":"Kpi"},"required":true},
+            "tagAnalyses": {"dataType":"array","array":{"dataType":"refObject","ref":"TagAnalysis"},"required":true},
+            "weeklyReflections": {"dataType":"array","array":{"dataType":"refObject","ref":"WeeklyReflection"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateWeeklyReflectionRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "workSummary": {"dataType":"string"},
+            "resourcesUsed": {"dataType":"string"},
+            "learning": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
@@ -231,6 +327,125 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'getMyProfile',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardController_getEligibility: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/dashboards/eligibility',
+            ...(fetchMiddlewares<RequestHandler>(DashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.getEligibility)),
+
+            async function DashboardController_getEligibility(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardController_getEligibility, request, response });
+
+                const controller = new DashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'getEligibility',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardController_getList: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/dashboards',
+            ...(fetchMiddlewares<RequestHandler>(DashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.getList)),
+
+            async function DashboardController_getList(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardController_getList, request, response });
+
+                const controller = new DashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'getList',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardController_getDetail: Record<string, TsoaRoute.ParameterSchema> = {
+                dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
+        };
+        app.get('/dashboards/:dashboardId',
+            ...(fetchMiddlewares<RequestHandler>(DashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.getDetail)),
+
+            async function DashboardController_getDetail(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardController_getDetail, request, response });
+
+                const controller = new DashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'getDetail',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardController_createReflection: Record<string, TsoaRoute.ParameterSchema> = {
+                dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateWeeklyReflectionRequest"},
+        };
+        app.post('/dashboards/:dashboardId/reflection',
+            ...(fetchMiddlewares<RequestHandler>(DashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.createReflection)),
+
+            async function DashboardController_createReflection(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardController_createReflection, request, response });
+
+                const controller = new DashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'createReflection',
                 controller,
                 response,
                 next,

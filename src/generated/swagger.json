@@ -197,6 +197,249 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"EligibilityResponse": {
+				"properties": {
+					"eligible": {
+						"type": "boolean"
+					},
+					"journalDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"requiredDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"weekStart": {
+						"type": "string"
+					},
+					"weekEnd": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"eligible",
+					"journalDays",
+					"requiredDays",
+					"weekStart",
+					"weekEnd"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardListItem": {
+				"properties": {
+					"dashboardId": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"dashboardId",
+					"startDate",
+					"endDate",
+					"summary",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Insight": {
+				"properties": {
+					"journalDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"performanceCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"tagCount": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"journalDays",
+					"performanceCount",
+					"tagCount"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Kpi": {
+				"properties": {
+					"kpiName": {
+						"type": "string",
+						"nullable": true
+					},
+					"progress": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"kpiName",
+					"progress"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TagAnalysis": {
+				"properties": {
+					"goal": {
+						"type": "string",
+						"nullable": true
+					},
+					"expectedOutcome": {
+						"type": "string",
+						"nullable": true
+					},
+					"taskCount": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"periodStart": {
+						"type": "string",
+						"nullable": true
+					},
+					"periodEnd": {
+						"type": "string",
+						"nullable": true
+					},
+					"achievementStatus": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"goal",
+					"expectedOutcome",
+					"taskCount",
+					"periodStart",
+					"periodEnd",
+					"achievementStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"WeeklyReflection": {
+				"properties": {
+					"workSummary": {
+						"type": "string",
+						"nullable": true
+					},
+					"resourcesUsed": {
+						"type": "string",
+						"nullable": true
+					},
+					"learning": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"workSummary",
+					"resourcesUsed",
+					"learning"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardDetail": {
+				"properties": {
+					"dashboardId": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"journalDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"performanceCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"tagCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"insights": {
+						"items": {
+							"$ref": "#/components/schemas/Insight"
+						},
+						"type": "array"
+					},
+					"kpis": {
+						"items": {
+							"$ref": "#/components/schemas/Kpi"
+						},
+						"type": "array"
+					},
+					"tagAnalyses": {
+						"items": {
+							"$ref": "#/components/schemas/TagAnalysis"
+						},
+						"type": "array"
+					},
+					"weeklyReflections": {
+						"items": {
+							"$ref": "#/components/schemas/WeeklyReflection"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"dashboardId",
+					"startDate",
+					"endDate",
+					"summary",
+					"journalDays",
+					"performanceCount",
+					"tagCount",
+					"insights",
+					"kpis",
+					"tagAnalyses",
+					"weeklyReflections"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateWeeklyReflectionRequest": {
+				"properties": {
+					"workSummary": {
+						"type": "string"
+					},
+					"resourcesUsed": {
+						"type": "string"
+					},
+					"learning": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"ApiResponse__email-string__": {
 				"properties": {
 					"success": {
@@ -519,6 +762,127 @@
 						}
 					}
 				]
+			}
+		},
+		"/dashboards/eligibility": {
+			"get": {
+				"operationId": "GetEligibility",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/EligibilityResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "생성 조건 충족 여부 조회",
+				"tags": [
+					"Dashboard"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/dashboards": {
+			"get": {
+				"operationId": "GetList",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/DashboardListItem"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "목록 조회",
+				"tags": [
+					"Dashboard"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/dashboards/{dashboardId}": {
+			"get": {
+				"operationId": "GetDetail",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DashboardDetail"
+								}
+							}
+						}
+					}
+				},
+				"description": "대시보드 상세 조회",
+				"tags": [
+					"Dashboard"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "dashboardId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/dashboards/{dashboardId}/reflection": {
+			"post": {
+				"operationId": "CreateReflection",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "주간 회고 작성",
+				"tags": [
+					"Dashboard"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "dashboardId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateWeeklyReflectionRequest"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/auth/signup": {
