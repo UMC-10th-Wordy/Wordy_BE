@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
 interface EmailVerificationPayload {
   purpose: 'email-verification';
@@ -16,6 +17,13 @@ interface AccessTokenPayload {
 interface RefreshTokenPayload {
   purpose: 'refresh';
   userId: string;
+  jti: string;
+}
+
+interface GoogleSignupPendingPayload {
+  purpose: 'google-signup-pending';
+  email: string;
+  googleId: string;
 }
 
 export function generateEmailVerificationToken(
@@ -29,7 +37,11 @@ export function generateEmailVerificationToken(
 }
 
 export function verifyEmailVerificationToken(token: string): EmailVerificationPayload {
-  return jwt.verify(token, process.env.JWT_SECRET as string) as EmailVerificationPayload;
+  const payload = jwt.verify(token, process.env.JWT_SECRET as string) as EmailVerificationPayload;
+  if (payload.purpose !== 'email-verification') {
+    throw new jwt.JsonWebTokenError('토큰의 용도가 올바르지 않습니다.');
+  }
+  return payload;
 }
 
 export function generateAccessToken(payload: Omit<AccessTokenPayload, 'purpose'>): string {
@@ -41,17 +53,43 @@ export function generateAccessToken(payload: Omit<AccessTokenPayload, 'purpose'>
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
-  return jwt.verify(token, process.env.JWT_SECRET as string) as AccessTokenPayload;
+  const payload = jwt.verify(token, process.env.JWT_SECRET as string) as AccessTokenPayload;
+  if (payload.purpose !== 'access') {
+    throw new jwt.JsonWebTokenError('토큰의 용도가 올바르지 않습니다.');
+  }
+  return payload;
 }
 
 export function generateRefreshToken(userId: string): string {
   return jwt.sign(
-    { userId, purpose: 'refresh' },
+    { userId, purpose: 'refresh', jti: randomUUID() },
     process.env.JWT_SECRET as string,
     { expiresIn: '7d' },
   );
 }
 
 export function verifyRefreshToken(token: string): RefreshTokenPayload {
-  return jwt.verify(token, process.env.JWT_SECRET as string) as RefreshTokenPayload;
+  const payload = jwt.verify(token, process.env.JWT_SECRET as string) as RefreshTokenPayload;
+  if (payload.purpose !== 'refresh') {
+    throw new jwt.JsonWebTokenError('토큰의 용도가 올바르지 않습니다.');
+  }
+  return payload;
+}
+
+export function generateGoogleSignupPendingToken(
+  payload: Omit<GoogleSignupPendingPayload, 'purpose'>,
+): string {
+  return jwt.sign(
+    { ...payload, purpose: 'google-signup-pending' },
+    process.env.JWT_SECRET as string,
+    { expiresIn: '1h' },
+  );
+}
+
+export function verifyGoogleSignupPendingToken(token: string): GoogleSignupPendingPayload {
+  const payload = jwt.verify(token, process.env.JWT_SECRET as string) as GoogleSignupPendingPayload;
+  if (payload.purpose !== 'google-signup-pending') {
+    throw new jwt.JsonWebTokenError('토큰의 용도가 올바르지 않습니다.');
+  }
+  return payload;
 }
