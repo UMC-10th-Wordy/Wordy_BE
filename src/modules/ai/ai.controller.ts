@@ -7,10 +7,10 @@ import { ResponseParser } from "./response.parser";
 import { RuleEngine } from "./rule.engine";
 
 import { PerformancePreviewRequestDto } 
-from "./dto/api/performance.preview.request.dto";
+from "./dto/api/performance.request.dto";
 
 import { PerformancePreviewResponseDto } 
-from "./dto/api/performance.preview.response.dto";
+from "./dto/api/performance.response.dto";
 
 @Route("api/v1/ai")
 @Tags("AI")
