@@ -3,6 +3,7 @@ import { ErrorCode } from "../../common/errors/error.code";
 
 import { PromptAOutputDto } from "./dto/performance/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/performance/prompt/prompt.b.output.dto";
+import { PromptCOutputDto } from "./dto/dashboard/prompt/prompt.c.output";
 import { KpiOutputDto } from "./dto/kpi/prompt/kpi.output.dto";
 
 export class RuleEngine {
@@ -89,6 +90,43 @@ export class RuleEngine {
         ErrorCode.INTERNAL_SERVER_ERROR.status,
         ErrorCode.INTERNAL_SERVER_ERROR.code,
         "업무 성과 결과가 없습니다.",
+      );
+    }
+  }
+
+  validatePromptC(
+    output: PromptCOutputDto,
+  ): void {
+
+    if (!output.summary) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        "대시보드 요약이 없습니다.",
+      );
+    }
+
+    if (!Array.isArray(output.kpis)) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        "KPI 결과가 없습니다.",
+      );
+    }
+
+    if (!Array.isArray(output.tagAnalyses)) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        "태그 분석 결과가 없습니다.",
+      );
+    }
+
+    if (!output.weeklyReflection) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        "주간 회고 결과가 없습니다.",
       );
     }
   }

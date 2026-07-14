@@ -12,6 +12,8 @@ import { PerformanceResponseDto } from "./dto/performance/api/performance.respon
 import { PerformanceQuestionRequestDto } from "./dto/performance/api/performance.question.request.dto";
 import { DashboardRequestDto } from "./dto/dashboard/api/dashboard.request.dto";
 import { DashboardResponseDto } from "./dto/dashboard/api/dashboard.response.dto";
+import { KpiRequestDto } from "./dto/kpi/api/kpi.request.dto";
+import { KpiResponseDto } from "./dto/kpi/api/kpi.response.dto";
 @Route("api/v1/ai")
 @Tags("AI")
 export class AiController extends Controller {
@@ -51,6 +53,15 @@ export class AiController extends Controller {
     @Body() request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
     return this.aiService.generateDashboard(
+      request,
+    );
+  }
+
+  @Post("project-tags/kpi-recommendation")
+  public async createKpiRecommendation(
+    @Body() request: KpiRequestDto,
+  ): Promise<KpiResponseDto> {
+    return this.aiService.generateKpiRecommendation(
       request,
     );
   }

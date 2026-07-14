@@ -713,6 +713,190 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"DashboardKpiDto": {
+				"properties": {
+					"kpiName": {
+						"type": "string"
+					},
+					"progress": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"kpiName",
+					"progress"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardTagAnalysisDto": {
+				"properties": {
+					"goal": {
+						"type": "string"
+					},
+					"expectedOutcome": {
+						"type": "string"
+					},
+					"taskCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"achievementStatus": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"goal",
+					"expectedOutcome",
+					"taskCount",
+					"achievementStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"WeeklyReflectionDto": {
+				"properties": {
+					"workSummary": {
+						"type": "string"
+					},
+					"resourcesUsed": {
+						"type": "string"
+					},
+					"learning": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"workSummary",
+					"resourcesUsed",
+					"learning"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardResponseDto": {
+				"properties": {
+					"dashboardId": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"journalDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"performanceCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"tagCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"kpis": {
+						"items": {
+							"$ref": "#/components/schemas/DashboardKpiDto"
+						},
+						"type": "array"
+					},
+					"tagAnalyses": {
+						"items": {
+							"$ref": "#/components/schemas/DashboardTagAnalysisDto"
+						},
+						"type": "array"
+					},
+					"weeklyReflection": {
+						"$ref": "#/components/schemas/WeeklyReflectionDto"
+					}
+				},
+				"required": [
+					"dashboardId",
+					"startDate",
+					"endDate",
+					"summary",
+					"journalDays",
+					"performanceCount",
+					"tagCount",
+					"kpis",
+					"tagAnalyses",
+					"weeklyReflection"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardRequestDto": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"startDate",
+					"endDate"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"KpiResponseDto": {
+				"properties": {
+					"kpiRecommendations": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"kpiRecommendations"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"KpiRequestDto": {
+				"properties": {
+					"tagName": {
+						"type": "string"
+					},
+					"projectName": {
+						"type": "string"
+					},
+					"goal": {
+						"type": "string"
+					},
+					"expectedOutcome": {
+						"type": "string"
+					},
+					"period": {
+						"type": "string"
+					},
+					"userJob": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"tagName",
+					"projectName",
+					"goal",
+					"expectedOutcome",
+					"userJob"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -1145,6 +1329,70 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/PerformanceQuestionRequestDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/dashboard": {
+			"post": {
+				"operationId": "CreateDashboard",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DashboardResponseDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DashboardRequestDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/project-tags/kpi-recommendation": {
+			"post": {
+				"operationId": "CreateKpiRecommendation",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/KpiResponseDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/KpiRequestDto"
 							}
 						}
 					}

@@ -286,6 +286,84 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardKpiDto": {
+        "dataType": "refObject",
+        "properties": {
+            "kpiName": {"dataType":"string","required":true},
+            "progress": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardTagAnalysisDto": {
+        "dataType": "refObject",
+        "properties": {
+            "goal": {"dataType":"string","required":true},
+            "expectedOutcome": {"dataType":"string","required":true},
+            "taskCount": {"dataType":"double","required":true},
+            "achievementStatus": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "WeeklyReflectionDto": {
+        "dataType": "refObject",
+        "properties": {
+            "workSummary": {"dataType":"string","required":true},
+            "resourcesUsed": {"dataType":"string","required":true},
+            "learning": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "dashboardId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+            "journalDays": {"dataType":"double","required":true},
+            "performanceCount": {"dataType":"double","required":true},
+            "tagCount": {"dataType":"double","required":true},
+            "kpis": {"dataType":"array","array":{"dataType":"refObject","ref":"DashboardKpiDto"},"required":true},
+            "tagAnalyses": {"dataType":"array","array":{"dataType":"refObject","ref":"DashboardTagAnalysisDto"},"required":true},
+            "weeklyReflection": {"ref":"WeeklyReflectionDto","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DashboardRequestDto": {
+        "dataType": "refObject",
+        "properties": {
+            "userId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "kpiRecommendations": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiRequestDto": {
+        "dataType": "refObject",
+        "properties": {
+            "tagName": {"dataType":"string","required":true},
+            "projectName": {"dataType":"string","required":true},
+            "goal": {"dataType":"string","required":true},
+            "expectedOutcome": {"dataType":"string","required":true},
+            "period": {"dataType":"string"},
+            "userJob": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const templateService = new ExpressTemplateService(models, {"noImplicitAdditionalProperties":"throw-on-extras","bodyCoercion":true});
 
@@ -653,6 +731,66 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'completePerformancePreview',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAiController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
+        };
+        app.post('/api/v1/ai/dashboard',
+            ...(fetchMiddlewares<RequestHandler>(AiController)),
+            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.createDashboard)),
+
+            async function AiController_createDashboard(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_createDashboard, request, response });
+
+                const controller = new AiController();
+
+              await templateService.apiHandler({
+                methodName: 'createDashboard',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAiController_createKpiRecommendation: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"KpiRequestDto"},
+        };
+        app.post('/api/v1/ai/project-tags/kpi-recommendation',
+            ...(fetchMiddlewares<RequestHandler>(AiController)),
+            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.createKpiRecommendation)),
+
+            async function AiController_createKpiRecommendation(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_createKpiRecommendation, request, response });
+
+                const controller = new AiController();
+
+              await templateService.apiHandler({
+                methodName: 'createKpiRecommendation',
                 controller,
                 response,
                 next,

@@ -13,6 +13,9 @@ import { DashboardRequestDto } from "./dto/dashboard/api/dashboard.request.dto";
 import { DashboardResponseDto } from "./dto/dashboard/api/dashboard.response.dto";
 import { PromptCInputDto } from "./dto/dashboard/prompt/prompt.c.input.dto";
 import { PromptCOutputDto } from "./dto/dashboard/prompt/prompt.c.output";
+import { KpiRequestDto } from "./dto/kpi/api/kpi.request.dto";
+import { KpiResponseDto } from "./dto/kpi/api/kpi.response.dto";
+import { KpiOutputDto } from "./dto/kpi/prompt/kpi.output.dto";
 
 export class AiService {
   constructor(
@@ -231,6 +234,9 @@ export class AiService {
       this.responseParser.parse<PromptCOutputDto>(
         dashboardResponse,
       );
+    this.ruleEngine.validatePromptC(
+      dashboardResult,
+    );
 
     // 7. Response 반환
     return {
@@ -251,6 +257,30 @@ export class AiService {
         dashboardResult.tagAnalyses,
       weeklyReflection:
         dashboardResult.weeklyReflection,
+    };
+  }
+
+  async generateKpiRecommendation(
+    request: KpiRequestDto,
+  ): Promise<KpiResponseDto> {
+    const prompt =
+      this.promptManager.buildKpiPrompt(
+        request,
+      );
+    const response =
+      await this.llmClient.generate(
+        prompt,
+      );
+    const result =
+      this.responseParser.parse<KpiOutputDto>(
+        response,
+      );
+    this.ruleEngine.validateKpi(
+      result,
+    );
+    return {
+      kpiRecommendations:
+        result.kpis,
     };
   }
 }

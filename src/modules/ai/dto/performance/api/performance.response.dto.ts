@@ -10,12 +10,10 @@ export interface PerformanceResponseDto {
   taskPerformances?: TaskPerformanceDto[];
 }
 
-
 export interface SupplementQuestionDto {
   question: string;
   reason: string;
 }
-
 
 export interface TaskPerformanceDto {
   taskId:string;
