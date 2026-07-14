@@ -6,17 +6,18 @@ import { PromptManager } from "./prompt.manager";
 import { ResponseParser } from "./response.parser";
 import { RuleEngine } from "./rule.engine";
 
-import { PerformancePreviewRequestDto } 
+import { PerformanceRequestDto } 
 from "./dto/api/performance.request.dto";
 
-import { PerformancePreviewResponseDto } 
+import { PerformanceResponseDto } 
 from "./dto/api/performance.response.dto";
+import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto";
 
 @Route("api/v1/ai")
 @Tags("AI")
 export class AiController extends Controller {
   private readonly aiService: AiService;
-
+  
   constructor() {
     super();
     this.aiService = new AiService(
@@ -29,10 +30,20 @@ export class AiController extends Controller {
 
   @Post("performance-preview")
   public async createPerformancePreview(
-    @Body() request: PerformancePreviewRequestDto,
-  ): Promise<PerformancePreviewResponseDto> {
+    @Body() request: PerformanceRequestDto,
+  ): Promise<PerformanceResponseDto> {
 
     return this.aiService.generatePerformancePreview(
+      request,
+    );
+  }
+
+  @Post("performance-preview/complete")
+  public async completePerformancePreview(
+    @Body() request: PerformanceQuestionRequestDto,
+  ): Promise<PerformanceResponseDto> {
+
+    return this.aiService.completePerformancePreview(
       request,
     );
   }

@@ -1,5 +1,8 @@
 export interface KpiRequestDto {
-  projectName: string;
-  projectDescription?: string;
-  userJob: string;
+  tagName:string;
+  projectName:string;
+  goal:string;
+  expectedOutcome:string;
+  period?:string;
+  userJob:string;
 }

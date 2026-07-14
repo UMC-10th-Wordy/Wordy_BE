@@ -5,12 +5,10 @@ import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 import { KpiOutputDto } from "./dto/prompt/kpi.output.dto";
 
-
 export class RuleEngine {
   validatePromptA(
     output: PromptAOutputDto,
   ): void {
-
     if (!output.tasks) {
       throw new ApiError(
         ErrorCode.INTERNAL_SERVER_ERROR.status,
@@ -36,10 +34,16 @@ export class RuleEngine {
     }
   }
 
+  // 실제 질문 노출 여부 판단
+  needFollowUpQuestion(
+    output: PromptAOutputDto,
+  ): boolean {
+    return output.followUpQuestions.length > 0;
+  }
+
   validatePromptB(
     output: PromptBOutputDto,
   ): void {
-
     if (!output.summary) {
       throw new ApiError(
         ErrorCode.INTERNAL_SERVER_ERROR.status,
@@ -100,8 +104,10 @@ export class RuleEngine {
       );
     }
 
-    if(output.kpis.length < 2 ||
-        output.kpis.length > 5){
+    if(
+      output.kpis.length < 2 ||
+      output.kpis.length > 5
+    ){
       throw new ApiError(
         ErrorCode.INTERNAL_SERVER_ERROR.status,
         ErrorCode.INTERNAL_SERVER_ERROR.code,

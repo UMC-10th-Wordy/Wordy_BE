@@ -7,6 +7,8 @@ import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 import { UsersController } from './../modules/users/users.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { AiController } from './../modules/ai/ai.controller';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 
@@ -160,6 +162,126 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "refreshToken": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GoogleCallbackResult": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true},"refreshToken":{"dataType":"string","required":true},"accessToken":{"dataType":"string","required":true},"status":{"dataType":"enum","enums":["login"],"required":true}}},{"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true},"pendingToken":{"dataType":"string","required":true},"status":{"dataType":"enum","enums":["pending"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_GoogleCallbackResult_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "code": {"dataType":"string","required":true},
+            "message": {"dataType":"string","required":true},
+            "result": {"dataType":"union","subSchemas":[{"ref":"GoogleCallbackResult"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GoogleCompleteSignupRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "token": {"dataType":"string","required":true},
+            "agreements": {"dataType":"array","array":{"dataType":"refObject","ref":"AgreementInput"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SupplementQuestionDto": {
+        "dataType": "refObject",
+        "properties": {
+            "question": {"dataType":"string","required":true},
+            "reason": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskPerformanceDto": {
+        "dataType": "refObject",
+        "properties": {
+            "taskId": {"dataType":"string","required":true},
+            "output": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "impact": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["QUESTION_REQUIRED"]},{"dataType":"enum","enums":["COMPLETED"]}],"required":true},
+            "supplementQuestions": {"dataType":"array","array":{"dataType":"refObject","ref":"SupplementQuestionDto"}},
+            "summary": {"dataType":"string"},
+            "growthInsights": {"dataType":"array","array":{"dataType":"string"}},
+            "nextActions": {"dataType":"array","array":{"dataType":"string"}},
+            "taskPerformances": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskPerformanceDto"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskDto": {
+        "dataType": "refObject",
+        "properties": {
+            "taskId": {"dataType":"string","required":true},
+            "priority": {"dataType":"string","required":true},
+            "completed": {"dataType":"boolean","required":true},
+            "title": {"dataType":"string","required":true},
+            "memo": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ReflectionDto": {
+        "dataType": "refObject",
+        "properties": {
+            "good": {"dataType":"string"},
+            "bad": {"dataType":"string"},
+            "learned": {"dataType":"string"},
+            "nextPlan": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ProjectTagDto": {
+        "dataType": "refObject",
+        "properties": {
+            "projectTagId": {"dataType":"string","required":true},
+            "title": {"dataType":"string","required":true},
+            "description": {"dataType":"string"},
+            "kpis": {"dataType":"array","array":{"dataType":"string"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceRequestDto": {
+        "dataType": "refObject",
+        "properties": {
+            "tasks": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskDto"},"required":true},
+            "reflection": {"ref":"ReflectionDto","required":true},
+            "projectTag": {"ref":"ProjectTagDto"},
+            "userJob": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "QuestionAnswerDto": {
+        "dataType": "refObject",
+        "properties": {
+            "question": {"dataType":"string","required":true},
+            "answer": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceQuestionRequestDto": {
+        "dataType": "refObject",
+        "properties": {
+            "originalRequest": {"ref":"PerformanceRequestDto","required":true},
+            "answers": {"dataType":"array","array":{"dataType":"refObject","ref":"QuestionAnswerDto"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -381,6 +503,156 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'refresh',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAuthController_googleLogin: Record<string, TsoaRoute.ParameterSchema> = {
+                redirect: {"in":"res","name":"302","required":true,"dataType":"void"},
+        };
+        app.get('/auth/google',
+            ...(fetchMiddlewares<RequestHandler>(AuthController)),
+            ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.googleLogin)),
+
+            async function AuthController_googleLogin(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_googleLogin, request, response });
+
+                const controller = new AuthController();
+
+              await templateService.apiHandler({
+                methodName: 'googleLogin',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAuthController_googleCallback: Record<string, TsoaRoute.ParameterSchema> = {
+                code: {"in":"query","name":"code","required":true,"dataType":"string"},
+        };
+        app.get('/auth/google/callback',
+            ...(fetchMiddlewares<RequestHandler>(AuthController)),
+            ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.googleCallback)),
+
+            async function AuthController_googleCallback(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_googleCallback, request, response });
+
+                const controller = new AuthController();
+
+              await templateService.apiHandler({
+                methodName: 'googleCallback',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAuthController_completeGoogleSignup: Record<string, TsoaRoute.ParameterSchema> = {
+                body: {"in":"body","name":"body","required":true,"ref":"GoogleCompleteSignupRequest"},
+        };
+        app.post('/auth/google/complete',
+            ...(fetchMiddlewares<RequestHandler>(AuthController)),
+            ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.completeGoogleSignup)),
+
+            async function AuthController_completeGoogleSignup(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_completeGoogleSignup, request, response });
+
+                const controller = new AuthController();
+
+              await templateService.apiHandler({
+                methodName: 'completeGoogleSignup',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAiController_createPerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"PerformanceRequestDto"},
+        };
+        app.post('/api/v1/ai/performance-preview',
+            ...(fetchMiddlewares<RequestHandler>(AiController)),
+            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.createPerformancePreview)),
+
+            async function AiController_createPerformancePreview(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_createPerformancePreview, request, response });
+
+                const controller = new AiController();
+
+              await templateService.apiHandler({
+                methodName: 'createPerformancePreview',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAiController_completePerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"PerformanceQuestionRequestDto"},
+        };
+        app.post('/api/v1/ai/performance-preview/complete',
+            ...(fetchMiddlewares<RequestHandler>(AiController)),
+            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.completePerformancePreview)),
+
+            async function AiController_completePerformancePreview(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_completePerformancePreview, request, response });
+
+                const controller = new AiController();
+
+              await templateService.apiHandler({
+                methodName: 'completePerformancePreview',
                 controller,
                 response,
                 next,

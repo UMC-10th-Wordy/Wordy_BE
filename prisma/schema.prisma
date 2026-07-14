@@ -63,6 +63,18 @@ enum AiRunStatus {
   FAILED  @map("failed")
 }
 
+enum AIQuestionStatus {
+  WAITING
+  ANSWERED
+  SKIPPED
+}
+
+enum PromptType {
+  PROMPT_A
+  PROMPT_B
+  KPI
+}
+
 model User {
   userId       String       @id @default(uuid()) @map("user_id") @db.Char(36)
   email        String       @unique @db.VarChar(255)
@@ -222,6 +234,8 @@ model Attachment {
 
 model ReflectionSnapshot {
   reflectionSnapshotId String   @id @default(uuid()) @map("reflection_snapshot_id") @db.Char(36)
+  promptAResult        Json?    @map("prompt_a_result")
+  promptBResult        Json?    @map("prompt_b_result")
   createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
   dailyEntryId         String   @map("daily_entry_id") @db.Char(36)
 
@@ -272,7 +286,9 @@ model AIQuestion {
   aiQuestionId         String    @id @default(uuid()) @map("ai_question_id") @db.Char(36)
   questionContent      String    @map("question_content") @db.Text
   answer               String?   @db.Text
-  isSkipped            Boolean   @default(false) @map("is_skipped")
+  reason               String?   @db.Text
+  order                Int       @default(1)
+  status               AIQuestionStatus   @default(WAITING)
   createdAt            DateTime  @default(now()) @map("created_at") @db.DateTime(0)
   reflectionSnapshotId String    @map("reflection_snapshot_id") @db.Char(36)
 
@@ -284,8 +300,10 @@ model AIQuestion {
 
 model AIRun {
   aiRunId              String       @id @default(uuid()) @map("ai_run_id") @db.Char(36)
-  promptType           String       @map("prompt_type") @db.VarChar(20)
+  promptType           PromptType
   promptVersion        String       @map("prompt_version") @db.VarChar(50)
+  request              Json?
+  response             Json?
   status               AiRunStatus
   inputTokens          Int          @default(0) @map("input_tokens")
   outputTokens         Int?         @map("output_tokens")
@@ -323,8 +341,8 @@ model DailyPerformance {
   dailyPerformanceId  String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
   achievementRate     Int      @map("achievement_rate") @db.TinyInt
   summary             String   @db.Text
-  growthInsight       String   @map("growth_insight") @db.Text
-  nextAction          String?  @map("next_action") @db.Text
+  growthInsight       Json     @map("growth_insight")
+  nextAction          Json     @map("next_action")
   structuredResult    Json     @map("structured_result")
   createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(0)
   reflectionSnapshotId String  @map("reflection_snapshot_id") @db.Char(36)
@@ -339,8 +357,8 @@ model DailyPerformance {
 
 model PerformanceItem {
   performanceItemId   String   @id @default(uuid()) @map("performance_item_id") @db.Char(36)
-  output              String   @db.Text
-  impact              String   @db.Text
+  output              Json
+  impact              Json
   createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(0)
   taskId              String   @map("task_id") @db.Char(36)
   dailyPerformanceId  String   @map("daily_performance_id") @db.Char(36)

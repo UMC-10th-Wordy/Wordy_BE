@@ -1,4 +1,4 @@
-export interface PerformancePreviewRequestDto {
+export interface PerformanceRequestDto {
   tasks: TaskDto[];
   reflection: ReflectionDto;
   projectTag?: ProjectTagDto;
