@@ -5,20 +5,20 @@ import { RuleEngine } from "./rule.engine";
 
 
 import { PerformanceRequestDto } 
-from "./dto/api/performance.request.dto";
+from "./dto/performance/api/performance.request.dto";
 
 import { PerformanceQuestionRequestDto } 
-from "./dto/api/performance.question.request.dto";
+from "./dto/performance/api/performance.question.request.dto";
 
 import { PerformanceResponseDto } 
-from "./dto/api/performance.response.dto";
+from "./dto/performance/api/performance.response.dto";
 
 
 import { PromptAOutputDto } 
-from "./dto/prompt/prompt.a.output.dto";
+from "./dto/performance/prompt/prompt.a.output.dto";
 
 import { PromptBOutputDto } 
-from "./dto/prompt/prompt.b.output.dto";
+from "./dto/performance/prompt/prompt.b.output.dto";
 
 export class AiService {
   constructor(

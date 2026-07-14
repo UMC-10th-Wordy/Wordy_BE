@@ -1,9 +1,9 @@
 import { ApiError } from "../../common/errors/api.error";
 import { ErrorCode } from "../../common/errors/error.code";
 
-import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
-import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
-import { KpiOutputDto } from "./dto/prompt/kpi.output.dto";
+import { PromptAOutputDto } from "./dto/performance/prompt/prompt.a.output.dto";
+import { PromptBOutputDto } from "./dto/performance/prompt/prompt.b.output.dto";
+import { KpiOutputDto } from "./dto/kpi/prompt/kpi.output.dto";
 
 export class RuleEngine {
   validatePromptA(

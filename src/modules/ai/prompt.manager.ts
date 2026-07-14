@@ -1,8 +1,8 @@
 import { PromptRequest } from "./types/ai.types";
 
-import { PromptAInputDto } from "./dto/prompt/prompt.a.input.dto";
-import { PromptBInputDto } from "./dto/prompt/prompt.b.input.dto";
-import { KpiInputDto } from "./dto/prompt/kpi.input.dto";
+import { PromptAInputDto } from "./dto/performance/prompt/prompt.a.input.dto";
+import { PromptBInputDto } from "./dto/performance/prompt/prompt.b.input.dto";
+import { KpiInputDto } from "./dto/kpi/prompt/kpi.input.dto";
 
 import { kpiInstructions, promptAInstructions, promptBInstructions } from "./prompts";
 

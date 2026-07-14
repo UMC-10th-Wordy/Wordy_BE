@@ -7,17 +7,17 @@ import { ResponseParser } from "./response.parser";
 import { RuleEngine } from "./rule.engine";
 
 import { PerformanceRequestDto } 
-from "./dto/api/performance.request.dto";
+from "./dto/performance/api/performance.request.dto";
 
 import { PerformanceResponseDto } 
-from "./dto/api/performance.response.dto";
-import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto";
+from "./dto/performance/api/performance.response.dto";
+import { PerformanceQuestionRequestDto } from "./dto/performance/api/performance.question.request.dto";
 
 @Route("api/v1/ai")
 @Tags("AI")
 export class AiController extends Controller {
   private readonly aiService: AiService;
-  
+
   constructor() {
     super();
     this.aiService = new AiService(
