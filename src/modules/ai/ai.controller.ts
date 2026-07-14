@@ -5,14 +5,13 @@ import { LlmClient } from "./llm.client";
 import { PromptManager } from "./prompt.manager";
 import { ResponseParser } from "./response.parser";
 import { RuleEngine } from "./rule.engine";
+import { prisma } from "../../common/prisma/prisma.client";
 
-import { PerformanceRequestDto } 
-from "./dto/performance/api/performance.request.dto";
-
-import { PerformanceResponseDto } 
-from "./dto/performance/api/performance.response.dto";
+import { PerformanceRequestDto } from "./dto/performance/api/performance.request.dto";
+import { PerformanceResponseDto } from "./dto/performance/api/performance.response.dto";
 import { PerformanceQuestionRequestDto } from "./dto/performance/api/performance.question.request.dto";
-
+import { DashboardRequestDto } from "./dto/dashboard/api/dashboard.request.dto";
+import { DashboardResponseDto } from "./dto/dashboard/api/dashboard.response.dto";
 @Route("api/v1/ai")
 @Tags("AI")
 export class AiController extends Controller {
@@ -25,6 +24,7 @@ export class AiController extends Controller {
       new PromptManager(),
       new ResponseParser(),
       new RuleEngine(),
+      prisma,
     );
   }
 
@@ -32,7 +32,6 @@ export class AiController extends Controller {
   public async createPerformancePreview(
     @Body() request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
-
     return this.aiService.generatePerformancePreview(
       request,
     );
@@ -42,8 +41,16 @@ export class AiController extends Controller {
   public async completePerformancePreview(
     @Body() request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {
-
     return this.aiService.completePerformancePreview(
+      request,
+    );
+  }
+
+  @Post("dashboard")
+  public async createDashboard(
+    @Body() request: DashboardRequestDto,
+  ): Promise<DashboardResponseDto> {
+    return this.aiService.generateDashboard(
       request,
     );
   }

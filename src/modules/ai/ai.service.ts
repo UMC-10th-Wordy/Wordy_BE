@@ -2,23 +2,17 @@ import { PromptManager } from "./prompt.manager";
 import { LlmClient } from "./llm.client";
 import { ResponseParser } from "./response.parser";
 import { RuleEngine } from "./rule.engine";
+import { PrismaClient, DailyPerformance } from "../../generated/prisma/client";
 
-
-import { PerformanceRequestDto } 
-from "./dto/performance/api/performance.request.dto";
-
-import { PerformanceQuestionRequestDto } 
-from "./dto/performance/api/performance.question.request.dto";
-
-import { PerformanceResponseDto } 
-from "./dto/performance/api/performance.response.dto";
-
-
-import { PromptAOutputDto } 
-from "./dto/performance/prompt/prompt.a.output.dto";
-
-import { PromptBOutputDto } 
-from "./dto/performance/prompt/prompt.b.output.dto";
+import { PerformanceRequestDto } from "./dto/performance/api/performance.request.dto";
+import { PerformanceQuestionRequestDto } from "./dto/performance/api/performance.question.request.dto";
+import { PerformanceResponseDto } from "./dto/performance/api/performance.response.dto";
+import { PromptAOutputDto } from "./dto/performance/prompt/prompt.a.output.dto";
+import { PromptBOutputDto } from "./dto/performance/prompt/prompt.b.output.dto";
+import { DashboardRequestDto } from "./dto/dashboard/api/dashboard.request.dto";
+import { DashboardResponseDto } from "./dto/dashboard/api/dashboard.response.dto";
+import { PromptCInputDto } from "./dto/dashboard/prompt/prompt.c.input.dto";
+import { PromptCOutputDto } from "./dto/dashboard/prompt/prompt.c.output";
 
 export class AiService {
   constructor(
@@ -26,6 +20,8 @@ export class AiService {
     private readonly promptManager: PromptManager,
     private readonly responseParser: ResponseParser,
     private readonly ruleEngine: RuleEngine,
+    private readonly prisma: PrismaClient,
+
   ) {}
 
   // 첫 번째 호출
@@ -65,7 +61,6 @@ export class AiService {
         promptAResult,
       )
     ) {
-
       return {
         status: "QUESTION_REQUIRED",
         supplementQuestions:
@@ -170,6 +165,92 @@ export class AiService {
 
       taskPerformances:
         promptBResult.taskPerformances,
+    };
+  }
+
+  // 대시보드 생성
+   async generateDashboard(
+    request: DashboardRequestDto,
+  ): Promise<DashboardResponseDto> {
+
+    // 1. 일주일간 성과 변환 조회
+    const performances: DailyPerformance[] =
+      await this.prisma.dailyPerformance.findMany({
+        where: {
+          reflectionSnapshot: {
+            dailyEntry: {
+              userId: request.userId,
+            },
+          },
+          createdAt: {
+            gte: new Date(request.startDate),
+            lte: new Date(request.endDate),
+          },
+        },
+      });
+
+    // 2. 3회 미만이면 생성 불가
+    if (performances.length < 3) {
+      throw new Error(
+        "일주일간 성과 변환 3회 이상부터 대시보드를 생성할 수 있습니다.",
+      );
+    }
+
+    // 3. Dashboard Prompt Input 생성
+    const dashboardInput: PromptCInputDto = {
+      startDate: request.startDate,
+      endDate: request.endDate,
+
+      performances:
+        performances.map(
+          (performance) => ({
+            summary: performance.summary,
+            growthInsight: performance.growthInsight,
+            nextAction: performance.nextAction,
+          })
+        ),
+
+      reflections: [],
+      tasks: [],
+    };
+
+    // 4. Prompt 생성
+    const dashboardPrompt =
+      this.promptManager.buildDashboardPrompt(
+        dashboardInput,
+      );
+
+    // 5. LLM 호출
+    const dashboardResponse =
+      await this.llmClient.generate(
+        dashboardPrompt,
+      );
+
+    // 6. Parsing
+    const dashboardResult =
+      this.responseParser.parse<PromptCOutputDto>(
+        dashboardResponse,
+      );
+
+    // 7. Response 반환
+    return {
+      dashboardId:"",
+      startDate:
+        request.startDate,
+      endDate:
+        request.endDate,
+      summary:
+        dashboardResult.summary,
+      journalDays: 0,
+      performanceCount:
+        performances.length,
+      tagCount: 0,
+      kpis:
+        dashboardResult.kpis,
+      tagAnalyses:
+        dashboardResult.tagAnalyses,
+      weeklyReflection:
+        dashboardResult.weeklyReflection,
     };
   }
 }

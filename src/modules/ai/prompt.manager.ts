@@ -2,9 +2,10 @@ import { PromptRequest } from "./types/ai.types";
 
 import { PromptAInputDto } from "./dto/performance/prompt/prompt.a.input.dto";
 import { PromptBInputDto } from "./dto/performance/prompt/prompt.b.input.dto";
+import { PromptCInputDto } from "./dto/dashboard/prompt/prompt.c.input.dto";
 import { KpiInputDto } from "./dto/kpi/prompt/kpi.input.dto";
 
-import { kpiInstructions, promptAInstructions, promptBInstructions } from "./prompts";
+import { kpiInstructions, promptAInstructions, promptBInstructions, promptCInstructions } from "./prompts";
 
 export class PromptManager {
   buildPromptA(dto: PromptAInputDto): PromptRequest {
@@ -20,6 +21,18 @@ export class PromptManager {
       model: "gpt-5-mini",
       instructions: promptBInstructions,
       input: JSON.stringify(dto),
+    };
+  }
+
+  buildDashboardPrompt(
+  dto: PromptCInputDto
+  ): PromptRequest {
+    return {
+      model:"gpt-5-mini",
+      instructions:
+        promptCInstructions,
+      input:
+        JSON.stringify(dto),
     };
   }
 

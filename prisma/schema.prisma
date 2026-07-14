@@ -72,6 +72,7 @@ enum AIQuestionStatus {
 enum PromptType {
   PROMPT_A
   PROMPT_B
+  PROMPT_C
   KPI
 }
 

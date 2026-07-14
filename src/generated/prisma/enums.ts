@@ -101,6 +101,7 @@ export type AIQuestionStatus = (typeof AIQuestionStatus)[keyof typeof AIQuestion
 export const PromptType = {
   PROMPT_A: 'PROMPT_A',
   PROMPT_B: 'PROMPT_B',
+  PROMPT_C: 'PROMPT_C',
   KPI: 'KPI'
 } as const
 
