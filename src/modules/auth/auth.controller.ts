@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Route, Tags, Body, Query, Res, TsoaResponse } from "tsoa";
+import { Controller, Post, Get, Route, Tags, Body, Query, Res, TsoaResponse, Example } from "tsoa";
 import { AuthService } from "./auth.service";
 import {
   SignupRequest,
@@ -18,10 +18,20 @@ import { SuccessCode } from "../../common/responses/success.code";
 export class AuthController extends Controller {
   private authService = new AuthService();
 
-  /** @summary 회원가입 */
+  /**
+   * @summary 회원가입
+   * @example body {"email": "user@email.com", "password": "TestPassword123!", "agreements": [{"type": "TERMS_OF_SERVICE", "isAgreed": true}, {"type": "PRIVACY_POLICY", "isAgreed": true}, {"type": "AGE_OVER_14", "isAgreed": true}, {"type": "MARKETING", "isAgreed": false}]}
+   */
   @Post("signup")
+  @Example<ApiResponse<{ email: string }>>({
+    success: true,
+    code: "S201",
+    message: "인증 메일을 발송했습니다.",
+    result: { email: "user@email.com" },
+  })
   public async signup(
-    @Body() body: SignupRequest,
+    @Body()
+    body: SignupRequest,
   ): Promise<ApiResponse<{ email: string }>> {
     await this.authService.signup(
       body.email,
@@ -42,6 +52,16 @@ export class AuthController extends Controller {
 
   /** @summary 이메일 인증 */
   @Get("verify-email")
+  @Example<ApiResponse<{ accessToken: string; refreshToken: string; email: string }>>({
+    success: true,
+    code: "S200",
+    message: "이메일 인증이 완료되었습니다. 프로필을 입력해주세요.",
+    result: {
+      accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
+      refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
+      email: "user@email.com",
+    },
+  })
   public async verifyEmail(
     @Query() token: string,
   ): Promise<
@@ -60,8 +80,22 @@ export class AuthController extends Controller {
     );
   }
 
-  /** @summary 로그인 */
+  /**
+   * 이메일/비밀번호로 로그인 - 구글로 가입한 계정은 password가 없어 항상 401
+   * @summary 로그인
+   * @example body {"email": "user@email.com", "password": "TestPassword123!"}
+   */
   @Post("login")
+  @Example<ApiResponse<{ accessToken: string; refreshToken: string; email: string }>>({
+    success: true,
+    code: "S200",
+    message: "로그인이 완료되었습니다.",
+    result: {
+      accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
+      refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
+      email: "user@email.com",
+    },
+  })
   public async login(
     @Body() body: LoginRequest,
   ): Promise<
@@ -83,8 +117,17 @@ export class AuthController extends Controller {
     );
   }
 
-  /** @summary 로그아웃 */
+  /**
+   * @summary 로그아웃
+   * @example body {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+   */
   @Post("logout")
+  @Example<ApiResponse<null>>({
+    success: true,
+    code: "S200",
+    message: "로그아웃이 완료되었습니다.",
+    result: null,
+  })
   public async logout(
     @Body() body: LogoutRequest,
   ): Promise<ApiResponse<null>> {
@@ -97,8 +140,21 @@ export class AuthController extends Controller {
     );
   }
 
-  /** @summary 액세스 토큰 재발급 */
+  /**
+   * 리프레시 토큰 로테이션 - 응답으로 새 refreshToken이 내려오며, 기존 refreshToken은 이후 즉시 무효화됨
+   * @summary 액세스 토큰 재발급
+   * @example body {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+   */
   @Post("refresh")
+  @Example<ApiResponse<{ accessToken: string; refreshToken: string }>>({
+    success: true,
+    code: "S200",
+    message: "토큰이 재발급되었습니다.",
+    result: {
+      accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
+      refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
+    },
+  })
   public async refresh(
     @Body() body: RefreshRequest,
   ): Promise<
@@ -116,7 +172,10 @@ export class AuthController extends Controller {
     );
   }
 
-  /** @summary 구글 로그인 시작 */
+  /**
+   * 구글 로그인 페이지로 302 리다이렉트 - 프론트에서 fetch/axios로 호출하지 말고 `window.location.href = "/api/v1/auth/google"`처럼 브라우저 이동으로 처리해야 함
+   * @summary 구글 로그인 시작
+   */
   @Get("google")
   public async googleLogin(
     @Res() redirect: TsoaResponse<302, void>,
@@ -125,8 +184,40 @@ export class AuthController extends Controller {
     redirect(302, undefined, { Location: url });
   }
 
-  /** @summary 구글 로그인 콜백 */
+  /**
+   * 구글이 인증 후 리다이렉트하는 콜백 - `result.status`로 분기 처리
+   * - `"login"`: 기존에 가입된 구글 계정. accessToken/refreshToken이 바로 내려오므로 별도 `/auth/login` 호출 없이 그대로 로그인 상태로 처리하면 됨 (약관 동의/프로필 등록 화면 모두 스킵)
+   * - `"pending"`: 처음 로그인하는 구글 계정. 아직 User가 생성되지 않은 상태이며 토큰도 없음. 약관 동의 화면으로 이동시킨 뒤, 체크한 약관과 함께 `pendingToken`을 `POST /auth/google/complete`로 보내야 가입이 완료됨
+   * @summary 구글 로그인 콜백
+   */
   @Get("google/callback")
+  @Example<ApiResponse<GoogleCallbackResult>>(
+    {
+      success: true,
+      code: "S200",
+      message: "약관 동의 후 회원가입을 완료해주세요.",
+      result: {
+        status: "pending",
+        pendingToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Ii4uLiIsInB1cnBvc2UiOiJnb29nbGUtc2lnbnVwLXBlbmRpbmcifQ...",
+        email: "uesr@google.com",
+      },
+    },
+    "신규 유저 - 약관 동의 필요",
+  )
+  @Example<ApiResponse<GoogleCallbackResult>>(
+    {
+      success: true,
+      code: "S200",
+      message: "구글 로그인이 완료되었습니다.",
+      result: {
+        status: "login",
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
+        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
+        email: "uesr@google.com",
+      },
+    },
+    "기존 유저 - 즉시 로그인",
+  )
   public async googleCallback(
     @Query() code: string,
   ): Promise<ApiResponse<GoogleCallbackResult>> {
@@ -141,8 +232,22 @@ export class AuthController extends Controller {
     );
   }
 
-  /** @summary 구글 회원가입 완료 */
+  /**
+   * `token`은 `/auth/google/callback`에서 받은 `pendingToken`을 그대로 전달 - 완료되면 accessToken/refreshToken이 바로 내려오므로 별도 로그인 호출 없이 프로필 등록 화면으로 이동
+   * @summary 구글 회원가입 완료
+   * @example body {"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "agreements": [{"type": "TERMS_OF_SERVICE", "isAgreed": true}, {"type": "PRIVACY_POLICY", "isAgreed": true}, {"type": "AGE_OVER_14", "isAgreed": true}, {"type": "MARKETING", "isAgreed": false}]}
+   */
   @Post("google/complete")
+  @Example<ApiResponse<{ accessToken: string; refreshToken: string; email: string }>>({
+    success: true,
+    code: "S201",
+    message: "회원가입이 완료되었습니다. 프로필을 입력해주세요.",
+    result: {
+      accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
+      refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
+      email: "uesr@google.com",
+    },
+  })
   public async completeGoogleSignup(
     @Body() body: GoogleCompleteSignupRequest,
   ): Promise<

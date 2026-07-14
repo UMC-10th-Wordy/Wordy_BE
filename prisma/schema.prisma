@@ -63,6 +63,18 @@ enum AiRunStatus {
   FAILED  @map("failed")
 }
 
+model ApiLog {
+  logId      Int      @id @default(autoincrement()) @map("log_id")
+  userId     String?  @map("user_id") @db.Char(36)
+  method     String   @db.VarChar(10)
+  path       String   @db.Text
+  ipAddress  String   @map("ip_address") @db.VarChar(45)
+  statusCode Int      @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([userId, createdAt])
+  @@map("ApiLog")
+}
 model User {
   userId       String       @id @default(uuid()) @map("user_id") @db.Char(36)
   email        String       @unique @db.VarChar(255)
@@ -73,12 +85,12 @@ model User {
   updatedAt    DateTime     @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt    DateTime?    @map("deleted_at") @db.DateTime(0)
 
-  profile     Profile?
-  agreements  UserAgreement[]
-  tags        Tag[]
-  tasks       Task[]
+  profile      Profile?
+  agreements   UserAgreement[]
+  tags         Tag[]
+  tasks        Task[]
   dailyEntries DailyEntry[]
-  dashboards  Dashboard[]
+  dashboards   Dashboard[]
 
   @@map("User")
 }
@@ -206,13 +218,13 @@ model TaskResult {
 }
 
 model Attachment {
-  attachmentId  String    @id @default(uuid()) @map("attachment_id") @db.Char(36)
-  fileType      FileType  @map("file_type")
-  fileUrl       String    @map("file_url") @db.VarChar(255)
-  fileName      String    @map("file_name") @db.VarChar(255)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(0)
-  deletedAt     DateTime? @map("deleted_at") @db.DateTime(0)
-  taskResultId  String    @map("task_result_id") @db.Char(36)
+  attachmentId String    @id @default(uuid()) @map("attachment_id") @db.Char(36)
+  fileType     FileType  @map("file_type")
+  fileUrl      String    @map("file_url") @db.VarChar(255)
+  fileName     String    @map("file_name") @db.VarChar(255)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  deletedAt    DateTime? @map("deleted_at") @db.DateTime(0)
+  taskResultId String    @map("task_result_id") @db.Char(36)
 
   taskResult TaskResult @relation(fields: [taskResultId], references: [taskResultId])
 
@@ -225,11 +237,11 @@ model ReflectionSnapshot {
   createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
   dailyEntryId         String   @map("daily_entry_id") @db.Char(36)
 
-  dailyEntry                  DailyEntry                   @relation(fields: [dailyEntryId], references: [dailyEntryId])
-  aiQuestions                 AIQuestion[]
-  dailyPerformances           DailyPerformance[]
-  aiRuns                      AIRun[]
-  reflectionTaskSnapshots     ReflectionTaskSnapshot[]
+  dailyEntry              DailyEntry               @relation(fields: [dailyEntryId], references: [dailyEntryId])
+  aiQuestions             AIQuestion[]
+  dailyPerformances       DailyPerformance[]
+  aiRuns                  AIRun[]
+  reflectionTaskSnapshots ReflectionTaskSnapshot[]
 
   @@index([dailyEntryId])
   @@map("ReflectionSnapshot")
@@ -245,8 +257,8 @@ model ReflectionTaskSnapshot {
   reflectionSnapshotId     String       @map("reflection_snapshot_id") @db.Char(36)
   taskId                   String       @map("task_id") @db.Char(36)
 
-  reflectionSnapshot ReflectionSnapshot @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
-  task               Task               @relation(fields: [taskId], references: [taskId])
+  reflectionSnapshot ReflectionSnapshot             @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+  task               Task                           @relation(fields: [taskId], references: [taskId])
   resultSnapshots    ReflectionTaskResultSnapshot[]
 
   @@index([reflectionSnapshotId])
@@ -269,12 +281,12 @@ model ReflectionTaskResultSnapshot {
 }
 
 model AIQuestion {
-  aiQuestionId         String    @id @default(uuid()) @map("ai_question_id") @db.Char(36)
-  questionContent      String    @map("question_content") @db.Text
-  answer               String?   @db.Text
-  isSkipped            Boolean   @default(false) @map("is_skipped")
-  createdAt            DateTime  @default(now()) @map("created_at") @db.DateTime(0)
-  reflectionSnapshotId String    @map("reflection_snapshot_id") @db.Char(36)
+  aiQuestionId         String   @id @default(uuid()) @map("ai_question_id") @db.Char(36)
+  questionContent      String   @map("question_content") @db.Text
+  answer               String?  @db.Text
+  isSkipped            Boolean  @default(false) @map("is_skipped")
+  createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  reflectionSnapshotId String   @map("reflection_snapshot_id") @db.Char(36)
 
   reflectionSnapshot ReflectionSnapshot @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
 
@@ -283,18 +295,18 @@ model AIQuestion {
 }
 
 model AIRun {
-  aiRunId              String       @id @default(uuid()) @map("ai_run_id") @db.Char(36)
-  promptType           String       @map("prompt_type") @db.VarChar(20)
-  promptVersion        String       @map("prompt_version") @db.VarChar(50)
+  aiRunId              String      @id @default(uuid()) @map("ai_run_id") @db.Char(36)
+  promptType           String      @map("prompt_type") @db.VarChar(20)
+  promptVersion        String      @map("prompt_version") @db.VarChar(50)
   status               AiRunStatus
-  inputTokens          Int          @default(0) @map("input_tokens")
-  outputTokens         Int?         @map("output_tokens")
-  totalTokens          Int?         @map("total_tokens")
-  cost                 Decimal      @default(0) @db.Decimal(10, 4)
-  errorMessage         String?      @map("error_message") @db.Text
-  createdAt            DateTime     @default(now()) @map("created_at") @db.DateTime(0)
-  dashboardId          String?      @map("dashboard_id") @db.Char(36)
-  reflectionSnapshotId String?      @map("reflection_snapshot_id") @db.Char(36)
+  inputTokens          Int         @default(0) @map("input_tokens")
+  outputTokens         Int?        @map("output_tokens")
+  totalTokens          Int?        @map("total_tokens")
+  cost                 Decimal     @default(0) @db.Decimal(10, 4)
+  errorMessage         String?     @map("error_message") @db.Text
+  createdAt            DateTime    @default(now()) @map("created_at") @db.DateTime(0)
+  dashboardId          String?     @map("dashboard_id") @db.Char(36)
+  reflectionSnapshotId String?     @map("reflection_snapshot_id") @db.Char(36)
 
   dashboard          Dashboard?          @relation(fields: [dashboardId], references: [dashboardId])
   reflectionSnapshot ReflectionSnapshot? @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
@@ -320,30 +332,30 @@ model RuleEngineLog {
 }
 
 model DailyPerformance {
-  dailyPerformanceId  String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
-  achievementRate     Int      @map("achievement_rate") @db.TinyInt
-  summary             String   @db.Text
-  growthInsight       String   @map("growth_insight") @db.Text
-  nextAction          String?  @map("next_action") @db.Text
-  structuredResult    Json     @map("structured_result")
-  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(0)
-  reflectionSnapshotId String  @map("reflection_snapshot_id") @db.Char(36)
+  dailyPerformanceId   String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
+  achievementRate      Int      @map("achievement_rate") @db.TinyInt
+  summary              String   @db.Text
+  growthInsight        String   @map("growth_insight") @db.Text
+  nextAction           String?  @map("next_action") @db.Text
+  structuredResult     Json     @map("structured_result")
+  createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  reflectionSnapshotId String   @map("reflection_snapshot_id") @db.Char(36)
 
-  reflectionSnapshot  ReflectionSnapshot  @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
-  performanceItems    PerformanceItem[]
-  dashboardLinks      DashboardPerformance[]
+  reflectionSnapshot ReflectionSnapshot     @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+  performanceItems   PerformanceItem[]
+  dashboardLinks     DashboardPerformance[]
 
   @@index([reflectionSnapshotId])
   @@map("DailyPerformance")
 }
 
 model PerformanceItem {
-  performanceItemId   String   @id @default(uuid()) @map("performance_item_id") @db.Char(36)
-  output              String   @db.Text
-  impact              String   @db.Text
-  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(0)
-  taskId              String   @map("task_id") @db.Char(36)
-  dailyPerformanceId  String   @map("daily_performance_id") @db.Char(36)
+  performanceItemId  String   @id @default(uuid()) @map("performance_item_id") @db.Char(36)
+  output             String   @db.Text
+  impact             String   @db.Text
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  taskId             String   @map("task_id") @db.Char(36)
+  dailyPerformanceId String   @map("daily_performance_id") @db.Char(36)
 
   task             Task             @relation(fields: [taskId], references: [taskId])
   dailyPerformance DailyPerformance @relation(fields: [dailyPerformanceId], references: [dailyPerformanceId])
@@ -366,13 +378,13 @@ model Dashboard {
   deletedAt        DateTime? @map("deleted_at") @db.DateTime(0)
   userId           String    @map("user_id") @db.Char(36)
 
-  user               User                    @relation(fields: [userId], references: [userId])
-  aiRuns             AIRun[]
-  performances       DashboardPerformance[]
-  kpis               DashboardKPI[]
-  insights           DashboardInsight[]
-  tagAnalyses        DashboardTagAnalysis[]
-  weeklyReflections  WeeklyReflection[]
+  user              User                   @relation(fields: [userId], references: [userId])
+  aiRuns            AIRun[]
+  performances      DashboardPerformance[]
+  kpis              DashboardKPI[]
+  insights          DashboardInsight[]
+  tagAnalyses       DashboardTagAnalysis[]
+  weeklyReflections WeeklyReflection[]
 
   @@index([userId])
   @@map("Dashboard")
@@ -431,12 +443,12 @@ model DashboardTagAnalysis {
 }
 
 model WeeklyReflection {
-  weeklyReflectionId String    @id @default(uuid()) @map("weekly_reflection_id") @db.Char(36)
-  workSummary        String?   @map("work_summary") @db.Text
-  resourcesUsed      String?   @map("resources_used") @db.Text
-  learning           String?   @db.Text
-  createdAt          DateTime  @default(now()) @map("created_at") @db.DateTime(0)
-  dashboardId        String    @map("dashoard_id") @db.Char(36)
+  weeklyReflectionId String   @id @default(uuid()) @map("weekly_reflection_id") @db.Char(36)
+  workSummary        String?  @map("work_summary") @db.Text
+  resourcesUsed      String?  @map("resources_used") @db.Text
+  learning           String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  dashboardId        String   @map("dashoard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 
