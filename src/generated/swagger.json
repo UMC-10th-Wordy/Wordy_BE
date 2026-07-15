@@ -395,6 +395,508 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"GoogleCallbackResult": {
+				"anyOf": [
+					{
+						"properties": {
+							"email": {
+								"type": "string"
+							},
+							"refreshToken": {
+								"type": "string"
+							},
+							"accessToken": {
+								"type": "string"
+							},
+							"status": {
+								"type": "string",
+								"enum": [
+									"login"
+								],
+								"nullable": false
+							}
+						},
+						"required": [
+							"email",
+							"refreshToken",
+							"accessToken",
+							"status"
+						],
+						"type": "object"
+					},
+					{
+						"properties": {
+							"email": {
+								"type": "string"
+							},
+							"pendingToken": {
+								"type": "string"
+							},
+							"status": {
+								"type": "string",
+								"enum": [
+									"pending"
+								],
+								"nullable": false
+							}
+						},
+						"required": [
+							"email",
+							"pendingToken",
+							"status"
+						],
+						"type": "object"
+					}
+				]
+			},
+			"ApiResponse_GoogleCallbackResult_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/GoogleCallbackResult"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GoogleCompleteSignupRequest": {
+				"properties": {
+					"token": {
+						"type": "string"
+					},
+					"agreements": {
+						"items": {
+							"$ref": "#/components/schemas/AgreementInput"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"token",
+					"agreements"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SupplementQuestionDto": {
+				"properties": {
+					"question": {
+						"type": "string"
+					},
+					"reason": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"question",
+					"reason"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskPerformanceDto": {
+				"properties": {
+					"taskId": {
+						"type": "string"
+					},
+					"output": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"impact": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"taskId",
+					"output",
+					"impact"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PerformanceResponseDto": {
+				"properties": {
+					"status": {
+						"type": "string",
+						"enum": [
+							"QUESTION_REQUIRED",
+							"COMPLETED"
+						]
+					},
+					"supplementQuestions": {
+						"items": {
+							"$ref": "#/components/schemas/SupplementQuestionDto"
+						},
+						"type": "array"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"growthInsights": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"nextActions": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"taskPerformances": {
+						"items": {
+							"$ref": "#/components/schemas/TaskPerformanceDto"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskDto": {
+				"properties": {
+					"taskId": {
+						"type": "string"
+					},
+					"priority": {
+						"type": "string"
+					},
+					"completed": {
+						"type": "boolean"
+					},
+					"title": {
+						"type": "string"
+					},
+					"memo": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"taskId",
+					"priority",
+					"completed",
+					"title"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ReflectionDto": {
+				"properties": {
+					"good": {
+						"type": "string"
+					},
+					"bad": {
+						"type": "string"
+					},
+					"learned": {
+						"type": "string"
+					},
+					"nextPlan": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ProjectTagDto": {
+				"properties": {
+					"projectTagId": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"kpis": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"projectTagId",
+					"title"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PerformanceRequestDto": {
+				"properties": {
+					"tasks": {
+						"items": {
+							"$ref": "#/components/schemas/TaskDto"
+						},
+						"type": "array"
+					},
+					"reflection": {
+						"$ref": "#/components/schemas/ReflectionDto"
+					},
+					"projectTag": {
+						"$ref": "#/components/schemas/ProjectTagDto"
+					},
+					"userJob": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"tasks",
+					"reflection",
+					"userJob"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"QuestionAnswerDto": {
+				"properties": {
+					"question": {
+						"type": "string"
+					},
+					"answer": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"question",
+					"answer"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PerformanceQuestionRequestDto": {
+				"properties": {
+					"originalRequest": {
+						"$ref": "#/components/schemas/PerformanceRequestDto"
+					},
+					"answers": {
+						"items": {
+							"$ref": "#/components/schemas/QuestionAnswerDto"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"originalRequest",
+					"answers"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardKpiDto": {
+				"properties": {
+					"kpiName": {
+						"type": "string"
+					},
+					"progress": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"kpiName",
+					"progress"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardTagAnalysisDto": {
+				"properties": {
+					"goal": {
+						"type": "string"
+					},
+					"expectedOutcome": {
+						"type": "string"
+					},
+					"taskCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"achievementStatus": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"goal",
+					"expectedOutcome",
+					"taskCount",
+					"achievementStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"WeeklyReflectionDto": {
+				"properties": {
+					"workSummary": {
+						"type": "string"
+					},
+					"resourcesUsed": {
+						"type": "string"
+					},
+					"learning": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"workSummary",
+					"resourcesUsed",
+					"learning"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardResponseDto": {
+				"properties": {
+					"dashboardId": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"journalDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"performanceCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"tagCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"kpis": {
+						"items": {
+							"$ref": "#/components/schemas/DashboardKpiDto"
+						},
+						"type": "array"
+					},
+					"tagAnalyses": {
+						"items": {
+							"$ref": "#/components/schemas/DashboardTagAnalysisDto"
+						},
+						"type": "array"
+					},
+					"weeklyReflection": {
+						"$ref": "#/components/schemas/WeeklyReflectionDto"
+					}
+				},
+				"required": [
+					"dashboardId",
+					"startDate",
+					"endDate",
+					"summary",
+					"journalDays",
+					"performanceCount",
+					"tagCount",
+					"kpis",
+					"tagAnalyses",
+					"weeklyReflection"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardRequestDto": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"startDate",
+					"endDate"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"KpiResponseDto": {
+				"properties": {
+					"kpiRecommendations": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"kpiRecommendations"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"KpiRequestDto": {
+				"properties": {
+					"tagName": {
+						"type": "string"
+					},
+					"projectName": {
+						"type": "string"
+					},
+					"goal": {
+						"type": "string"
+					},
+					"expectedOutcome": {
+						"type": "string"
+					},
+					"period": {
+						"type": "string"
+					},
+					"userJob": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"tagName",
+					"projectName",
+					"goal",
+					"expectedOutcome",
+					"userJob"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -679,6 +1181,218 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/RefreshRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/google": {
+			"get": {
+				"operationId": "GoogleLogin",
+				"responses": {
+					"204": {
+						"description": "No content"
+					},
+					"302": {
+						"description": ""
+					}
+				},
+				"summary": "구글 로그인 시작",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/auth/google/callback": {
+			"get": {
+				"operationId": "GoogleCallback",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_GoogleCallbackResult_"
+								}
+							}
+						}
+					}
+				},
+				"summary": "구글 로그인 콜백",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "code",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/auth/google/complete": {
+			"post": {
+				"operationId": "CompleteGoogleSignup",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "구글 회원가입 완료",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/GoogleCompleteSignupRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/performance-preview": {
+			"post": {
+				"operationId": "CreatePerformancePreview",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PerformanceResponseDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PerformanceRequestDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/performance-preview/complete": {
+			"post": {
+				"operationId": "CompletePerformancePreview",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PerformanceResponseDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PerformanceQuestionRequestDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/dashboard": {
+			"post": {
+				"operationId": "CreateDashboard",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DashboardResponseDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DashboardRequestDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/project-tags/kpi-recommendation": {
+			"post": {
+				"operationId": "CreateKpiRecommendation",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/KpiResponseDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/KpiRequestDto"
 							}
 						}
 					}
