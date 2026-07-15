@@ -26,7 +26,12 @@ const getWeekRange = (base: Date = new Date()) => {
   return { start: monday, end: sunday };
 };
 
-const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
+const toDateStr = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 // 생성 조건 충족 여부 확인 (baseDate: 조회할 주의 기준 날짜)
 export const getEligibility = async (userId: string, baseDate?: string) => {

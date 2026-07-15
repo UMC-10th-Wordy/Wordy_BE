@@ -1047,6 +1047,108 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"GoogleCallbackResult": {
+				"anyOf": [
+					{
+						"properties": {
+							"email": {
+								"type": "string"
+							},
+							"refreshToken": {
+								"type": "string"
+							},
+							"accessToken": {
+								"type": "string"
+							},
+							"status": {
+								"type": "string",
+								"enum": [
+									"login"
+								],
+								"nullable": false
+							}
+						},
+						"required": [
+							"email",
+							"refreshToken",
+							"accessToken",
+							"status"
+						],
+						"type": "object"
+					},
+					{
+						"properties": {
+							"email": {
+								"type": "string"
+							},
+							"pendingToken": {
+								"type": "string"
+							},
+							"status": {
+								"type": "string",
+								"enum": [
+									"pending"
+								],
+								"nullable": false
+							}
+						},
+						"required": [
+							"email",
+							"pendingToken",
+							"status"
+						],
+						"type": "object"
+					}
+				]
+			},
+			"ApiResponse_GoogleCallbackResult_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/GoogleCallbackResult"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GoogleCompleteSignupRequest": {
+				"properties": {
+					"token": {
+						"type": "string"
+					},
+					"agreements": {
+						"items": {
+							"$ref": "#/components/schemas/AgreementInput"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"token",
+					"agreements"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -1640,6 +1742,90 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/RefreshRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/google": {
+			"get": {
+				"operationId": "GoogleLogin",
+				"responses": {
+					"204": {
+						"description": "No content"
+					},
+					"302": {
+						"description": ""
+					}
+				},
+				"summary": "구글 로그인 시작",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/auth/google/callback": {
+			"get": {
+				"operationId": "GoogleCallback",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_GoogleCallbackResult_"
+								}
+							}
+						}
+					}
+				},
+				"summary": "구글 로그인 콜백",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "code",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/auth/google/complete": {
+			"post": {
+				"operationId": "CompleteGoogleSignup",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "구글 회원가입 완료",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/GoogleCompleteSignupRequest"
 							}
 						}
 					}
