@@ -66,7 +66,7 @@ export const getDashboardList = async (userId: string) => {
   }));
 };
 
-// 대시보드 상세 조회
+// 대시보드 상세 조회npm run dev
 export const getDashboardDetail = async (
   dashboardId: string,
   userId: string

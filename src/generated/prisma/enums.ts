@@ -17,16 +17,6 @@ export const AuthProvider = {
 export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
 
 
-export const AgreementType = {
-  TERMS_OF_SERVICE: 'TERMS_OF_SERVICE',
-  PRIVACY_POLICY: 'PRIVACY_POLICY',
-  AGE_OVER_14: 'AGE_OVER_14',
-  MARKETING: 'MARKETING'
-} as const
-
-export type AgreementType = (typeof AgreementType)[keyof typeof AgreementType]
-
-
 export const YearsOfService = {
   UNDER_1: 'UNDER_1',
   ONE_TO_3: 'ONE_TO_3',
@@ -56,34 +46,11 @@ export const JobRole = {
 export type JobRole = (typeof JobRole)[keyof typeof JobRole]
 
 
-export const TaskPriority = {
-  MUST_DO: 'MUST_DO',
-  SHOULD_DO: 'SHOULD_DO',
-  COULD_DO: 'COULD_DO'
+export const AgreementType = {
+  TERMS_OF_SERVICE: 'TERMS_OF_SERVICE',
+  PRIVACY_POLICY: 'PRIVACY_POLICY',
+  AGE_OVER_14: 'AGE_OVER_14',
+  MARKETING: 'MARKETING'
 } as const
 
-export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
-
-
-export const TaskStatus = {
-  IN_PROGRESS: 'IN_PROGRESS',
-  COMPLETED: 'COMPLETED'
-} as const
-
-export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus]
-
-
-export const FileType = {
-  FILE: 'FILE',
-  IMG: 'IMG'
-} as const
-
-export type FileType = (typeof FileType)[keyof typeof FileType]
-
-
-export const AiRunStatus = {
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED'
-} as const
-
-export type AiRunStatus = (typeof AiRunStatus)[keyof typeof AiRunStatus]
+export type AgreementType = (typeof AgreementType)[keyof typeof AgreementType]
