@@ -1,19 +1,18 @@
-import jwt from 'jsonwebtoken';
 import { verifyAccessToken } from '../../auth.config';
 import { UsersRepository } from './users.repository';
 import { CompleteProfileRequest, UserProfileData, YearsOfService, JobRole } from './users.dto';
+import { ApiError } from '../../common/errors/api.error';
+import { ErrorCode } from '../../common/errors/error.code';
 
-export class UnauthorizedError extends Error {
+export class UnauthorizedError extends ApiError {
   constructor() {
-    super('인증이 필요합니다.');
-    this.name = 'UnauthorizedError';
+    super(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, '인증이 필요합니다.');
   }
 }
 
-export class UserNotFoundError extends Error {
+export class UserNotFoundError extends ApiError {
   constructor() {
-    super('사용자 프로필을 찾을 수 없습니다.');
-    this.name = 'UserNotFoundError';
+    super(ErrorCode.NOT_FOUND.status, ErrorCode.NOT_FOUND.code, '사용자 프로필을 찾을 수 없습니다.');
   }
 }
 

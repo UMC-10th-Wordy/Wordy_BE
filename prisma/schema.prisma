@@ -63,6 +63,18 @@ enum AiRunStatus {
   FAILED  @map("failed")
 }
 
+model ApiLog {
+  logId      Int      @id @default(autoincrement()) @map("log_id")
+  userId     String?  @map("user_id") @db.Char(36)
+  method     String   @db.VarChar(10)
+  path       String   @db.Text
+  ipAddress  String   @map("ip_address") @db.VarChar(45)
+  statusCode Int      @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([userId, createdAt])
+  @@map("ApiLog")
+}
 model User {
   userId       String       @id @default(uuid()) @map("user_id") @db.Char(36)
   email        String       @unique @db.VarChar(255)

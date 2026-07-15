@@ -11,6 +11,7 @@ import { ValidateError } from 'tsoa';
 import { RegisterRoutes } from './generated/routes';
 import { ErrorCode } from './common/errors/error.code';
 import { ApiError } from './common/errors/api.error';
+import { apiLogMiddleware } from './common/middlewares/api-log.middleware';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,6 +23,7 @@ app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(apiLogMiddleware);
 
 const swaggerDocument = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'generated/swagger.json'), 'utf-8'),
