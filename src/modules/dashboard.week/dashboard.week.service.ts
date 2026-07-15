@@ -4,7 +4,10 @@ import {
   findDashboardById,
   existsDashboard,          
   createWeeklyReflection,   
-} from "./dashboard.repository.js";
+  findReflectionById,     
+  updateWeeklyReflection,
+  findDailyEntries,
+} from "./dashboard.week.repository.js";
 
 const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
 
@@ -25,17 +28,24 @@ const getWeekRange = (base: Date = new Date()) => {
 
 const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
 
-// 생성 조건 충족 여부 확인
-export const getEligibility = async (userId: string) => {
-  const { start, end } = getWeekRange();
-  const journalDays = await countDailyEntries(userId, start, end);
+// 생성 조건 충족 여부 확인 (baseDate: 조회할 주의 기준 날짜)
+export const getEligibility = async (userId: string, baseDate?: string) => {
+  // baseDate가 있으면 그 날짜 기준, 없으면 오늘 기준
+  const base = baseDate ? new Date(baseDate) : new Date();
+  const { start, end } = getWeekRange(base);
+
+  const entries = await findDailyEntries(userId, start, end);
 
   return {
-    eligible: journalDays >= REQUIRED_DAYS,
-    journalDays,
+    eligible: entries.length >= REQUIRED_DAYS,
+    journalDays: entries.length,
     requiredDays: REQUIRED_DAYS,
     weekStart: toDateStr(start),
     weekEnd: toDateStr(end),
+    entries: entries.map((e) => ({
+      dailyEntryId: e.dailyEntryId,
+      entryDate: toDateStr(e.entryDate),
+    })),
   };
 };
 
@@ -61,7 +71,7 @@ export const getDashboardDetail = async (
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
 
-  return {
+    return {
     dashboardId: d.dashboardId,
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
@@ -77,6 +87,16 @@ export const getDashboardDetail = async (
       periodEnd: t.periodEnd ? toDateStr(t.periodEnd) : null,
     })),
     weeklyReflections: d.weeklyReflections,
+    performances: d.performances.map((p) => ({
+      achievementRate: p.dailyPerformance.achievementRate,
+      summary: p.dailyPerformance.summary,
+      growthInsight: p.dailyPerformance.growthInsight,
+      nextAction: p.dailyPerformance.nextAction,
+      items: p.dailyPerformance.performanceItems.map((item) => ({
+        output: item.output,
+        impact: item.impact,
+      })),
+    })),
   };
 };
 
@@ -105,5 +125,39 @@ export const addWeeklyReflection = async (
     resourcesUsed: reflection.resourcesUsed,
     learning: reflection.learning,
     createdAt: reflection.createdAt.toISOString(),
+  };
+};
+
+// 회고 수정
+export const editWeeklyReflection = async (
+  dashboardId: string,
+  reflectionId: string,
+  userId: string,
+  data: {
+    workSummary?: string;
+    resourcesUsed?: string;
+    learning?: string;
+  }
+) => {
+  // 대시보드가 이 유저 것인지 확인
+  const exists = await existsDashboard(dashboardId, userId);
+  if (!exists) {
+    throw new Error("해당 대시보드를 찾을 수 없습니다.");
+  }
+
+  // 회고가 이 대시보드 것인지 확인
+  const reflection = await findReflectionById(reflectionId, dashboardId);
+  if (!reflection) {
+    throw new Error("해당 회고를 찾을 수 없습니다.");
+  }
+
+  //  수정
+  const updated = await updateWeeklyReflection(reflectionId, data);
+
+  return {
+    weeklyReflectionId: updated.weeklyReflectionId,
+    workSummary: updated.workSummary,
+    resourcesUsed: updated.resourcesUsed,
+    learning: updated.learning,
   };
 };

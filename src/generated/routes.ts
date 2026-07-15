@@ -6,7 +6,9 @@ import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UsersController } from './../modules/users/users.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DashboardController } from './../modules/dashboard/dashboard.controller';
+import { DashboardController } from './../modules/dashboard.week/dashboard.week.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { MonthlyDashboardController } from './../modules/dashboard.month/dashboard.month.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
@@ -84,6 +86,15 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DailyEntryItem": {
+        "dataType": "refObject",
+        "properties": {
+            "dailyEntryId": {"dataType":"string","required":true},
+            "entryDate": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "EligibilityResponse": {
         "dataType": "refObject",
         "properties": {
@@ -92,6 +103,7 @@ const models: TsoaRoute.Models = {
             "requiredDays": {"dataType":"double","required":true},
             "weekStart": {"dataType":"string","required":true},
             "weekEnd": {"dataType":"string","required":true},
+            "entries": {"dataType":"array","array":{"dataType":"refObject","ref":"DailyEntryItem"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -150,6 +162,27 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceItemDto": {
+        "dataType": "refObject",
+        "properties": {
+            "output": {"dataType":"string","required":true},
+            "impact": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceDto": {
+        "dataType": "refObject",
+        "properties": {
+            "achievementRate": {"dataType":"double","required":true},
+            "summary": {"dataType":"string","required":true},
+            "growthInsight": {"dataType":"string","required":true},
+            "nextAction": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "items": {"dataType":"array","array":{"dataType":"refObject","ref":"PerformanceItemDto"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "DashboardDetail": {
         "dataType": "refObject",
         "properties": {
@@ -164,11 +197,140 @@ const models: TsoaRoute.Models = {
             "kpis": {"dataType":"array","array":{"dataType":"refObject","ref":"Kpi"},"required":true},
             "tagAnalyses": {"dataType":"array","array":{"dataType":"refObject","ref":"TagAnalysis"},"required":true},
             "weeklyReflections": {"dataType":"array","array":{"dataType":"refObject","ref":"WeeklyReflection"},"required":true},
+            "performances": {"dataType":"array","array":{"dataType":"refObject","ref":"PerformanceDto"},"required":true},
         },
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreateWeeklyReflectionRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "workSummary": {"dataType":"string"},
+            "resourcesUsed": {"dataType":"string"},
+            "learning": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "WeeklyDashboardItem": {
+        "dataType": "refObject",
+        "properties": {
+            "dashboardId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyEligibilityResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "eligible": {"dataType":"boolean","required":true},
+            "weeklyDashboardCount": {"dataType":"double","required":true},
+            "requiredCount": {"dataType":"double","required":true},
+            "monthStart": {"dataType":"string","required":true},
+            "monthEnd": {"dataType":"string","required":true},
+            "weeklyDashboards": {"dataType":"array","array":{"dataType":"refObject","ref":"WeeklyDashboardItem"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyDashboardListItem": {
+        "dataType": "refObject",
+        "properties": {
+            "dashboardId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+            "createdAt": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyInsight": {
+        "dataType": "refObject",
+        "properties": {
+            "journalDays": {"dataType":"double","required":true},
+            "performanceCount": {"dataType":"double","required":true},
+            "tagCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyKpi": {
+        "dataType": "refObject",
+        "properties": {
+            "kpiName": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "progress": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyTagAnalysis": {
+        "dataType": "refObject",
+        "properties": {
+            "goal": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "expectedOutcome": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "taskCount": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true},
+            "periodStart": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "periodEnd": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "achievementStatus": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyReflectionItem": {
+        "dataType": "refObject",
+        "properties": {
+            "workSummary": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "resourcesUsed": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "learning": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyPerformanceItemDto": {
+        "dataType": "refObject",
+        "properties": {
+            "output": {"dataType":"string","required":true},
+            "impact": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyPerformanceDto": {
+        "dataType": "refObject",
+        "properties": {
+            "achievementRate": {"dataType":"double","required":true},
+            "summary": {"dataType":"string","required":true},
+            "growthInsight": {"dataType":"string","required":true},
+            "nextAction": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "items": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlyPerformanceItemDto"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MonthlyDashboardDetail": {
+        "dataType": "refObject",
+        "properties": {
+            "dashboardId": {"dataType":"string","required":true},
+            "startDate": {"dataType":"string","required":true},
+            "endDate": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+            "journalDays": {"dataType":"double","required":true},
+            "performanceCount": {"dataType":"double","required":true},
+            "tagCount": {"dataType":"double","required":true},
+            "insights": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlyInsight"},"required":true},
+            "kpis": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlyKpi"},"required":true},
+            "tagAnalyses": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlyTagAnalysis"},"required":true},
+            "weeklyReflections": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlyReflectionItem"},"required":true},
+            "performances": {"dataType":"array","array":{"dataType":"refObject","ref":"MonthlyPerformanceDto"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateMonthlyReflectionRequest": {
         "dataType": "refObject",
         "properties": {
             "workSummary": {"dataType":"string"},
@@ -339,6 +501,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardController_getEligibility: Record<string, TsoaRoute.ParameterSchema> = {
+                baseDate: {"in":"query","name":"baseDate","dataType":"string"},
         };
         app.get('/dashboards/eligibility',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
@@ -443,6 +606,158 @@ export function RegisterRoutes(app: Router) {
                 validatedArgs = templateService.getValidatedArgs({ args: argsDashboardController_createReflection, request, response });
 
                 const controller = new DashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'createReflection',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDashboardController_updateReflection: Record<string, TsoaRoute.ParameterSchema> = {
+                dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
+                reflectionId: {"in":"path","name":"reflectionId","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateWeeklyReflectionRequest"},
+        };
+        app.patch('/dashboards/:dashboardId/reflection/:reflectionId',
+            ...(fetchMiddlewares<RequestHandler>(DashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.updateReflection)),
+
+            async function DashboardController_updateReflection(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardController_updateReflection, request, response });
+
+                const controller = new DashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'updateReflection',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMonthlyDashboardController_getEligibility: Record<string, TsoaRoute.ParameterSchema> = {
+                baseDate: {"in":"query","name":"baseDate","dataType":"string"},
+        };
+        app.get('/dashboards/monthly/eligibility',
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.getEligibility)),
+
+            async function MonthlyDashboardController_getEligibility(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMonthlyDashboardController_getEligibility, request, response });
+
+                const controller = new MonthlyDashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'getEligibility',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMonthlyDashboardController_getList: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/dashboards/monthly',
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.getList)),
+
+            async function MonthlyDashboardController_getList(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMonthlyDashboardController_getList, request, response });
+
+                const controller = new MonthlyDashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'getList',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMonthlyDashboardController_getDetail: Record<string, TsoaRoute.ParameterSchema> = {
+                dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
+        };
+        app.get('/dashboards/monthly/:dashboardId',
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.getDetail)),
+
+            async function MonthlyDashboardController_getDetail(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMonthlyDashboardController_getDetail, request, response });
+
+                const controller = new MonthlyDashboardController();
+
+              await templateService.apiHandler({
+                methodName: 'getDetail',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMonthlyDashboardController_createReflection: Record<string, TsoaRoute.ParameterSchema> = {
+                dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateMonthlyReflectionRequest"},
+        };
+        app.post('/dashboards/monthly/:dashboardId/reflection',
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
+            ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.createReflection)),
+
+            async function MonthlyDashboardController_createReflection(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMonthlyDashboardController_createReflection, request, response });
+
+                const controller = new MonthlyDashboardController();
 
               await templateService.apiHandler({
                 methodName: 'createReflection',

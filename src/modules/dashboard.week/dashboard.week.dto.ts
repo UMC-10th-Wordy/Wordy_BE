@@ -5,7 +5,9 @@ export interface EligibilityResponse {
   requiredDays: number;     // 생성에 필요한 최소 일지 수
   weekStart: string;        // 이번 주 시작일 (YYYY-MM-DD)
   weekEnd: string;          // 이번 주 종료일 (YYYY-MM-DD)
+  entries: DailyEntryItem[];
 }
+// 날짜 형식은 웬만하면 YYYY-MM-DD
 
 // 대시보드 목록의 각 항목
 export interface DashboardListItem {
@@ -29,6 +31,7 @@ export interface DashboardDetail {
   kpis: Kpi[];
   tagAnalyses: TagAnalysis[];
   weeklyReflections: WeeklyReflection[];
+  performances: PerformanceDto[];
 }
 
 export interface Insight {
@@ -62,4 +65,25 @@ export interface CreateWeeklyReflectionRequest {
   workSummary?: string;      // 이번 주 업무 정리
   resourcesUsed?: string;    // 사용한 시간/리소스
   learning?: string;         // 배우고 느낀 점
+}
+
+// 성과 항목 (output, impact)
+export interface PerformanceItemDto {
+  output: string;
+  impact: string;
+}
+
+// 일일 성과 요약
+export interface PerformanceDto {
+  achievementRate: number;
+  summary: string;
+  growthInsight: string;
+  nextAction: string | null;
+  items: PerformanceItemDto[];
+}
+
+// 일지 항목 (생성에 사용할 업무 일지)
+export interface DailyEntryItem {
+  dailyEntryId: string;
+  entryDate: string;
 }

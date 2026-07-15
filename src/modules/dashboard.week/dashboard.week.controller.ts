@@ -1,27 +1,31 @@
-import { Controller, Get, Post, Path, Body, Route, Tags } from "tsoa";
+import { Controller, Get, Post, Patch, Path, Body, Query, Route, Tags } from "tsoa";
 import {
   getEligibility,
   getDashboardList,
   getDashboardDetail,
-  addWeeklyReflection,   
-} from "./dashboard.service.js";
+  addWeeklyReflection,
+  editWeeklyReflection,   
+} from "./dashboard.week.service.js";
 import {
   EligibilityResponse,
   DashboardListItem,
   DashboardDetail,
   CreateWeeklyReflectionRequest,   
-} from "./dashboard.dto.js";
+} from "./dashboard.week.dto.js";
 
 @Route("dashboards")
 @Tags("Dashboard")
 export class DashboardController extends Controller {
-  /**
+/**
    * 생성 조건 충족 여부 조회
+   * @param baseDate 조회할 주의 기준 날짜 (YYYY-MM-DD, 생략 시 이번 주)
    */
   @Get("eligibility")
-  public async getEligibility(): Promise<EligibilityResponse> {
-    const userId = "test-user-id"; // 로그인 붙으면 실제 userId로 교체
-    return getEligibility(userId);
+  public async getEligibility(
+    @Query() baseDate?: string
+  ): Promise<EligibilityResponse> {
+    const userId = "test-user-id";
+    return getEligibility(userId, baseDate);
   }
 
   /**
@@ -55,4 +59,17 @@ export class DashboardController extends Controller {
     const userId = "test-user-id";
     return addWeeklyReflection(dashboardId, userId, body);
   }
+
+  //회고 수정
+  @Patch("{dashboardId}/reflection/{reflectionId}")
+  public async updateReflection(
+    @Path() dashboardId: string,
+    @Path() reflectionId: string,
+    @Body() body: CreateWeeklyReflectionRequest
+  ): Promise<any> {
+    const userId = "test-user-id";
+    return editWeeklyReflection(dashboardId, reflectionId, userId, body);
+  }
+
 }
+
