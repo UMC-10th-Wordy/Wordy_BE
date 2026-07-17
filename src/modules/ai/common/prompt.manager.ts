@@ -1,11 +1,10 @@
-import { PromptRequest } from "./types/ai.types";
+import { PromptRequest } from "../types/ai.types";
+import { kpiInstructions, promptAInstructions, promptBInstructions, promptCInstructions } from "../prompts";
 
-import { PromptAInputDto } from "./dto/performance/prompt/prompt.a.input.dto";
-import { PromptBInputDto } from "./dto/performance/prompt/prompt.b.input.dto";
-import { PromptCInputDto } from "./dto/dashboard/prompt/prompt.c.input.dto";
-import { KpiInputDto } from "./dto/kpi/prompt/kpi.input.dto";
-
-import { kpiInstructions, promptAInstructions, promptBInstructions, promptCInstructions } from "./prompts";
+import { KpiInputDto } from "../kpi/dto/prompt/kpi.input.dto";
+import { PromptAInputDto } from "../performance/dto/prompt/prompt.a.input.dto";
+import { PromptBInputDto } from "../performance/dto/prompt/prompt.b.input.dto";
+import { PromptCInputDto } from "../dashboard/dto/prompt/prompt.c.input.dto";
 
 export class PromptManager {
   buildPromptA(dto: PromptAInputDto): PromptRequest {

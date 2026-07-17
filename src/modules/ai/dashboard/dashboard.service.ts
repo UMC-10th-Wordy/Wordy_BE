@@ -24,7 +24,7 @@ export class DashboardService {
     request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
 
-    // 일주일간 성과 변환 조회
+    // 1. 일주일간 성과 변환 조회
     const performances: DailyPerformance[] =
       await this.prisma.dailyPerformance.findMany({
         where: {
@@ -40,14 +40,14 @@ export class DashboardService {
         },
       });
 
-    // 3회 미만이면 생성 불가
+    // 2. 최소 생성 조건 확인
     if (performances.length < 3) {
       throw new Error(
         "일주일간 성과 변환 3회 이상부터 대시보드를 생성할 수 있습니다.",
       );
     }
 
-    // Dashboard Prompt Input 생성
+    // 3. Dashboard(Prompt C) Input 생성
     const dashboardInput: PromptCInputDto = {
       startDate: request.startDate,
       endDate: request.endDate,
@@ -82,13 +82,91 @@ export class DashboardService {
       this.responseParser.parse<PromptCOutputDto>(
         dashboardResponse,
       );
+
+    // 7. 룰 검증
     this.ruleEngine.validatePromptC(
       dashboardResult,
     );
 
+    // 8. DB 저장
+    const dashboard =
+      await this.prisma.dashboard.create({
+        data: {
+          startDate: new Date(request.startDate),
+          endDate: new Date(request.endDate),
+          summary: dashboardResult.summary,
+          journalDays: 0,
+          performanceCount: performances.length,
+          tagCount: dashboardResult.tagAnalyses.length,
+          userId: request.userId,
+        },
+      });
+
+
+      // DailyPerformance 연결
+      await this.prisma.dashboardPerformance.createMany({
+        data: performances.map((performance) => ({
+          dashboardId: dashboard.dashboardId,
+          dailyPerformanceId: performance.dailyPerformanceId,
+        })),
+      });
+
+
+      // KPI 저장
+      if (dashboardResult.kpis.length > 0) {
+        await this.prisma.dashboardKPI.createMany({
+          data: dashboardResult.kpis.map((kpi) => ({
+            dashboardId: dashboard.dashboardId,
+            kpiName: kpi.kpiName,
+            progress: kpi.progress,
+          })),
+        });
+      }
+
+
+      // Tag Analysis 저장
+      if (dashboardResult.tagAnalyses.length > 0) {
+        await this.prisma.dashboardTagAnalysis.createMany({
+          data: dashboardResult.tagAnalyses.map((analysis) => ({
+            dashboardId: dashboard.dashboardId,
+            goal: analysis.goal,
+            expectedOutcome: analysis.expectedOutcome,
+            taskCount: analysis.taskCount,
+            achievementStatus: analysis.achievementStatus,
+            periodStart: new Date(request.startDate),
+            periodEnd: new Date(request.endDate),
+          })),
+        });
+      }
+
+
+      // Weekly Reflection 저장
+      await this.prisma.weeklyReflection.create({
+        data: {
+          dashboardId: dashboard.dashboardId,
+          workSummary:
+            dashboardResult.weeklyReflection.workSummary,
+          resourcesUsed:
+            dashboardResult.weeklyReflection.resourcesUsed,
+          learning:
+            dashboardResult.weeklyReflection.learning,
+        },
+      });
+
+
+      // Dashboard Insight 저장
+      await this.prisma.dashboardInsight.create({
+        data: {
+          dashboardId: dashboard.dashboardId,
+          journalDays: 0,
+          performanceCount: performances.length,
+          tagCount: dashboardResult.tagAnalyses.length,
+        },
+      });
+
     // 8. Response 반환
     return {
-      dashboardId:"",
+      dashboardId:dashboard.dashboardId,
       startDate:
         request.startDate,
       endDate:

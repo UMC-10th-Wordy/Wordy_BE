@@ -16,7 +16,11 @@ import { MonthlyDashboardController } from './../modules/dashboard.month/dashboa
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { AiController } from './../modules/ai/ai.controller';
+import { PerformanceController } from './../modules/ai/performance/performance.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { KpiController } from './../modules/ai/kpi/kpi.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DashboardAiController } from './../modules/ai/dashboard/dashboard.controller';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 
@@ -719,6 +723,27 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "kpiRecommendations": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KpiRequestDto": {
+        "dataType": "refObject",
+        "properties": {
+            "tagName": {"dataType":"string","required":true},
+            "projectName": {"dataType":"string","required":true},
+            "goal": {"dataType":"string","required":true},
+            "expectedOutcome": {"dataType":"string","required":true},
+            "period": {"dataType":"string"},
+            "userJob": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "DashboardKpiDto": {
         "dataType": "refObject",
         "properties": {
@@ -772,27 +797,6 @@ const models: TsoaRoute.Models = {
             "userId": {"dataType":"string","required":true},
             "startDate": {"dataType":"string","required":true},
             "endDate": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "KpiResponseDto": {
-        "dataType": "refObject",
-        "properties": {
-            "kpiRecommendations": {"dataType":"array","array":{"dataType":"string"},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "KpiRequestDto": {
-        "dataType": "refObject",
-        "properties": {
-            "tagName": {"dataType":"string","required":true},
-            "projectName": {"dataType":"string","required":true},
-            "goal": {"dataType":"string","required":true},
-            "expectedOutcome": {"dataType":"string","required":true},
-            "period": {"dataType":"string"},
-            "userJob": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -1698,22 +1702,22 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAiController_createPerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+        const argsPerformanceController_createPerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"body","name":"request","required":true,"ref":"PerformanceRequestDto"},
         };
         app.post('/api/v1/ai/performance-preview',
-            ...(fetchMiddlewares<RequestHandler>(AiController)),
-            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.createPerformancePreview)),
+            ...(fetchMiddlewares<RequestHandler>(PerformanceController)),
+            ...(fetchMiddlewares<RequestHandler>(PerformanceController.prototype.createPerformancePreview)),
 
-            async function AiController_createPerformancePreview(request: ExRequest, response: ExResponse, next: any) {
+            async function PerformanceController_createPerformancePreview(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_createPerformancePreview, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsPerformanceController_createPerformancePreview, request, response });
 
-                const controller = new AiController();
+                const controller = new PerformanceController();
 
               await templateService.apiHandler({
                 methodName: 'createPerformancePreview',
@@ -1728,22 +1732,22 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAiController_completePerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+        const argsPerformanceController_completePerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"body","name":"request","required":true,"ref":"PerformanceQuestionRequestDto"},
         };
         app.post('/api/v1/ai/performance-preview/complete',
-            ...(fetchMiddlewares<RequestHandler>(AiController)),
-            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.completePerformancePreview)),
+            ...(fetchMiddlewares<RequestHandler>(PerformanceController)),
+            ...(fetchMiddlewares<RequestHandler>(PerformanceController.prototype.completePerformancePreview)),
 
-            async function AiController_completePerformancePreview(request: ExRequest, response: ExResponse, next: any) {
+            async function PerformanceController_completePerformancePreview(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_completePerformancePreview, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsPerformanceController_completePerformancePreview, request, response });
 
-                const controller = new AiController();
+                const controller = new PerformanceController();
 
               await templateService.apiHandler({
                 methodName: 'completePerformancePreview',
@@ -1758,25 +1762,25 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAiController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
-                request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
+        const argsKpiController_createKpiRecommendation: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"KpiRequestDto"},
         };
-        app.post('/api/v1/ai/dashboard',
-            ...(fetchMiddlewares<RequestHandler>(AiController)),
-            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.createDashboard)),
+        app.post('/api/v1/ai/project-tags/kpi-recommendation',
+            ...(fetchMiddlewares<RequestHandler>(KpiController)),
+            ...(fetchMiddlewares<RequestHandler>(KpiController.prototype.createKpiRecommendation)),
 
-            async function AiController_createDashboard(request: ExRequest, response: ExResponse, next: any) {
+            async function KpiController_createKpiRecommendation(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_createDashboard, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsKpiController_createKpiRecommendation, request, response });
 
-                const controller = new AiController();
+                const controller = new KpiController();
 
               await templateService.apiHandler({
-                methodName: 'createDashboard',
+                methodName: 'createKpiRecommendation',
                 controller,
                 response,
                 next,
@@ -1788,25 +1792,25 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAiController_createKpiRecommendation: Record<string, TsoaRoute.ParameterSchema> = {
-                request: {"in":"body","name":"request","required":true,"ref":"KpiRequestDto"},
+        const argsDashboardAiController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
         };
-        app.post('/api/v1/ai/project-tags/kpi-recommendation',
-            ...(fetchMiddlewares<RequestHandler>(AiController)),
-            ...(fetchMiddlewares<RequestHandler>(AiController.prototype.createKpiRecommendation)),
+        app.post('/api/v1/ai/dashboard',
+            ...(fetchMiddlewares<RequestHandler>(DashboardAiController)),
+            ...(fetchMiddlewares<RequestHandler>(DashboardAiController.prototype.createDashboard)),
 
-            async function AiController_createKpiRecommendation(request: ExRequest, response: ExResponse, next: any) {
+            async function DashboardAiController_createDashboard(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAiController_createKpiRecommendation, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsDashboardAiController_createDashboard, request, response });
 
-                const controller = new AiController();
+                const controller = new DashboardAiController();
 
               await templateService.apiHandler({
-                methodName: 'createKpiRecommendation',
+                methodName: 'createDashboard',
                 controller,
                 response,
                 next,

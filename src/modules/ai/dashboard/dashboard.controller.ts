@@ -12,7 +12,7 @@ import { DashboardService } from "./dashboard.service";
 
 @Route("api/v1/ai")
 @Tags("AI")
-export class DashboardController extends Controller {
+export class DashboardAiController extends Controller {
   private readonly dashboardService: DashboardService;
 
   constructor() {

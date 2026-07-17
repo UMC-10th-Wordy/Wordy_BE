@@ -1,5 +1,5 @@
-import { ApiError } from "../../common/errors/api.error";
-import { ErrorCode } from "../../common/errors/error.code";
+import { ApiError } from "../../../common/errors/api.error";
+import { ErrorCode } from "../../../common/errors/error.code";
 
 export class ResponseParser {
   parse<T>(response: string): T {
