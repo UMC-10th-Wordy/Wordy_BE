@@ -397,10 +397,10 @@ model PerformanceItem {
 }
 
 model Dashboard {
-  dashboardId      String    @id @default(uuid()) @map("dashoard_id") @db.Char(36)
+  dashboardId      String    @id @default(uuid()) @map("dashboard_id") @db.Char(36)
   startDate        DateTime  @map("start_date") @db.Date
   endDate          DateTime  @map("end_date") @db.Date
-  summary          String    @map("sumary") @db.Text
+  summary          String    @map("summary") @db.Text
   journalDays      Int       @map("journal_days")
   performanceCount Int       @map("performance_count")
   tagCount         Int       @map("tag_count")
@@ -422,7 +422,7 @@ model Dashboard {
 }
 
 model DashboardPerformance {
-  dashboardId        String @map("dashoard_id") @db.Char(36)
+  dashboardId        String @map("dashboard_id") @db.Char(36)
   dailyPerformanceId String @map("daily_performance_id") @db.Char(36)
 
   dashboard        Dashboard        @relation(fields: [dashboardId], references: [dashboardId])
@@ -436,7 +436,7 @@ model DashboardKPI {
   dashboardKpiId String  @id @default(uuid()) @map("dashboard_kpi_id") @db.Char(36)
   kpiName        String? @map("kpi_name") @db.VarChar(100)
   progress       String? @db.Text
-  dashboardId    String  @map("dashoard_id") @db.Char(36)
+  dashboardId    String  @map("dashboard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 
@@ -449,7 +449,7 @@ model DashboardInsight {
   journalDays        Int    @map("journal_days")
   performanceCount   Int    @map("performance_count")
   tagCount           Int    @map("tag_count")
-  dashboardId        String @map("dashoard_id") @db.Char(36)
+  dashboardId        String @map("dashboard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 
@@ -465,7 +465,7 @@ model DashboardTagAnalysis {
   periodStart            DateTime? @map("period_start") @db.Date
   periodEnd              DateTime? @map("period_end") @db.Date
   achievementStatus      String?   @map("achievement_status") @db.Text
-  dashboardId            String    @map("dashoard_id") @db.Char(36)
+  dashboardId            String    @map("dashboard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 
@@ -479,7 +479,7 @@ model WeeklyReflection {
   resourcesUsed      String?  @map("resources_used") @db.Text
   learning           String?  @db.Text
   createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
-  dashboardId        String   @map("dashoard_id") @db.Char(36)
+  dashboardId        String   @map("dashboard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 

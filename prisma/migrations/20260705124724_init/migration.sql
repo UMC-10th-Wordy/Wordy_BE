@@ -244,10 +244,10 @@ CREATE TABLE `PerformanceItem` (
 
 -- CreateTable
 CREATE TABLE `Dashboard` (
-    `dashoard_id` CHAR(36) NOT NULL,
+    `dashboard_id` CHAR(36) NOT NULL,
     `start_date` DATE NOT NULL,
     `end_date` DATE NOT NULL,
-    `sumary` TEXT NOT NULL,
+    `summary` TEXT NOT NULL,
     `journal_days` INTEGER NOT NULL,
     `performance_count` INTEGER NOT NULL,
     `tag_count` INTEGER NOT NULL,
@@ -257,15 +257,15 @@ CREATE TABLE `Dashboard` (
     `user_id` CHAR(36) NOT NULL,
 
     INDEX `Dashboard_user_id_idx`(`user_id`),
-    PRIMARY KEY (`dashoard_id`)
+    PRIMARY KEY (`dashboard_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `DashboardPerformance` (
-    `dashoard_id` CHAR(36) NOT NULL,
+    `dashboard_id` CHAR(36) NOT NULL,
     `daily_performance_id` CHAR(36) NOT NULL,
 
-    PRIMARY KEY (`dashoard_id`, `daily_performance_id`)
+    PRIMARY KEY (`dashboard_id`, `daily_performance_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -273,9 +273,9 @@ CREATE TABLE `DashboardKPI` (
     `dashboard_kpi_id` CHAR(36) NOT NULL,
     `kpi_name` VARCHAR(100) NULL,
     `progress` TEXT NULL,
-    `dashoard_id` CHAR(36) NOT NULL,
+    `dashboard_id` CHAR(36) NOT NULL,
 
-    INDEX `DashboardKPI_dashoard_id_idx`(`dashoard_id`),
+    INDEX `DashboardKPI_dashboard_id_idx`(`dashboard_id`),
     PRIMARY KEY (`dashboard_kpi_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -285,9 +285,9 @@ CREATE TABLE `DashboardInsight` (
     `journal_days` INTEGER NOT NULL,
     `performance_count` INTEGER NOT NULL,
     `tag_count` INTEGER NOT NULL,
-    `dashoard_id` CHAR(36) NOT NULL,
+    `dashboard_id` CHAR(36) NOT NULL,
 
-    INDEX `DashboardInsight_dashoard_id_idx`(`dashoard_id`),
+    INDEX `DashboardInsight_dashboard_id_idx`(`dashboard_id`),
     PRIMARY KEY (`dashboard_insight_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -300,9 +300,9 @@ CREATE TABLE `DashboardTagAnalysis` (
     `period_start` DATE NULL,
     `period_end` DATE NULL,
     `achievement_status` TEXT NULL,
-    `dashoard_id` CHAR(36) NOT NULL,
+    `dashboard_id` CHAR(36) NOT NULL,
 
-    INDEX `DashboardTagAnalysis_dashoard_id_idx`(`dashoard_id`),
+    INDEX `DashboardTagAnalysis_dashboard_id_idx`(`dashboard_id`),
     PRIMARY KEY (`dashboard_tag_analysis_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -313,9 +313,9 @@ CREATE TABLE `WeeklyReflection` (
     `resources_used` TEXT NULL,
     `learning` TEXT NULL,
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
-    `dashoard_id` CHAR(36) NOT NULL,
+    `dashboard_id` CHAR(36) NOT NULL,
 
-    INDEX `WeeklyReflection_dashoard_id_idx`(`dashoard_id`),
+    INDEX `WeeklyReflection_dashboard_id_idx`(`dashboard_id`),
     PRIMARY KEY (`weekly_reflection_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -371,7 +371,7 @@ ALTER TABLE `ReflectionTaskResultSnapshot` ADD CONSTRAINT `ReflectionTaskResultS
 ALTER TABLE `AIQuestion` ADD CONSTRAINT `AIQuestion_reflection_snapshot_id_fkey` FOREIGN KEY (`reflection_snapshot_id`) REFERENCES `ReflectionSnapshot`(`reflection_snapshot_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `AIRun` ADD CONSTRAINT `AIRun_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashoard_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `AIRun` ADD CONSTRAINT `AIRun_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashboard_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `AIRun` ADD CONSTRAINT `AIRun_reflection_snapshot_id_fkey` FOREIGN KEY (`reflection_snapshot_id`) REFERENCES `ReflectionSnapshot`(`reflection_snapshot_id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -392,19 +392,19 @@ ALTER TABLE `PerformanceItem` ADD CONSTRAINT `PerformanceItem_daily_performance_
 ALTER TABLE `Dashboard` ADD CONSTRAINT `Dashboard_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DashboardPerformance` ADD CONSTRAINT `DashboardPerformance_dashoard_id_fkey` FOREIGN KEY (`dashoard_id`) REFERENCES `Dashboard`(`dashoard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DashboardPerformance` ADD CONSTRAINT `DashboardPerformance_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashboard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `DashboardPerformance` ADD CONSTRAINT `DashboardPerformance_daily_performance_id_fkey` FOREIGN KEY (`daily_performance_id`) REFERENCES `DailyPerformance`(`daily_performance_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DashboardKPI` ADD CONSTRAINT `DashboardKPI_dashoard_id_fkey` FOREIGN KEY (`dashoard_id`) REFERENCES `Dashboard`(`dashoard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DashboardKPI` ADD CONSTRAINT `DashboardKPI_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashboard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DashboardInsight` ADD CONSTRAINT `DashboardInsight_dashoard_id_fkey` FOREIGN KEY (`dashoard_id`) REFERENCES `Dashboard`(`dashoard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DashboardInsight` ADD CONSTRAINT `DashboardInsight_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashboard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DashboardTagAnalysis` ADD CONSTRAINT `DashboardTagAnalysis_dashoard_id_fkey` FOREIGN KEY (`dashoard_id`) REFERENCES `Dashboard`(`dashoard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DashboardTagAnalysis` ADD CONSTRAINT `DashboardTagAnalysis_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashboard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `WeeklyReflection` ADD CONSTRAINT `WeeklyReflection_dashoard_id_fkey` FOREIGN KEY (`dashoard_id`) REFERENCES `Dashboard`(`dashoard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `WeeklyReflection` ADD CONSTRAINT `WeeklyReflection_dashboard_id_fkey` FOREIGN KEY (`dashboard_id`) REFERENCES `Dashboard`(`dashboard_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
