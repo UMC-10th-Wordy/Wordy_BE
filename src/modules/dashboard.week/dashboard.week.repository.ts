@@ -134,3 +134,72 @@ export const findDailyEntries = async (
     },
   });
 };
+// AI 결과로 대시보드 생성 (하위 데이터까지 한 번에 저장)
+export const createDashboard = async (data: {
+  userId: string;
+  startDate: Date;
+  endDate: Date;
+  summary: string;
+  journalDays: number;
+  performanceCount: number;
+  tagCount: number;
+  kpis: { kpiName: string; progress: string }[];
+  tagAnalyses: {
+    goal: string;
+    expectedOutcome: string;
+    taskCount: number;
+    achievementStatus: string;
+  }[];
+  weeklyReflection: {
+    workSummary: string;
+    resourcesUsed: string;
+    learning: string;
+  };
+}) => {
+  return prisma.dashboard.create({
+    data: {
+      userId: data.userId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      summary: data.summary,
+      journalDays: data.journalDays,
+      performanceCount: data.performanceCount,
+      tagCount: data.tagCount,
+      // 하위 데이터를 nested create로 함께 저장
+      kpis: {
+        create: data.kpis.map((k) => ({
+          kpiName: k.kpiName,
+          progress: k.progress,
+        })),
+      },
+      tagAnalyses: {
+        create: data.tagAnalyses.map((t) => ({
+          goal: t.goal,
+          expectedOutcome: t.expectedOutcome,
+          taskCount: t.taskCount,
+          achievementStatus: t.achievementStatus,
+          // AI가 periodStart/End는 안 줘서 null (스키마상 optional)
+        })),
+      },
+      weeklyReflections: {
+        create: [
+          {
+            workSummary: data.weeklyReflection.workSummary,
+            resourcesUsed: data.weeklyReflection.resourcesUsed,
+            learning: data.weeklyReflection.learning,
+          },
+        ],
+      },
+      // insights는 AI가 안 주니 직접 계산해서 하나 생성
+      insights: {
+        create: [
+          {
+            journalDays: data.journalDays,
+            performanceCount: data.performanceCount,
+            tagCount: data.tagCount,
+          },
+        ],
+      },
+    },
+  });
+};
