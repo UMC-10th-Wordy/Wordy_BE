@@ -60,8 +60,6 @@ export class UsersController extends Controller {
       createdAt: new Date('2026-06-20T16:00:00.000Z'),
     },
   })
-  @Response<ApiResponse<null>>(401, '인증이 필요합니다.')
-  @Response<ApiResponse<null>>(404, '사용자 프로필을 찾을 수 없습니다.')
   public async getMyProfile(
     @Header('Authorization') authorization: string | undefined,
   ): Promise<ApiResponse<UserProfileData>> {

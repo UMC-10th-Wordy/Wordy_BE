@@ -1,38 +1,33 @@
 import jwt from 'jsonwebtoken';
 import { TaskRepository } from './task.repository';
 import {
-  TaskApiResponseDto,
   CreateTaskRequest,
   TaskResponse,
   UpdateTaskRequest,
 } from './task.dto';
+import { ApiError } from '../../common/errors/api.error';
+import { ErrorCode } from '../../common/errors/error.code';
 
 interface AccessTokenPayload {
   userId: string;
   email: string;
 }
 
-class UnauthorizedError extends Error {
-  public statusCode = 401;
-
+class UnauthorizedError extends ApiError {
   constructor() {
-    super('인증이 필요합니다.');
+    super(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, ErrorCode.UNAUTHORIZED.message);
   }
 }
 
-class BadRequestError extends Error {
-  public statusCode = 400;
-
+class BadRequestError extends ApiError {
   constructor(message: string) {
-    super(message);
+    super(ErrorCode.BAD_REQUEST.status, ErrorCode.BAD_REQUEST.code, message);
   }
 }
 
-class NotFoundError extends Error {
-  public statusCode = 404;
-
+class NotFoundError extends ApiError {
   constructor(message: string) {
-    super(message);
+    super(ErrorCode.NOT_FOUND.status, ErrorCode.NOT_FOUND.code, message);
   }
 }
 
@@ -42,28 +37,19 @@ export class TaskService {
   public async getTasksByDate(
     authorization: string | undefined,
     date: string,
-  ): Promise<TaskApiResponseDto<TaskResponse[]>> {
+  ): Promise<TaskResponse[]> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     this.validateDate(date);
 
-    const tasks = await this.taskRepository.findManyByUserIdAndDate(
-      userId,
-      new Date(date),
-    );
-
-    return {
-      success: true,
-      statusCode: 200,
-      message: '업무카드 목록 조회가 완료되었습니다.',
-      data: tasks,
-    };
+    const tasks = await this.taskRepository.findManyByUserIdAndDate(userId, new Date(date));
+    return tasks as unknown as TaskResponse[];
   }
 
   public async createTask(
     authorization: string | undefined,
     body: CreateTaskRequest,
-  ): Promise<TaskApiResponseDto<TaskResponse>> {
+  ): Promise<TaskResponse> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     this.validateCreateTaskRequest(body);
@@ -78,19 +64,13 @@ export class TaskService {
     }
 
     const task = await this.taskRepository.create(userId, body);
-
-    return {
-      success: true,
-      statusCode: 201,
-      message: '업무카드가 생성되었습니다.',
-      data: task,
-    };
+    return task as unknown as TaskResponse;
   }
 
   public async getTask(
     authorization: string | undefined,
     taskId: string,
-  ): Promise<TaskApiResponseDto<TaskResponse>> {
+  ): Promise<TaskResponse> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
@@ -99,19 +79,14 @@ export class TaskService {
       throw new NotFoundError('업무카드를 찾을 수 없습니다.');
     }
 
-    return {
-      success: true,
-      statusCode: 200,
-      message: '업무카드 상세 조회가 완료되었습니다.',
-      data: task,
-    };
+    return task as unknown as TaskResponse;
   }
 
   public async updateTask(
     authorization: string | undefined,
     taskId: string,
     body: UpdateTaskRequest,
-  ): Promise<TaskApiResponseDto<TaskResponse>> {
+  ): Promise<TaskResponse> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
@@ -134,19 +109,13 @@ export class TaskService {
     }
 
     const updatedTask = await this.taskRepository.update(taskId, body);
-
-    return {
-      success: true,
-      statusCode: 200,
-      message: '업무카드가 수정되었습니다.',
-      data: updatedTask,
-    };
+    return updatedTask as unknown as TaskResponse;
   }
 
   public async deleteTask(
     authorization: string | undefined,
     taskId: string,
-  ): Promise<TaskApiResponseDto<null>> {
+  ): Promise<void> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
@@ -156,13 +125,6 @@ export class TaskService {
     }
 
     await this.taskRepository.softDelete(taskId);
-
-    return {
-      success: true,
-      statusCode: 200,
-      message: '업무카드가 삭제되었습니다.',
-      data: null,
-    };
   }
 
   private getUserIdFromAuthorization(authorization: string | undefined): string {

@@ -12,6 +12,11 @@ enum AuthProvider {
   google
 }
 
+enum PlanType {
+  FREE
+  PRO
+}
+
 enum AgreementType {
   TERMS_OF_SERVICE
   PRIVACY_POLICY
@@ -81,11 +86,13 @@ model User {
   provider     AuthProvider @default(local)
   password     String?      @db.VarChar(255)
   refreshToken String?      @map("refresh_token") @db.VarChar(512)
+  lastLoginAt  DateTime?    @map("last_login_at") @db.DateTime(0)
   createdAt    DateTime     @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt    DateTime     @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt    DateTime?    @map("deleted_at") @db.DateTime(0)
 
   profile      Profile?
+  plan         Plan?
   agreements   UserAgreement[]
   tags         Tag[]
   tasks        Task[]
@@ -93,6 +100,18 @@ model User {
   dashboards   Dashboard[]
 
   @@map("User")
+}
+
+model Plan {
+  planId    String   @id @default(uuid()) @map("plan_id") @db.Char(36)
+  type      PlanType @default(FREE)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+  userId    String   @unique @map("user_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@map("Plan")
 }
 
 model Profile {
