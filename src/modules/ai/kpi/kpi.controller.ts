@@ -8,6 +8,7 @@ import { RuleEngine } from "../common/rule.engine";
 import { KpiRequestDto } from "./dto/api/kpi.request.dto";
 import { KpiResponseDto } from "./dto/api/kpi.response.dto";
 import { KpiService } from "./kpi.service";
+import { prisma } from "../../../common/prisma/prisma.client";
 
 @Route("api/v1/ai")
 @Tags("AI")
@@ -21,6 +22,7 @@ export class KpiController extends Controller {
       new PromptManager(),
       new ResponseParser(),
       new RuleEngine(),
+      prisma,
     );
   }
 

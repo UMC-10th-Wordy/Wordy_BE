@@ -9,7 +9,7 @@ import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
-import { PrismaClient, TaskStatus, AIQuestionStatus } from "../../../generated/prisma/client";
+import { PrismaClient, TaskStatus, PromptType, AiRunStatus } from "../../../generated/prisma/client";
 import { ApiError } from "../../../common/errors/api.error";
 import { ErrorCode } from "../../../common/errors/error.code";
 
@@ -40,6 +40,17 @@ export class PerformanceService {
     const promptAResponse =
       await this.llmClient.generate(promptARequest);
 
+    // AIRun 저장
+    await this.prisma.aIRun.create({
+      data: {
+        promptType: PromptType.PROMPT_A,
+        promptVersion: "v1",
+        request: promptARequest,
+        response: promptAResponse,
+        status: AiRunStatus.SUCCESS,
+      },
+    });
+
     // Parsing
     const promptAResult =
       this.responseParser.parse<PromptAOutputDto>(
@@ -57,29 +68,32 @@ export class PerformanceService {
         promptAResult,
       )
     ) {
+      const reflectionSnapshotId =
       await this.saveQuestionSnapshot(
-      request,
-      promptAResult,
-    );
+        request,
+        promptAResult,
+      );
 
     return {
       status: "QUESTION_REQUIRED",
+      reflectionSnapshotId,
       supplementQuestions:
         promptAResult.followUpQuestions,
     };
   }
 
+  // 질문 필요 없으면 바로 완료
   return this.createPerformanceResult(
     promptAResult,
     request,
   );
 }
-
+  
+  // 질문 단계 snapshot 생성
   private async saveQuestionSnapshot(
     request: PerformanceRequestDto,
     promptAResult: PromptAOutputDto,
   ) {
-
     const dailyEntry =
       await this.prisma.dailyEntry.findUnique({
         where: {
@@ -88,19 +102,17 @@ export class PerformanceService {
       });
 
     if (!dailyEntry) {
-    throw new ApiError(
-      ErrorCode.NOT_FOUND.status,
-      ErrorCode.NOT_FOUND.code,
-      "DailyEntry를 찾을 수 없습니다.",
-    );
-  }
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "DailyEntry를 찾을 수 없습니다.",
+      );
+    }
 
     const snapshot =
       await this.prisma.reflectionSnapshot.create({
         data: {
-          dailyEntryId:
-            dailyEntry.dailyEntryId,
-
+          dailyEntryId: dailyEntry.dailyEntryId,
           promptAResult,
         },
       });
@@ -109,7 +121,6 @@ export class PerformanceService {
       promptAResult.followUpQuestions &&
       promptAResult.followUpQuestions.length > 0
     ) {
-
       await this.prisma.aIQuestion.createMany({
         data:
           promptAResult.followUpQuestions.map(
@@ -129,6 +140,8 @@ export class PerformanceService {
           ),
       });
     }
+
+    return snapshot.reflectionSnapshotId;
   }
 
   // 질문 답변 후 최종 생성
@@ -140,12 +153,9 @@ export class PerformanceService {
     const promptARequest =
       this.promptManager.buildPromptA({
         tasks: request.originalRequest.tasks,
-        reflection:
-          request.originalRequest.reflectionContent,
-        projectTag:
-          request.originalRequest.projectTag,
-        userJob:
-          request.originalRequest.userJob,
+        reflection: request.originalRequest.reflectionContent,
+        projectTag: request.originalRequest.projectTag,
+        userJob: request.originalRequest.userJob,
         supplementAnswers: request.answers,
       });
 
@@ -153,6 +163,16 @@ export class PerformanceService {
       await this.llmClient.generate(
         promptARequest,
       );
+
+    await this.prisma.aIRun.create({
+      data: {
+        promptType: PromptType.PROMPT_A,
+        promptVersion: "v1",
+        request: promptARequest,
+        response: promptAResponse,
+        status: AiRunStatus.SUCCESS,
+      },
+    });
 
     const promptAResult =
       this.responseParser.parse<PromptAOutputDto>(
@@ -166,6 +186,7 @@ export class PerformanceService {
     return this.createPerformanceResult(
       promptAResult,
       request.originalRequest,
+      request.reflectionSnapshotId,
     );
   }
 
@@ -173,6 +194,7 @@ export class PerformanceService {
   private async createPerformanceResult(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
+    reflectionSnapshotId?: string,
   ): Promise<PerformanceResponseDto> {
 
     // Prompt B 생성
@@ -225,15 +247,43 @@ export class PerformanceService {
         "DailyEntry not found",
       );
     }
+    let snapshot;
 
-    const snapshot =
-      await this.prisma.reflectionSnapshot.create({
-        data: {
-          dailyEntryId: dailyEntry.dailyEntryId,
-          promptAResult,
-          promptBResult,
-        },
-      });
+    // 질문 후 완료 → 기존 Snapshot 업데이트
+    if (reflectionSnapshotId) {
+      snapshot =
+        await this.prisma.reflectionSnapshot.update({
+          where: {
+            reflectionSnapshotId,
+          },
+          data: {
+            promptAResult,
+            promptBResult,
+          },
+        });
+    } 
+    else {
+      snapshot =
+        await this.prisma.reflectionSnapshot.create({
+          data: {
+            dailyEntryId: dailyEntry.dailyEntryId,
+            promptAResult,
+            promptBResult,
+          },
+        });
+    }
+
+  await this.prisma.aIRun.create({
+    data: {
+      promptType: PromptType.PROMPT_B,
+      promptVersion: "v1",
+      request: promptBRequest,
+      response: promptBResponse,
+      status: AiRunStatus.SUCCESS,
+      reflectionSnapshotId:
+        snapshot.reflectionSnapshotId,
+    },
+  });
 
     // Task Snapshot 저장
     for (const reflectionTask of dailyEntry.reflectionTasks) {
@@ -262,14 +312,9 @@ export class PerformanceService {
       for (const taskResult of task.taskResults) {
         await this.prisma.reflectionTaskResultSnapshot.create({
           data:{
-            reflectionTaskSnapshotId:
-              taskSnapshot.reflectionTaskSnapshotId,
-
-            taskResultId:
-              taskResult.taskResultId,
-
-            content:
-              taskResult.content,
+            reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
+            taskResultId: taskResult.taskResultId,
+            content: taskResult.content,
           },
         });
       }

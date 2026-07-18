@@ -1703,6 +1703,10 @@
 							"$ref": "#/components/schemas/TaskPerformanceDto"
 						},
 						"type": "array"
+					},
+					"reflectionSnapshotId": {
+						"type": "string",
+						"example": "reflection-snapshot-550e8400"
 					}
 				},
 				"required": [
@@ -1840,6 +1844,9 @@
 			},
 			"PerformanceQuestionRequestDto": {
 				"properties": {
+					"reflectionSnapshotId": {
+						"type": "string"
+					},
 					"originalRequest": {
 						"$ref": "#/components/schemas/PerformanceRequestDto"
 					},
@@ -1851,6 +1858,7 @@
 					}
 				},
 				"required": [
+					"reflectionSnapshotId",
 					"originalRequest",
 					"answers"
 				],
@@ -3432,6 +3440,7 @@
 								"examples": {
 									"Example 1": {
 										"value": {
+											"reflectionSnapshotId": "reflection-snapshot-550e8400",
 											"originalRequest": {
 												"dailyEntryId": "daily-entry-550e8400",
 												"tasks": [

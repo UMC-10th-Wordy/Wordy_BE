@@ -656,6 +656,7 @@ const models: TsoaRoute.Models = {
             "growthInsights": {"dataType":"array","array":{"dataType":"string"}},
             "nextActions": {"dataType":"array","array":{"dataType":"string"}},
             "taskPerformances": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskPerformanceDto"}},
+            "reflectionSnapshotId": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
@@ -712,6 +713,7 @@ const models: TsoaRoute.Models = {
     "PerformanceQuestionRequestDto": {
         "dataType": "refObject",
         "properties": {
+            "reflectionSnapshotId": {"dataType":"string","required":true},
             "originalRequest": {"ref":"PerformanceRequestDto","required":true},
             "answers": {"dataType":"array","array":{"dataType":"refObject","ref":"QuestionAnswerDto"},"required":true},
         },

@@ -93,6 +93,7 @@ export class PerformanceController extends Controller {
    */
   @Post("performance-preview/complete")
   @Example<PerformanceQuestionRequestDto>({
+    reflectionSnapshotId: "reflection-snapshot-550e8400",
     originalRequest: {
       dailyEntryId: "daily-entry-550e8400",
       tasks: [

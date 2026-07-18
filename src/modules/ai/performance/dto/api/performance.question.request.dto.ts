@@ -2,6 +2,7 @@ import { PerformanceRequestDto } from "./performance.request.dto";
 import { Example } from "tsoa";
 
 export class PerformanceQuestionRequestDto {
+  reflectionSnapshotId!: string;
   originalRequest!: PerformanceRequestDto;
   answers!: QuestionAnswerDto[];
 }

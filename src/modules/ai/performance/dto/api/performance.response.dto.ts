@@ -22,6 +22,9 @@ export class PerformanceResponseDto {
   nextActions?: string[];
 
   taskPerformances?: TaskPerformanceDto[];
+
+  @Example("reflection-snapshot-550e8400")
+  reflectionSnapshotId?: string;
 }
 
 export class SupplementQuestionDto {

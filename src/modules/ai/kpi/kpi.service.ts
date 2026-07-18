@@ -6,6 +6,7 @@ import { RuleEngine } from "../common/rule.engine";
 import { KpiRequestDto }from "./dto/api/kpi.request.dto";
 import { KpiResponseDto }from "./dto/api/kpi.response.dto";
 import { KpiOutputDto }from "./dto/prompt/kpi.output.dto";
+import { PrismaClient, PromptType, AiRunStatus } from "../../../generated/prisma/client";
 
 export class KpiService {
   constructor(
@@ -13,6 +14,7 @@ export class KpiService {
     private readonly promptManager:PromptManager,
     private readonly responseParser:ResponseParser,
     private readonly ruleEngine:RuleEngine,
+    private readonly prisma:PrismaClient,
   ){}
   
   // KPI 추천
@@ -23,10 +25,21 @@ export class KpiService {
       this.promptManager.buildKpiPrompt(
         request,
       );
+
     const response =
       await this.llmClient.generate(
         prompt,
       );
+    await this.prisma.aIRun.create({
+      data: {
+        promptType: PromptType.PROMPT_C,
+        promptVersion: "v1",
+        request: prompt,
+        response,
+        status: AiRunStatus.SUCCESS,
+      },
+    });
+
     const result =
       this.responseParser.parse<KpiOutputDto>(
         response,
