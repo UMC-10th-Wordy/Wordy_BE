@@ -4,7 +4,15 @@ import {
   findMonthlyDashboardById,
   existsDashboard,
   createMonthlyReflection,
+  createMonthlyDashboard,
 } from "./dashboard.month.repository.js";
+
+import { AiService } from "../ai/ai.service.js";
+import { LlmClient } from "../ai/llm.client.js";
+import { PromptManager } from "../ai/prompt.manager.js";
+import { ResponseParser } from "../ai/response.parser.js";
+import { RuleEngine } from "../ai/rule.engine.js";
+import { prisma } from "../../db.config.js";
 
 const REQUIRED_COUNT = 3; // 월간 생성에 필요한 최소 주간 대시보드 수
 
@@ -122,4 +130,43 @@ export const addMonthlyReflection = async (
     learning: reflection.learning,
     createdAt: reflection.createdAt.toISOString(),
   };
+};
+
+// 월간 대시보드 생성 (AI 호출 → DB 저장)
+export const createMonthlyDashboardWithAI = async (
+  userId: string,
+  startDate: string,
+  endDate: string
+) => {
+  // 1. AI 서비스 인스턴스 생성
+  const aiService = new AiService(
+    new LlmClient(),
+    new PromptManager(),
+    new ResponseParser(),
+    new RuleEngine(),
+    prisma
+  );
+
+  // 2. AI로 대시보드 내용 생성 (월간도 같은 AI 함수, 기간만 한 달)
+  const aiResult = await aiService.generateDashboard({
+    userId,
+    startDate,
+    endDate,
+  });
+
+  // 3. AI 결과 + 계산값을 DB에 저장
+  const saved = await createMonthlyDashboard({
+    userId,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    summary: aiResult.summary,
+    journalDays: aiResult.performanceCount, // TODO: 실제 일지 수로 교체 필요 (팀 확인)
+    performanceCount: aiResult.performanceCount,
+    tagCount: aiResult.tagAnalyses.length,
+    kpis: aiResult.kpis,
+    tagAnalyses: aiResult.tagAnalyses,
+    weeklyReflection: aiResult.weeklyReflection,
+  });
+
+  return { dashboardId: saved.dashboardId };
 };

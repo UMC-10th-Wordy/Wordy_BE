@@ -84,3 +84,69 @@ export const createMonthlyReflection = async (
     },
   });
 };
+// AI 결과로 월간 대시보드 생성 (하위 데이터까지 한 번에 저장)
+export const createMonthlyDashboard = async (data: {
+  userId: string;
+  startDate: Date;
+  endDate: Date;
+  summary: string;
+  journalDays: number;
+  performanceCount: number;
+  tagCount: number;
+  kpis: { kpiName: string; progress: string }[];
+  tagAnalyses: {
+    goal: string;
+    expectedOutcome: string;
+    taskCount: number;
+    achievementStatus: string;
+  }[];
+  weeklyReflection: {
+    workSummary: string;
+    resourcesUsed: string;
+    learning: string;
+  };
+}) => {
+  return prisma.dashboard.create({
+    data: {
+      userId: data.userId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      summary: data.summary,
+      journalDays: data.journalDays,
+      performanceCount: data.performanceCount,
+      tagCount: data.tagCount,
+      kpis: {
+        create: data.kpis.map((k) => ({
+          kpiName: k.kpiName,
+          progress: k.progress,
+        })),
+      },
+      tagAnalyses: {
+        create: data.tagAnalyses.map((t) => ({
+          goal: t.goal,
+          expectedOutcome: t.expectedOutcome,
+          taskCount: t.taskCount,
+          achievementStatus: t.achievementStatus,
+        })),
+      },
+      weeklyReflections: {
+        create: [
+          {
+            workSummary: data.weeklyReflection.workSummary,
+            resourcesUsed: data.weeklyReflection.resourcesUsed,
+            learning: data.weeklyReflection.learning,
+          },
+        ],
+      },
+      insights: {
+        create: [
+          {
+            journalDays: data.journalDays,
+            performanceCount: data.performanceCount,
+            tagCount: data.tagCount,
+          },
+        ],
+      },
+    },
+  });
+};
