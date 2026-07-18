@@ -4,11 +4,14 @@ import { LlmClient } from "../common/llm.client";
 import { PromptManager } from "../common/prompt.manager";
 import { ResponseParser } from "../common/response.parser";
 import { RuleEngine } from "../common/rule.engine";
+import { prisma } from "../../../common/prisma/prisma.client";
 
+import { PerformanceService } from "./performance.service";
 import { PerformanceRequestDto } from "./dto/api/performance.request.dto";
 import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
 import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto";
-import { PerformanceService } from "./performance.service";
+import { TaskPriority } from "../../tasks/task.dto";
+import { JobRole } from "../../users/users.dto";
 
 @Route("api/v1/ai")
 @Tags("AI")
@@ -22,6 +25,7 @@ export class PerformanceController extends Controller {
       new PromptManager(),
       new ResponseParser(),
       new RuleEngine(),
+      prisma,
     );
   }
 
@@ -30,21 +34,18 @@ export class PerformanceController extends Controller {
    */
   @Post("performance-preview")
   @Example<PerformanceRequestDto>({
+    dailyEntryId: "daily-entry-550e8400",
     tasks: [
       {
         taskId: "task-550e8400",
-        priority: "HIGH",
+        priority: TaskPriority.SHOULD_DO,
         completed: true,
         title: "Swagger 문서 작성",
-        memo: "Request/Response 예시 추가"
+        memo: "Request/Response 예시 추가",
+        result: "Swagger 문서와 API 예시 데이터를 작성했다.",
       }
     ],
-    reflection: {
-      good: "Swagger 문서를 성공적으로 작성했다.",
-      bad: "예시 데이터 작성에 시간이 오래 걸렸다.",
-      learned: "TSOA Example 사용법을 익혔다.",
-      nextPlan: "Dashboard API 구현"
-    },
+    reflectionContent: "오늘 Swagger 문서를 작성하면서 TSOA Example 사용법을 익혔다.",
     projectTag: {
       projectTagId: "project-tag-01",
       title: "AI 기능",
@@ -54,7 +55,7 @@ export class PerformanceController extends Controller {
         "주간 회고 작성률"
       ]
     },
-    userJob: "백엔드 개발자"
+    userJob: JobRole.DEVELOPMENT
   })
   @Example<PerformanceResponseDto>({
     status: "COMPLETED",
@@ -88,23 +89,23 @@ export class PerformanceController extends Controller {
   }
 
   /**
-   * @summary 성과 미리보기 생성 완료
+   * @summary 보충 질문 답변 후 성과 미리보기 생성 완료
    */
   @Post("performance-preview/complete")
   @Example<PerformanceQuestionRequestDto>({
     originalRequest: {
+      dailyEntryId: "daily-entry-550e8400",
       tasks: [
         {
           taskId: "task-550e8400",
-          priority: "HIGH",
+          priority: TaskPriority.SHOULD_DO,
           completed: true,
-          title: "Swagger 문서 작성"
+          title: "Swagger 문서 작성",
+          result: "API 예시 데이터를 추가했다."
         }
       ],
-      reflection: {
-        good: "문서화 완료"
-      },
-      userJob: "개발자"
+      reflectionContent: "오늘 API 문서화를 진행했다.",
+      userJob: JobRole.DEVELOPMENT
     },
     answers: [
       {

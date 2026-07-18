@@ -1,22 +1,32 @@
 import { Example } from "tsoa";
-
+import { TaskPriority } from "../../../../tasks/task.dto";
+import { JobRole } from "../../../../users/users.dto";
 export class PerformanceRequestDto {
+  
+  @Example("daily-entry-550e8400")
+  dailyEntryId!: string;
+
   tasks!: TaskDto[];
 
-  reflection!: ReflectionDto;
+  @Example("오늘 Swagger 문서를 작성하고 API 예시를 추가했다.")
+  reflectionContent!: string;
 
   projectTag?: ProjectTagDto;
 
-  @Example("백엔드 개발자")
-  userJob!: string;
+  @Example("DEVELOPMENT")
+  userJob!: JobRole;
 }
 
 export class TaskDto {
+
   @Example("task-550e8400")
   taskId!: string;
 
-  @Example("HIGH")
-  priority!: string;
+  @Example("task-result-550e8400")
+  taskResultId?: string;
+
+  @Example("SHOULD_DO")
+  priority!: TaskPriority;
 
   @Example(true)
   completed!: boolean;
@@ -26,35 +36,26 @@ export class TaskDto {
 
   @Example("Request/Response 예시 추가")
   memo?: string;
-}
 
-export class ReflectionDto {
-  @Example("Swagger 문서가 깔끔하게 작성되었다.")
-  good?: string;
-
-  @Example("예시 데이터 작성에 시간이 오래 걸렸다.")
-  bad?: string;
-
-  @Example("TSOA Example 사용법을 익혔다.")
-  learned?: string;
-
-  @Example("Dashboard API도 구현할 예정이다.")
-  nextPlan?: string;
+  @Example("Swagger 문서를 모두 작성했다.")
+  result?: string;
 }
 
 export class ProjectTagDto {
+
   @Example("project-tag-01")
   projectTagId!: string;
 
   @Example("AI 기능")
   title!: string;
 
-  @Example("AI 관련 업무")
   description?: string;
 
-  @Example([
-    "업무 완료율 90%",
-    "주간 회고 작성"
-  ])
   kpis?: string[];
+
+  purpose?: string;
+
+  expectedOutcome?: string;
+
+  period?: string;
 }

@@ -9,12 +9,17 @@ import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
+import { PrismaClient, TaskStatus, AIQuestionStatus } from "../../../generated/prisma/client";
+import { ApiError } from "../../../common/errors/api.error";
+import { ErrorCode } from "../../../common/errors/error.code";
+
 export class PerformanceService {
   constructor(
     private readonly llmClient: LlmClient,
     private readonly promptManager: PromptManager,
     private readonly responseParser: ResponseParser,
     private readonly ruleEngine: RuleEngine,
+    private readonly prisma: PrismaClient,
   ) {}
 
   // 첫 번째 호출
@@ -22,50 +27,108 @@ export class PerformanceService {
     request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
 
-    // 1. Prompt A 생성
+    // Prompt A 생성
     const promptARequest =
       this.promptManager.buildPromptA({
         tasks: request.tasks,
-        reflection: request.reflection,
+        reflection: request.reflectionContent,
         projectTag: request.projectTag,
         userJob: request.userJob,
       });
 
-    // 2. LLM 호출
+    // LLM 호출
     const promptAResponse =
-      await this.llmClient.generate(
-        promptARequest,
-      );
+      await this.llmClient.generate(promptARequest);
 
-    // 3. Prompt A Parsing
+    // Parsing
     const promptAResult =
       this.responseParser.parse<PromptAOutputDto>(
         promptAResponse,
       );
 
-    // 4. Prompt A Rule 검증
+    // Rule 검증
     this.ruleEngine.validatePromptA(
       promptAResult,
     );
 
-    // 5. 보충 질문 판단
+    // 보충 질문 판단
     if (
       this.ruleEngine.needFollowUpQuestion(
         promptAResult,
       )
     ) {
-      return {
-        status: "QUESTION_REQUIRED",
-        supplementQuestions:
-          promptAResult.followUpQuestions,
-      };
-    }
-
-    // 6. Prompt B 생성
-    return this.createPerformanceResult(
-      promptAResult,
+      await this.saveQuestionSnapshot(
       request,
+      promptAResult,
     );
+
+    return {
+      status: "QUESTION_REQUIRED",
+      supplementQuestions:
+        promptAResult.followUpQuestions,
+    };
+  }
+
+  return this.createPerformanceResult(
+    promptAResult,
+    request,
+  );
+}
+
+  private async saveQuestionSnapshot(
+    request: PerformanceRequestDto,
+    promptAResult: PromptAOutputDto,
+  ) {
+
+    const dailyEntry =
+      await this.prisma.dailyEntry.findUnique({
+        where: {
+          dailyEntryId: request.dailyEntryId,
+        },
+      });
+
+    if (!dailyEntry) {
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "DailyEntry를 찾을 수 없습니다.",
+    );
+  }
+
+    const snapshot =
+      await this.prisma.reflectionSnapshot.create({
+        data: {
+          dailyEntryId:
+            dailyEntry.dailyEntryId,
+
+          promptAResult,
+        },
+      });
+
+    if (
+      promptAResult.followUpQuestions &&
+      promptAResult.followUpQuestions.length > 0
+    ) {
+
+      await this.prisma.aIQuestion.createMany({
+        data:
+          promptAResult.followUpQuestions.map(
+            (question, index) => ({
+              reflectionSnapshotId:
+                snapshot.reflectionSnapshotId,
+
+              questionContent:
+                question.question,
+
+              reason:
+                question.reason ?? null,
+
+              order:
+                index + 1,
+            }),
+          ),
+      });
+    }
   }
 
   // 질문 답변 후 최종 생성
@@ -76,16 +139,14 @@ export class PerformanceService {
     // 답변 포함해서 Prompt A 재호출
     const promptARequest =
       this.promptManager.buildPromptA({
-        tasks:
-          request.originalRequest.tasks,
+        tasks: request.originalRequest.tasks,
         reflection:
-          request.originalRequest.reflection,
+          request.originalRequest.reflectionContent,
         projectTag:
           request.originalRequest.projectTag,
         userJob:
           request.originalRequest.userJob,
-        supplementAnswers:
-          request.answers,
+        supplementAnswers: request.answers,
       });
 
     const promptAResponse =
@@ -102,15 +163,13 @@ export class PerformanceService {
       promptAResult,
     );
 
-    // 여기서는 질문 판단 X
-    // 답변했거나 건너뛰었기 때문에 바로 생성
     return this.createPerformanceResult(
       promptAResult,
       request.originalRequest,
     );
   }
 
-  // Prompt B 실행 + 결과 반환
+  // Prompt B 실행 + 저장
   private async createPerformanceResult(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
@@ -119,12 +178,10 @@ export class PerformanceService {
     // Prompt B 생성
     const promptBRequest =
       this.promptManager.buildPromptB({
-        tasks:
-          promptAResult.tasks,
-        userJob:
-          request.userJob,
-        projectTag:
-          request.projectTag,
+        tasks: promptAResult.tasks,
+        reflection: request.reflectionContent,
+        userJob: request.userJob,
+        projectTag: request.projectTag,
       });
 
     // LLM 호출
@@ -144,20 +201,128 @@ export class PerformanceService {
       promptBResult,
     );
 
+    // 실제 저장된 DailyEntry + Task 데이터 조회
+    const dailyEntry =
+      await this.prisma.dailyEntry.findUnique({
+        where: {
+          dailyEntryId: request.dailyEntryId,
+        },
+        include: {
+          reflectionTasks: {
+            include: {
+              task: {
+                include: {
+                  taskResults: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+    if (!dailyEntry) {
+      throw new Error(
+        "DailyEntry not found",
+      );
+    }
+
+    const snapshot =
+      await this.prisma.reflectionSnapshot.create({
+        data: {
+          dailyEntryId: dailyEntry.dailyEntryId,
+          promptAResult,
+          promptBResult,
+        },
+      });
+
+    // Task Snapshot 저장
+    for (const reflectionTask of dailyEntry.reflectionTasks) {
+      const task = reflectionTask.task;
+
+      const taskSnapshot =
+        await this.prisma.reflectionTaskSnapshot.create({
+          data: {
+            reflectionSnapshotId: snapshot.reflectionSnapshotId,
+            taskId: task.taskId,
+            title: task.title,
+            priority: task.priority,
+            memo: task.memo,
+            status:
+              task.completed
+                ? TaskStatus.COMPLETED
+                : TaskStatus.IN_PROGRESS,
+            completedAt:
+              task.completed
+                ? new Date()
+                : null,
+          },
+        });
+
+      // Task Result Snapshot 저장
+      for (const taskResult of task.taskResults) {
+        await this.prisma.reflectionTaskResultSnapshot.create({
+          data:{
+            reflectionTaskSnapshotId:
+              taskSnapshot.reflectionTaskSnapshotId,
+
+            taskResultId:
+              taskResult.taskResultId,
+
+            content:
+              taskResult.content,
+          },
+        });
+      }
+    }
+
+    // 완료율 계산
+    const completedCount =
+      request.tasks.filter(
+        (task) => task.completed,
+      ).length;
+
+    const completionRate =
+      request.tasks.length === 0
+        ? 0
+        : Math.round((completedCount / request.tasks.length) * 100 );
+
+    // DailyPerformance 저장
+    const performance =
+      await this.prisma.dailyPerformance.create({
+        data: {
+          achievementRate: completionRate,
+          summary: promptBResult.summary,
+          growthInsight: promptBResult.growthInsights,
+          nextAction: promptBResult.nextActions,
+          structuredResult: promptAResult,
+          reflectionSnapshotId: snapshot.reflectionSnapshotId,
+        },
+      });
+
+    // Performance Item 저장
+    if (
+      promptBResult.taskPerformances.length >
+      0
+    ) {
+      await this.prisma.performanceItem.createMany({
+        data:
+          promptBResult.taskPerformances.map(
+            (task) => ({
+              dailyPerformanceId: performance.dailyPerformanceId,
+              taskId: task.taskId,
+              output: task.output.join("\n"),
+              impact: task.impact.join("\n"),
+            }),
+          ),
+      });
+    }
+
     return {
       status: "COMPLETED",
-
-      summary:
-        promptBResult.summary,
-
-      growthInsights:
-        promptBResult.growthInsights,
-
-      nextActions:
-        promptBResult.nextActions,
-
-      taskPerformances:
-        promptBResult.taskPerformances,
+      summary: promptBResult.summary,
+      growthInsights: promptBResult.growthInsights,
+      nextActions: promptBResult.nextActions,
+      taskPerformances: promptBResult.taskPerformances,
     };
   }
 }

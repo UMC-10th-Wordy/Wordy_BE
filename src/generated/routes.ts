@@ -664,21 +664,12 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "taskId": {"dataType":"string","required":true},
-            "priority": {"dataType":"string","required":true},
+            "taskResultId": {"dataType":"string"},
+            "priority": {"ref":"TaskPriority","required":true},
             "completed": {"dataType":"boolean","required":true},
             "title": {"dataType":"string","required":true},
             "memo": {"dataType":"string"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ReflectionDto": {
-        "dataType": "refObject",
-        "properties": {
-            "good": {"dataType":"string"},
-            "bad": {"dataType":"string"},
-            "learned": {"dataType":"string"},
-            "nextPlan": {"dataType":"string"},
+            "result": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
@@ -690,6 +681,9 @@ const models: TsoaRoute.Models = {
             "title": {"dataType":"string","required":true},
             "description": {"dataType":"string"},
             "kpis": {"dataType":"array","array":{"dataType":"string"}},
+            "purpose": {"dataType":"string"},
+            "expectedOutcome": {"dataType":"string"},
+            "period": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
@@ -697,10 +691,11 @@ const models: TsoaRoute.Models = {
     "PerformanceRequestDto": {
         "dataType": "refObject",
         "properties": {
+            "dailyEntryId": {"dataType":"string","required":true},
             "tasks": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskDto"},"required":true},
-            "reflection": {"ref":"ReflectionDto","required":true},
+            "reflectionContent": {"dataType":"string","required":true},
             "projectTag": {"ref":"ProjectTagDto"},
-            "userJob": {"dataType":"string","required":true},
+            "userJob": {"ref":"JobRole","required":true},
         },
         "additionalProperties": false,
     },

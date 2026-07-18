@@ -11,7 +11,7 @@ import { ValidateError } from 'tsoa';
 import { RegisterRoutes } from './generated/routes';
 import { ErrorCode } from './common/errors/error.code';
 import { ApiError } from './common/errors/api.error';
-import { apiLogMiddleware } from './common/middlewares/api-log.middleware';
+import { apiLogMiddleware } from './common/middlewares/api.log.middleware';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

@@ -28,10 +28,8 @@ export class PromptManager {
   ): PromptRequest {
     return {
       model:"gpt-5-mini",
-      instructions:
-        promptCInstructions,
-      input:
-        JSON.stringify(dto),
+      instructions: promptCInstructions,
+      input: JSON.stringify(dto),
     };
   }
 

@@ -1717,9 +1717,13 @@
 						"type": "string",
 						"example": "task-550e8400"
 					},
-					"priority": {
+					"taskResultId": {
 						"type": "string",
-						"example": "HIGH"
+						"example": "task-result-550e8400"
+					},
+					"priority": {
+						"$ref": "#/components/schemas/TaskPriority",
+						"example": "SHOULD_DO"
 					},
 					"completed": {
 						"type": "boolean",
@@ -1732,6 +1736,10 @@
 					"memo": {
 						"type": "string",
 						"example": "Request/Response 예시 추가"
+					},
+					"result": {
+						"type": "string",
+						"example": "Swagger 문서를 모두 작성했다."
 					}
 				},
 				"required": [
@@ -1740,28 +1748,6 @@
 					"completed",
 					"title"
 				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ReflectionDto": {
-				"properties": {
-					"good": {
-						"type": "string",
-						"example": "Swagger 문서가 깔끔하게 작성되었다."
-					},
-					"bad": {
-						"type": "string",
-						"example": "예시 데이터 작성에 시간이 오래 걸렸다."
-					},
-					"learned": {
-						"type": "string",
-						"example": "TSOA Example 사용법을 익혔다."
-					},
-					"nextPlan": {
-						"type": "string",
-						"example": "Dashboard API도 구현할 예정이다."
-					}
-				},
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1776,18 +1762,22 @@
 						"example": "AI 기능"
 					},
 					"description": {
-						"type": "string",
-						"example": "AI 관련 업무"
+						"type": "string"
 					},
 					"kpis": {
 						"items": {
 							"type": "string"
 						},
-						"type": "array",
-						"example": [
-							"업무 완료율 90%",
-							"주간 회고 작성"
-						]
+						"type": "array"
+					},
+					"purpose": {
+						"type": "string"
+					},
+					"expectedOutcome": {
+						"type": "string"
+					},
+					"period": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -1799,26 +1789,32 @@
 			},
 			"PerformanceRequestDto": {
 				"properties": {
+					"dailyEntryId": {
+						"type": "string",
+						"example": "daily-entry-550e8400"
+					},
 					"tasks": {
 						"items": {
 							"$ref": "#/components/schemas/TaskDto"
 						},
 						"type": "array"
 					},
-					"reflection": {
-						"$ref": "#/components/schemas/ReflectionDto"
+					"reflectionContent": {
+						"type": "string",
+						"example": "오늘 Swagger 문서를 작성하고 API 예시를 추가했다."
 					},
 					"projectTag": {
 						"$ref": "#/components/schemas/ProjectTagDto"
 					},
 					"userJob": {
-						"type": "string",
-						"example": "백엔드 개발자"
+						"$ref": "#/components/schemas/JobRole",
+						"example": "DEVELOPMENT"
 					}
 				},
 				"required": [
+					"dailyEntryId",
 					"tasks",
-					"reflection",
+					"reflectionContent",
 					"userJob"
 				],
 				"type": "object",
@@ -3350,21 +3346,18 @@
 								"examples": {
 									"Example 1": {
 										"value": {
+											"dailyEntryId": "daily-entry-550e8400",
 											"tasks": [
 												{
 													"taskId": "task-550e8400",
-													"priority": "HIGH",
+													"priority": "SHOULD_DO",
 													"completed": true,
 													"title": "Swagger 문서 작성",
-													"memo": "Request/Response 예시 추가"
+													"memo": "Request/Response 예시 추가",
+													"result": "Swagger 문서와 API 예시 데이터를 작성했다."
 												}
 											],
-											"reflection": {
-												"good": "Swagger 문서를 성공적으로 작성했다.",
-												"bad": "예시 데이터 작성에 시간이 오래 걸렸다.",
-												"learned": "TSOA Example 사용법을 익혔다.",
-												"nextPlan": "Dashboard API 구현"
-											},
+											"reflectionContent": "오늘 Swagger 문서를 작성하면서 TSOA Example 사용법을 익혔다.",
 											"projectTag": {
 												"projectTagId": "project-tag-01",
 												"title": "AI 기능",
@@ -3374,7 +3367,7 @@
 													"주간 회고 작성률"
 												]
 											},
-											"userJob": "백엔드 개발자"
+											"userJob": "DEVELOPMENT"
 										}
 									},
 									"Example 2": {
@@ -3440,18 +3433,18 @@
 									"Example 1": {
 										"value": {
 											"originalRequest": {
+												"dailyEntryId": "daily-entry-550e8400",
 												"tasks": [
 													{
 														"taskId": "task-550e8400",
-														"priority": "HIGH",
+														"priority": "SHOULD_DO",
 														"completed": true,
-														"title": "Swagger 문서 작성"
+														"title": "Swagger 문서 작성",
+														"result": "API 예시 데이터를 추가했다."
 													}
 												],
-												"reflection": {
-													"good": "문서화 완료"
-												},
-												"userJob": "개발자"
+												"reflectionContent": "오늘 API 문서화를 진행했다.",
+												"userJob": "DEVELOPMENT"
 											},
 											"answers": [
 												{
@@ -3466,7 +3459,7 @@
 						}
 					}
 				},
-				"summary": "성과 미리보기 생성 완료",
+				"summary": "보충 질문 답변 후 성과 미리보기 생성 완료",
 				"tags": [
 					"AI"
 				],
