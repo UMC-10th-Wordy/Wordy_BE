@@ -3,13 +3,12 @@ import { ErrorCode } from "../../../common/errors/error.code";
 
 export class ResponseParser {
   parse<T>(response: string): T {
-
     if (!response.trim()) {
-        throw new ApiError(
-            ErrorCode.BAD_REQUEST.status,
-            ErrorCode.BAD_REQUEST.code,
-            "AI 응답이 비어 있습니다.",
-        );
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        "AI 응답이 비어 있습니다.",
+      );
     }
 
     try {
@@ -19,9 +18,13 @@ export class ResponseParser {
     } catch (error) {
       console.error("[Response Parser]", error);
 
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
       throw new ApiError(
-        ErrorCode.BAD_REQUEST.status,
-        ErrorCode.BAD_REQUEST.code,
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
         "AI 응답을 파싱할 수 없습니다.",
       );
     }
@@ -37,7 +40,11 @@ export class ResponseParser {
     const end = cleaned.lastIndexOf("}");
 
     if (start === -1 || end === -1) {
-      throw new Error("JSON not found");
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        "AI 응답에서 JSON을 찾을 수 없습니다.",
+      );
     }
 
     return cleaned.substring(start, end + 1);

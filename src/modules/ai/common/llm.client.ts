@@ -20,9 +20,21 @@ export class LlmClient {
         input: request.input,
       });
 
+      if (!response.output_text) {
+        throw new ApiError(
+          ErrorCode.INTERNAL_SERVER_ERROR.status,
+          ErrorCode.INTERNAL_SERVER_ERROR.code,
+          "LLM 응답이 비어 있습니다.",
+        );
+      }
+
       return response.output_text;
     } catch (error) {
       console.error("[LLM ERROR]", error);
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
 
       throw new ApiError(
         ErrorCode.INTERNAL_SERVER_ERROR.status,

@@ -4,6 +4,8 @@ import { ResponseParser } from "../common/response.parser";
 import { RuleEngine } from "../common/rule.engine";
 
 import { PrismaClient, DailyPerformance } from "../../../generated/prisma/client";
+import { ApiError } from "../../../common/errors/api.error";
+import { ErrorCode } from "../../../common/errors/error.code";
 
 import { DashboardRequestDto }from "./dto/api/dashboard.request.dto";
 import { DashboardResponseDto }from "./dto/api/dashboard.response.dto";
@@ -42,7 +44,9 @@ export class DashboardService {
 
     // 2. 최소 생성 조건 확인
     if (performances.length < 3) {
-      throw new Error(
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
         "일주일간 성과 변환 3회 이상부터 대시보드를 생성할 수 있습니다.",
       );
     }

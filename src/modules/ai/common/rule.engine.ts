@@ -7,24 +7,43 @@ import { PromptAOutputDto } from "../performance/dto/prompt/prompt.a.output.dto"
 import { PromptBOutputDto } from "../performance/dto/prompt/prompt.b.output.dto";
 
 export class RuleEngine {
+  private requireString(
+    value: string | undefined,
+    message: string,
+  ): void {
+    if (!value?.trim()) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        message,
+      );
+    }
+  }
+
+  private requireArray<T>(
+    value: T[] | undefined,
+    message: string,
+  ): void {
+    if (!Array.isArray(value)) {
+      throw new ApiError(
+        ErrorCode.INTERNAL_SERVER_ERROR.status,
+        ErrorCode.INTERNAL_SERVER_ERROR.code,
+        message,
+      );
+    }
+  }
+
   validatePromptA(
     output: PromptAOutputDto,
   ): void {
-    if (!output.tasks) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "AI 구조화 결과가 없습니다.",
-      );
-    }
-
-    if (!Array.isArray(output.followUpQuestions)) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "보충 질문 결과가 없습니다.",
-      );
-    }
+    this.requireArray(
+      output.tasks,
+      "AI 구조화 결과가 없습니다.",
+    );
+    this.requireArray(
+      output.followUpQuestions,
+      "보충 질문 결과가 없습니다.",
+    );
 
     if (output.followUpQuestions.length > 2) {
       throw new ApiError(
@@ -35,7 +54,6 @@ export class RuleEngine {
     }
   }
 
-  // 실제 질문 노출 여부 판단
   needFollowUpQuestion(
     output: PromptAOutputDto,
   ): boolean {
@@ -45,21 +63,14 @@ export class RuleEngine {
   validatePromptB(
     output: PromptBOutputDto,
   ): void {
-    if (!output.summary) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "성과 요약이 없습니다.",
-      );
-    }
-
-    if (!Array.isArray(output.growthInsights)) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "성장 인사이트 결과가 없습니다.",
-      );
-    }
+    this.requireString(
+      output.summary,
+      "성과 요약이 없습니다.",
+    );
+    this.requireArray(
+      output.growthInsights,
+      "성장 인사이트 결과가 없습니다.",
+    );
 
     if (output.growthInsights.length > 2) {
       throw new ApiError(
@@ -68,14 +79,10 @@ export class RuleEngine {
         "성장 인사이트는 최대 2개까지 가능합니다.",
       );
     }
-
-    if (!Array.isArray(output.nextActions)) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "추천 업무 결과가 없습니다.",
-      );
-    }
+    this.requireArray(
+      output.nextActions,
+      "추천 업무 결과가 없습니다.",
+    );
 
     if (output.nextActions.length > 3) {
       throw new ApiError(
@@ -84,43 +91,27 @@ export class RuleEngine {
         "추천 업무는 최대 3개까지 가능합니다.",
       );
     }
-
-    if (!Array.isArray(output.taskPerformances)) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "업무 성과 결과가 없습니다.",
-      );
-    }
+    this.requireArray(
+      output.taskPerformances,
+      "업무 성과 결과가 없습니다.",
+    );
   }
 
   validatePromptC(
     output: PromptCOutputDto,
   ): void {
-
-    if (!output.summary) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "대시보드 요약이 없습니다.",
-      );
-    }
-
-    if (!Array.isArray(output.kpis)) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "KPI 결과가 없습니다.",
-      );
-    }
-
-    if (!Array.isArray(output.tagAnalyses)) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "태그 분석 결과가 없습니다.",
-      );
-    }
+    this.requireString(
+      output.summary,
+      "대시보드 요약이 없습니다.",
+    );
+    this.requireArray(
+      output.kpis,
+      "KPI 결과가 없습니다.",
+    );
+    this.requireArray(
+      output.tagAnalyses,
+      "태그 분석 결과가 없습니다.",
+    );
 
     if (!output.weeklyReflection) {
       throw new ApiError(
@@ -129,27 +120,39 @@ export class RuleEngine {
         "주간 회고 결과가 없습니다.",
       );
     }
+    this.requireString(
+      output.weeklyReflection.workSummary,
+      "주간 업무 요약이 없습니다.",
+    );
+    this.requireString(
+      output.weeklyReflection.resourcesUsed,
+      "활용한 리소스가 없습니다.",
+    );
+    this.requireString(
+      output.weeklyReflection.learning,
+      "학습 내용이 없습니다.",
+    );
   }
 
   validateKpi(
     output: KpiOutputDto,
-  ):void {
-    if(!Array.isArray(output.kpis)){
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "KPI 결과가 없습니다.",
-      );
-    }
-
-    if(
-      output.kpis.length < 2 ||
-      output.kpis.length > 5
-    ){
+  ): void {
+    this.requireArray(
+      output.kpis,
+      "KPI 결과가 없습니다.",
+    );
+    if (output.kpis.length < 2 || output.kpis.length > 5) 
+    {
       throw new ApiError(
         ErrorCode.INTERNAL_SERVER_ERROR.status,
         ErrorCode.INTERNAL_SERVER_ERROR.code,
         "KPI는 2개 이상 5개 이하만 가능합니다.",
+      );
+    }
+    for (const kpi of output.kpis) {
+      this.requireString(
+        kpi,
+        "KPI 이름이 없습니다.",
       );
     }
   }
