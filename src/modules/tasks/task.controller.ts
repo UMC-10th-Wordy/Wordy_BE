@@ -12,12 +12,10 @@ import {
   Tags,
 } from 'tsoa';
 import { TaskService } from './task.service';
-import {
-  TaskApiResponseDto,
-  CreateTaskRequest,
-  TaskResponse,
-  UpdateTaskRequest,
-} from './task.dto';
+import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from './task.dto';
+import { ApiResponse } from '../../common/responses/api.response';
+import { success } from '../../common/responses/response';
+import { SuccessCode } from '../../common/responses/success.code';
 
 @Route('tasks')
 @Tags('Tasks')
@@ -28,37 +26,28 @@ export class TaskController extends Controller {
   public async getTasksByDate(
     @Header('authorization') authorization: string,
     @Query() date: string,
-  ): Promise<TaskApiResponseDto<TaskResponse[]>> {
-    try {
-      return await this.taskService.getTasksByDate(authorization, date);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  ): Promise<ApiResponse<TaskResponse[]>> {
+    const data = await this.taskService.getTasksByDate(authorization, date);
+    return success(SuccessCode.GET_SUCCESS.code, '업무카드 목록 조회가 완료되었습니다.', data);
   }
 
   @Post()
   public async createTask(
     @Header('authorization') authorization: string,
     @Body() body: CreateTaskRequest,
-  ): Promise<TaskApiResponseDto<TaskResponse>> {
-    try {
-      this.setStatus(201);
-      return await this.taskService.createTask(authorization, body);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  ): Promise<ApiResponse<TaskResponse>> {
+    const data = await this.taskService.createTask(authorization, body);
+    this.setStatus(201);
+    return success(SuccessCode.CREATED.code, '업무카드가 생성되었습니다.', data);
   }
 
   @Get('{taskId}')
   public async getTask(
     @Header('authorization') authorization: string,
     @Path() taskId: string,
-  ): Promise<TaskApiResponseDto<TaskResponse>> {
-    try {
-      return await this.taskService.getTask(authorization, taskId);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  ): Promise<ApiResponse<TaskResponse>> {
+    const data = await this.taskService.getTask(authorization, taskId);
+    return success(SuccessCode.GET_SUCCESS.code, '업무카드 상세 조회가 완료되었습니다.', data);
   }
 
   @Patch('{taskId}')
@@ -66,39 +55,17 @@ export class TaskController extends Controller {
     @Header('authorization') authorization: string,
     @Path() taskId: string,
     @Body() body: UpdateTaskRequest,
-  ): Promise<TaskApiResponseDto<TaskResponse>> {
-    try {
-      return await this.taskService.updateTask(authorization, taskId, body);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  ): Promise<ApiResponse<TaskResponse>> {
+    const data = await this.taskService.updateTask(authorization, taskId, body);
+    return success(SuccessCode.UPDATED.code, '업무카드가 수정되었습니다.', data);
   }
 
   @Delete('{taskId}')
   public async deleteTask(
     @Header('authorization') authorization: string,
     @Path() taskId: string,
-  ): Promise<TaskApiResponseDto<null>> {
-    try {
-      return await this.taskService.deleteTask(authorization, taskId);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  private handleError(error: unknown): TaskApiResponseDto<any> {
-    const statusCode =
-      error instanceof Error && 'statusCode' in error
-        ? Number((error as any).statusCode)
-        : 500;
-
-    this.setStatus(statusCode);
-
-    return {
-      success: false,
-      statusCode,
-      message: error instanceof Error ? error.message : '서버 오류가 발생했습니다.',
-      data: null,
-    };
+  ): Promise<ApiResponse<null>> {
+    await this.taskService.deleteTask(authorization, taskId);
+    return success(SuccessCode.DELETED.code, '업무카드가 삭제되었습니다.', null);
   }
 }

@@ -146,6 +146,7 @@ export class AuthService {
     const accessToken = generateAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = generateRefreshToken(user.userId);
     await this.authRepository.saveRefreshToken(user.userId, refreshToken);
+    await this.authRepository.updateLastLogin(user.userId);
 
     return { accessToken, refreshToken, email: user.email };
   }
@@ -163,6 +164,7 @@ export class AuthService {
     const accessToken = generateAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = generateRefreshToken(user.userId);
     await this.authRepository.saveRefreshToken(user.userId, refreshToken);
+    await this.authRepository.updateLastLogin(user.userId);
 
     return { accessToken, refreshToken, email: user.email };
   }
@@ -234,6 +236,7 @@ export class AuthService {
       const accessToken = generateAccessToken({ userId: existing.userId, email: existing.email });
       const refreshToken = generateRefreshToken(existing.userId);
       await this.authRepository.saveRefreshToken(existing.userId, refreshToken);
+      await this.authRepository.updateLastLogin(existing.userId);
 
       return { status: 'login', accessToken, refreshToken, email: existing.email };
     }
@@ -274,6 +277,7 @@ export class AuthService {
     const accessToken = generateAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = generateRefreshToken(user.userId);
     await this.authRepository.saveRefreshToken(user.userId, refreshToken);
+    await this.authRepository.updateLastLogin(user.userId);
 
     return { accessToken, refreshToken, email: user.email };
   }

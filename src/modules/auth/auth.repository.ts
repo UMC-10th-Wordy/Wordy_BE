@@ -39,6 +39,13 @@ export class AuthRepository {
     });
   }
 
+  public async updateLastLogin(userId: string) {
+    return prisma.user.update({
+      where: { userId },
+      data: { lastLoginAt: new Date() },
+    });
+  }
+
   public async clearRefreshToken(userId: string) {
     return prisma.user.update({
       where: { userId },

@@ -1,6 +1,9 @@
 import { Body, Controller, Delete, Get, Header, Patch, Path, Post, Route, Tags } from 'tsoa';
-import { ApiResponseDto, CreateTagRequest, TagResponse, UpdateTagRequest } from './tag.dto';
-import { InvalidTagError, TagNotFoundError, TagService, UnauthorizedError } from './tag.service';
+import { CreateTagRequest, TagResponse, UpdateTagRequest } from './tag.dto';
+import { TagService } from './tag.service';
+import { ApiResponse } from '../../common/responses/api.response';
+import { success } from '../../common/responses/response';
+import { SuccessCode } from '../../common/responses/success.code';
 
 @Route('tags')
 @Tags('Tags')
@@ -11,22 +14,9 @@ export class TagController extends Controller {
   @Get()
   public async getTags(
     @Header('Authorization') authorization: string | undefined,
-  ): Promise<ApiResponseDto<TagResponse[] | null>> {
-    try {
-      const data = await this.tagService.getTags(authorization);
-      return {
-        success: true,
-        statusCode: 200,
-        message: '태그 목록 조회 성공',
-        data,
-      };
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        this.setStatus(401);
-        return { success: false, statusCode: 401, message: err.message, data: null };
-      }
-      throw err;
-    }
+  ): Promise<ApiResponse<TagResponse[]>> {
+    const data = await this.tagService.getTags(authorization);
+    return success(SuccessCode.OK.code, '태그 목록 조회 성공', data);
   }
 
   /** @summary 태그 생성 */
@@ -34,27 +24,10 @@ export class TagController extends Controller {
   public async createTag(
     @Header('Authorization') authorization: string | undefined,
     @Body() body: CreateTagRequest,
-  ): Promise<ApiResponseDto<TagResponse | null>> {
-    try {
-      const data = await this.tagService.createTag(authorization, body);
-      this.setStatus(201);
-      return {
-        success: true,
-        statusCode: 201,
-        message: '태그가 생성되었습니다.',
-        data,
-      };
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        this.setStatus(401);
-        return { success: false, statusCode: 401, message: err.message, data: null };
-      }
-      if (err instanceof InvalidTagError) {
-        this.setStatus(400);
-        return { success: false, statusCode: 400, message: err.message, data: null };
-      }
-      throw err;
-    }
+  ): Promise<ApiResponse<TagResponse>> {
+    const data = await this.tagService.createTag(authorization, body);
+    this.setStatus(201);
+    return success(SuccessCode.CREATED.code, '태그가 생성되었습니다.', data);
   }
 
   /** @summary 태그 상세 조회 */
@@ -62,26 +35,9 @@ export class TagController extends Controller {
   public async getTag(
     @Header('Authorization') authorization: string | undefined,
     @Path() tagId: string,
-  ): Promise<ApiResponseDto<TagResponse | null>> {
-    try {
-      const data = await this.tagService.getTag(authorization, tagId);
-      return {
-        success: true,
-        statusCode: 200,
-        message: '태그 상세 조회 성공',
-        data,
-      };
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        this.setStatus(401);
-        return { success: false, statusCode: 401, message: err.message, data: null };
-      }
-      if (err instanceof TagNotFoundError) {
-        this.setStatus(404);
-        return { success: false, statusCode: 404, message: err.message, data: null };
-      }
-      throw err;
-    }
+  ): Promise<ApiResponse<TagResponse>> {
+    const data = await this.tagService.getTag(authorization, tagId);
+    return success(SuccessCode.OK.code, '태그 상세 조회 성공', data);
   }
 
   /** @summary 태그 수정 */
@@ -90,30 +46,9 @@ export class TagController extends Controller {
     @Header('Authorization') authorization: string | undefined,
     @Path() tagId: string,
     @Body() body: UpdateTagRequest,
-  ): Promise<ApiResponseDto<TagResponse | null>> {
-    try {
-      const data = await this.tagService.updateTag(authorization, tagId, body);
-      return {
-        success: true,
-        statusCode: 200,
-        message: '태그가 수정되었습니다.',
-        data,
-      };
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        this.setStatus(401);
-        return { success: false, statusCode: 401, message: err.message, data: null };
-      }
-      if (err instanceof InvalidTagError) {
-        this.setStatus(400);
-        return { success: false, statusCode: 400, message: err.message, data: null };
-      }
-      if (err instanceof TagNotFoundError) {
-        this.setStatus(404);
-        return { success: false, statusCode: 404, message: err.message, data: null };
-      }
-      throw err;
-    }
+  ): Promise<ApiResponse<TagResponse>> {
+    const data = await this.tagService.updateTag(authorization, tagId, body);
+    return success(SuccessCode.UPDATED.code, '태그가 수정되었습니다.', data);
   }
 
   /** @summary 태그 삭제 */
@@ -121,25 +56,8 @@ export class TagController extends Controller {
   public async deleteTag(
     @Header('Authorization') authorization: string | undefined,
     @Path() tagId: string,
-  ): Promise<ApiResponseDto<null>> {
-    try {
-      await this.tagService.deleteTag(authorization, tagId);
-      return {
-        success: true,
-        statusCode: 200,
-        message: '태그가 삭제되었습니다.',
-        data: null,
-      };
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        this.setStatus(401);
-        return { success: false, statusCode: 401, message: err.message, data: null };
-      }
-      if (err instanceof TagNotFoundError) {
-        this.setStatus(404);
-        return { success: false, statusCode: 404, message: err.message, data: null };
-      }
-      throw err;
-    }
+  ): Promise<ApiResponse<null>> {
+    await this.tagService.deleteTag(authorization, tagId);
+    return success(SuccessCode.DELETED.code, '태그가 삭제되었습니다.', null);
   }
 }

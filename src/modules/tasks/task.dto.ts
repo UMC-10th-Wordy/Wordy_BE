@@ -9,13 +9,6 @@ export enum TaskStatus {
   COMPLETED = 'COMPLETED',
 }
 
-export interface TaskApiResponseDto<T> {
-  success: boolean;
-  statusCode: number;
-  message: string;
-  data: T;
-}
-
 export interface CreateTaskRequest {
   title: string;
   priority: TaskPriority;

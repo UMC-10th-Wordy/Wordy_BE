@@ -1,30 +1,29 @@
 import jwt from 'jsonwebtoken';
 import { TagRepository } from './tag.repository';
 import { CreateTagRequest, UpdateTagRequest } from './tag.dto';
+import { ApiError } from '../../common/errors/api.error';
+import { ErrorCode } from '../../common/errors/error.code';
 
 interface AccessTokenPayload {
   userId: string;
   email: string;
 }
 
-export class UnauthorizedError extends Error {
+export class UnauthorizedError extends ApiError {
   constructor() {
-    super('인증이 필요합니다.');
-    this.name = 'UnauthorizedError';
+    super(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, ErrorCode.UNAUTHORIZED.message);
   }
 }
 
-export class TagNotFoundError extends Error {
+export class TagNotFoundError extends ApiError {
   constructor() {
-    super('태그를 찾을 수 없습니다.');
-    this.name = 'TagNotFoundError';
+    super(ErrorCode.NOT_FOUND.status, ErrorCode.NOT_FOUND.code, '태그를 찾을 수 없습니다.');
   }
 }
 
-export class InvalidTagError extends Error {
+export class InvalidTagError extends ApiError {
   constructor(message: string) {
-    super(message);
-    this.name = 'InvalidTagError';
+    super(ErrorCode.BAD_REQUEST.status, ErrorCode.BAD_REQUEST.code, message);
   }
 }
 
