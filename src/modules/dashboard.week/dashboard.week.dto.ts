@@ -67,18 +67,18 @@ export interface CreateWeeklyReflectionRequest {
   learning?: string;         // 배우고 느낀 점
 }
 
-// 성과 항목 (output, impact)
+// 성과 항목 (output, impact) — 스키마상 Json 타입
 export interface PerformanceItemDto {
-  output: string;
-  impact: string;
+  output: any;
+  impact: any;
 }
 
 // 일일 성과 요약
 export interface PerformanceDto {
   achievementRate: number;
   summary: string;
-  growthInsight: string;
-  nextAction: string | null;
+  growthInsight: any;   // 스키마상 Json
+  nextAction: any;      // 스키마상 Jsonn
   items: PerformanceItemDto[];
 }
 

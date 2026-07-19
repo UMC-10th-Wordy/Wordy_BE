@@ -1,0 +1,364 @@
+import {
+  countEntriesBetween,
+  findAllEntryDates,
+  findEntriesWithTags,
+  findEntriesByMonth,
+  findEntryDetail,
+  findEntryById,
+  softDeleteEntry,
+  searchEntries,
+  countMatchingTags,
+} from "./dailyentries.repository.js";
+
+import type {
+  DailyEntriesSummaryResponse,
+  MonthlyRecordItem,
+  DailyRecordItem,
+  DailyEntriesDetailResponse,
+  DailyEntriesSearchResponse,
+  TagChip,
+} from "./dailyentries.dto.js";
+
+// 공통 헬퍼
+
+// Date → "YYYY-MM-DD" (대시보드 모듈과 동일 규칙)
+const toDateStr = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// 특정 연/월의 시작~종료일 (UTC 기준, @db.Date 비교용)
+const getMonthRange = (year: number, month: number) => {
+  const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+  const end = new Date(Date.UTC(year, month, 0, 23, 59, 59)); // month의 0일 = 이전 달 마지막 날
+  return { start, end };
+};
+
+// "YYYY-MM" 문자열에서 대표 태그 최대 n개 추출
+const pickTags = (
+  tagList: { tagName: string; color: string | null }[],
+  n = 3
+): TagChip[] => {
+  const seen = new Map<string, TagChip>();
+  for (const t of tagList) {
+    if (!seen.has(t.tagName)) seen.set(t.tagName, { tagName: t.tagName, color: t.color });
+    if (seen.size >= n) break;
+  }
+  return [...seen.values()];
+};
+
+// 1) 나의 요약 (상단 카드 3개)
+export const getDailyEntriesSummary = async (
+  userId: string
+): Promise<DailyEntriesSummaryResponse> => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+
+  // --- 이번 달 / 지난 달 개수 ---
+  const thisMonth = getMonthRange(y, m);
+  const lastMonth = getMonthRange(m === 1 ? y - 1 : y, m === 1 ? 12 : m - 1);
+
+  const [thisCount, lastCount] = await Promise.all([
+    countEntriesBetween(userId, thisMonth.start, thisMonth.end),
+    countEntriesBetween(userId, lastMonth.start, lastMonth.end),
+  ]);
+
+  // --- 연속 작성 streak ---
+  const dateRows = await findAllEntryDates(userId);
+  const { currentStreak, maxStreak } = calcStreaks(
+    dateRows.map((r) => toDateStr(r.entryDate))
+  );
+
+  // --- 최다 기록 카테고리 ---
+  const entries = await findEntriesWithTags(userId);
+  const topCategory = calcTopCategory(entries);
+
+  return {
+    monthlyCount: {
+      count: thisCount,
+      diffFromLastMonth: thisCount - lastCount,
+    },
+    streak: { currentStreak, maxStreak },
+    topCategory,
+  };
+};
+
+// 연속 작성 일수 계산 (dateStrs: "YYYY-MM-DD" 배열, 중복/순서 무관)
+const calcStreaks = (dateStrs: string[]) => {
+  if (dateStrs.length === 0) return { currentStreak: 0, maxStreak: 0 };
+
+  const uniqSorted = [...new Set(dateStrs)].sort(); // 오름차순
+  const dayDiff = (a: string, b: string) =>
+    Math.round(
+      (new Date(b + "T00:00:00Z").getTime() -
+        new Date(a + "T00:00:00Z").getTime()) /
+        86400000
+    );
+
+  // 최고 기록
+  let maxStreak = 1;
+  let run = 1;
+  for (let i = 1; i < uniqSorted.length; i++) {
+    if (dayDiff(uniqSorted[i - 1], uniqSorted[i]) === 1) {
+      run++;
+      maxStreak = Math.max(maxStreak, run);
+    } else {
+      run = 1;
+    }
+  }
+
+  // 현재 연속: 가장 최근 기록일부터 역순으로 하루씩 이어지는 구간
+  let currentStreak = 1;
+  for (let i = uniqSorted.length - 1; i > 0; i--) {
+    if (dayDiff(uniqSorted[i - 1], uniqSorted[i]) === 1) currentStreak++;
+    else break;
+  }
+  // 가장 최근 기록이 오늘/어제가 아니면 연속이 끊긴 것으로 봄
+  const today = toDateStr(new Date());
+  const last = uniqSorted[uniqSorted.length - 1];
+  if (dayDiff(last, today) > 1) currentStreak = 0;
+
+  return { currentStreak, maxStreak };
+};
+
+// 최다 기록 카테고리(태그) + 비중
+const calcTopCategory = (
+  entries: Awaited<ReturnType<typeof findEntriesWithTags>>
+) => {
+  const counter = new Map<string, { count: number; color: string | null }>();
+  let total = 0;
+
+  for (const e of entries) {
+    for (const rt of e.reflectionTasks) {
+      const task = rt.task;
+      if (!task || task.deletedAt || !task.tag) continue;
+      total++;
+      const cur = counter.get(task.tag.tagName);
+      if (cur) cur.count++;
+      else counter.set(task.tag.tagName, { count: 1, color: task.tag.color });
+    }
+  }
+
+  if (total === 0) return { tagName: null, color: null, percentage: 0 };
+
+  let topName: string | null = null;
+  let topInfo = { count: 0, color: null as string | null };
+  for (const [name, info] of counter) {
+    if (info.count > topInfo.count) {
+      topName = name;
+      topInfo = info;
+    }
+  }
+
+  return {
+    tagName: topName,
+    color: topInfo.color,
+    percentage: Math.round((topInfo.count / total) * 100),
+  };
+};
+
+// 2) 월별 기록 목록 (접힌 상태)
+export const getMonthlyList = async (
+  userId: string
+): Promise<MonthlyRecordItem[]> => {
+  const entries = await findEntriesWithTags(userId);
+
+  // yearMonth 별로 그룹핑
+  const groups = new Map<
+    string,
+    { dates: Set<string>; tags: { tagName: string; color: string | null }[] }
+  >();
+
+  for (const e of entries) {
+    const ym = toDateStr(e.entryDate).slice(0, 7); // "2026-08"
+    if (!groups.has(ym)) groups.set(ym, { dates: new Set(), tags: [] });
+    const g = groups.get(ym)!;
+    g.dates.add(toDateStr(e.entryDate));
+    for (const rt of e.reflectionTasks) {
+      if (rt.task && !rt.task.deletedAt && rt.task.tag) {
+        g.tags.push({ tagName: rt.task.tag.tagName, color: rt.task.tag.color });
+      }
+    }
+  }
+
+  // 최신 월 순으로 정렬
+  const sortedKeys = [...groups.keys()].sort((a, b) => (a < b ? 1 : -1));
+
+  return sortedKeys.map((ym) => {
+    const [year, month] = ym.split("-").map(Number);
+    const g = groups.get(ym)!;
+    const tags = pickTags(g.tags);
+    return {
+      yearMonth: ym,
+      year,
+      month,
+      totalDays: g.dates.size,
+      tags,
+      // 대표 태그 + 기록 일수로 즉석 조합 (AI/테이블 없이 계산)
+      summary: buildMonthlySummary(
+        tags.map((t) => t.tagName),
+        g.dates.size
+      ),
+    };
+  });
+};
+
+// 월별 한 줄 요약 (규칙 기반). 대표 태그와 기록 일수로 문장 조합.
+const buildMonthlySummary = (tagNames: string[], totalDays: number): string => {
+  if (tagNames.length === 0) {
+    return `총 ${totalDays}일의 업무 일지를 기록한 달이에요.`;
+  }
+  const top = tagNames.slice(0, 3).join(", ");
+  return `${top} 중심으로 총 ${totalDays}일의 기록을 남긴 달이에요.`;
+};
+
+// 3) 월별 일자 목록 (월 펼쳤을 때)
+// yearMonth: "2026-08"
+export const getMonthlyEntries = async (
+  userId: string,
+  yearMonth: string
+): Promise<DailyRecordItem[]> => {
+  const [year, month] = yearMonth.split("-").map(Number);
+  if (!year || !month) {
+    throw new Error("yearMonth 형식이 올바르지 않습니다. (예: 2026-08)");
+  }
+
+  const { start, end } = getMonthRange(year, month);
+  const entries = await findEntriesByMonth(userId, start, end);
+
+  return entries.map((e) => {
+    const tasks = e.reflectionTasks
+      .map((rt) => rt.task)
+      .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+
+    // 대표 업무: MUST_DO 우선, 없으면 첫 업무 (기준은 팀 협의 후 조정 가능)
+    const mainTask =
+      tasks.find((t) => t.priority === "MUST_DO") ?? tasks[0] ?? null;
+
+    const tagList = tasks
+      .filter((t) => t.tag)
+      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+
+    const dateStr = toDateStr(e.entryDate);
+
+    return {
+      dailyEntryId: e.dailyEntryId,
+      entryDate: dateStr,
+      day: Number(dateStr.slice(8, 10)),
+      tags: pickTags(tagList),
+      mainTaskTitle: mainTask?.title ?? null,
+      extraTaskCount: Math.max(tasks.length - 1, 0),
+      summary: e.reflectionContent ?? null,
+    };
+  });
+};
+
+// 4) 일자 상세
+export const getDailyEntriesDetail = async (
+  userId: string,
+  dailyEntryId: string
+): Promise<DailyEntriesDetailResponse> => {
+  const entry = await findEntryDetail(userId, dailyEntryId);
+  if (!entry) {
+    throw new Error("해당 일지를 찾을 수 없습니다.");
+  }
+
+  // 이 일지의 업무 결과를 taskId 별로 묶기
+  const resultsByTask = new Map<string, typeof entry.taskResults>();
+  for (const r of entry.taskResults) {
+    if (!resultsByTask.has(r.taskId)) resultsByTask.set(r.taskId, []);
+    resultsByTask.get(r.taskId)!.push(r);
+  }
+
+  const tasks = entry.reflectionTasks
+    .map((rt) => rt.task)
+    .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt)
+    .map((t) => {
+      const results = (resultsByTask.get(t.taskId) ?? []).map((r) => ({
+        taskResultId: r.taskResultId,
+        content: r.content,
+        attachments: r.attachments.map((a) => ({
+          fileType: a.fileType,
+          fileUrl: a.fileUrl,
+          fileName: a.fileName,
+        })),
+      }));
+
+      return {
+        taskId: t.taskId,
+        tag: t.tag ? { tagName: t.tag.tagName, color: t.tag.color } : null,
+        title: t.title,
+        memo: t.memo ?? null,
+        priority: t.priority,
+        status: t.status,
+        results,
+      };
+    });
+
+  const completedCount = tasks.filter((t) => t.status === "COMPLETED").length;
+  const incompleteCount = tasks.length - completedCount;
+
+  return {
+    dailyEntryId: entry.dailyEntryId,
+    entryDate: toDateStr(entry.entryDate),
+    reflectionContent: entry.reflectionContent,
+    completedCount,
+    incompleteCount,
+    tasks,
+  };
+};
+
+// 5) 일지 삭제 (소프트 삭제)
+export const removeDailyEntry = async (userId: string, dailyEntryId: string) => {
+  const found = await findEntryById(userId, dailyEntryId);
+  if (!found) {
+    throw new Error("해당 일지를 찾을 수 없습니다.");
+  }
+
+  await softDeleteEntry(dailyEntryId);
+  return { dailyEntryId };
+};
+
+// 6) 검색
+export const searchDailyEntries = async (
+  userId: string,
+  keyword: string,
+  sort: "latest" | "oldest" = "latest"
+): Promise<DailyEntriesSearchResponse> => {
+  const trimmed = (keyword ?? "").trim();
+  if (trimmed.length === 0) {
+    return { keyword: "", entryCount: 0, tagCount: 0, results: [] };
+  }
+
+  const [entries, tagCount] = await Promise.all([
+    searchEntries(userId, trimmed, sort),
+    countMatchingTags(userId, trimmed),
+  ]);
+
+  const results = entries.map((e) => {
+    const tasks = e.reflectionTasks
+      .map((rt) => rt.task)
+      .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+
+    const tagList = tasks
+      .filter((t) => t.tag)
+      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+
+    return {
+      dailyEntryId: e.dailyEntryId,
+      entryDate: toDateStr(e.entryDate),
+      tags: pickTags(tagList),
+      title: tasks[0]?.title ?? null,
+    };
+  });
+
+  return {
+    keyword: trimmed,
+    entryCount: results.length,
+    tagCount,
+    results,
+  };
+};
