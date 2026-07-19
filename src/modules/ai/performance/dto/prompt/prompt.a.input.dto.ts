@@ -1,6 +1,6 @@
 export interface PromptAInputDto {
   tasks: PromptTaskDto[];
-  reflection: PromptReflectionDto;
+  reflection: string;
   projectTag?: PromptProjectDto;
   userJob: string;
   supplementAnswers?: SupplementAnswerDto[];
@@ -13,13 +13,6 @@ export interface PromptTaskDto {
   completed: boolean;
   memo?: string;
   result?: string;
-}
-
-export interface PromptReflectionDto {
-  good?: string;
-  bad?: string;
-  learned?: string;
-  nextPlan?: string;
 }
 
 export interface PromptProjectDto {
