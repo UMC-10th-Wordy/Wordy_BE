@@ -4,6 +4,7 @@ import {
   getMonthlyDashboardList,
   getMonthlyDashboardDetail,
   addMonthlyReflection,
+  createMonthlyDashboardWithAI,
 } from "./dashboard.month.service.js";
 import {
   MonthlyEligibilityResponse,
@@ -158,6 +159,20 @@ export class MonthlyDashboardController extends Controller {
   ): Promise<ApiResponse<any>> {
     const userId = "test-user-id";
     const data = await addMonthlyReflection(dashboardId, userId, body);
+    this.setStatus(201);
+    return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
+  }
+
+  /**
+   * @summary 월간 대시보드 생성 (AI)
+   * @example body {"startDate": "2026-06-01", "endDate": "2026-06-30"}
+   */
+  @Post()
+  public async createDashboard(
+    @Body() body: { startDate: string; endDate: string }
+  ): Promise<ApiResponse<any>> {
+    const userId = "test-user-id";
+    const data = await createMonthlyDashboardWithAI(userId, body.startDate, body.endDate);
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
   }

@@ -7,7 +7,15 @@ import {
   findReflectionById,     
   updateWeeklyReflection,
   findDailyEntries,
+  createDashboard,
 } from "./dashboard.week.repository.js";
+
+import { AiService } from "../ai/ai.service.js";
+import { LlmClient } from "../ai/llm.client.js";
+import { PromptManager } from "../ai/prompt.manager.js";
+import { ResponseParser } from "../ai/response.parser.js";
+import { RuleEngine } from "../ai/rule.engine.js";
+import { prisma } from "../../db.config.js";
 
 const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
 
@@ -165,4 +173,43 @@ export const editWeeklyReflection = async (
     resourcesUsed: updated.resourcesUsed,
     learning: updated.learning,
   };
+};
+
+// 대시보드 생성 (AI 호출 → DB 저장)
+export const createDashboardWithAI = async (
+  userId: string,
+  startDate: string,
+  endDate: string
+) => {
+  // 1. AI 서비스 인스턴스 생성 (ai.controller.ts와 동일한 방식)
+  const aiService = new AiService(
+    new LlmClient(),
+    new PromptManager(),
+    new ResponseParser(),
+    new RuleEngine(),
+    prisma
+  );
+
+  // 2. AI로 대시보드 내용 생성 (summary, kpis, tagAnalyses, reflection)
+  const aiResult = await aiService.generateDashboard({
+    userId,
+    startDate,
+    endDate,
+  });
+
+  // 3. AI 결과 + 계산값을 DB에 저장
+  const saved = await createDashboard({
+    userId,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    summary: aiResult.summary,
+    journalDays: aiResult.performanceCount, // TODO: 실제 일지 수로 교체 필요 (팀 확인)
+    performanceCount: aiResult.performanceCount,
+    tagCount: aiResult.tagAnalyses.length, // 태그 분석 개수로 계산
+    kpis: aiResult.kpis,
+    tagAnalyses: aiResult.tagAnalyses,
+    weeklyReflection: aiResult.weeklyReflection,
+  });
+
+  return { dashboardId: saved.dashboardId };
 };
