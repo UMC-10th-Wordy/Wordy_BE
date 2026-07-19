@@ -22,9 +22,28 @@ export class DashboardResponseDto {
   @Example(3)
   tagCount!: number;
 
+  @Example([
+    {
+      kpiName: "Swagger API 문서 작성",
+      progress: "100%"
+    },
+    {
+      kpiName: "AI 기능 구현",
+      progress: "80%"
+    }
+  ])
   kpis!: DashboardKpiDto[];
+
+  @Example([
+    {
+      tagName: "AI 기능 구현",
+      objective: "제품의 AI 기능 개발 목표",
+      expectedOutcome: "성과 미리보기 기능 완성",
+      achievementStatus: "달성",
+      insight: "AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다."
+    }
+  ])
   tagAnalyses!: DashboardTagAnalysisDto[];
-  weeklyReflection!: WeeklyReflectionDto;
 }
 
 export class DashboardKpiDto {
@@ -37,25 +56,17 @@ export class DashboardKpiDto {
 
 export class DashboardTagAnalysisDto {
   @Example("AI 기능 구현")
-  goal!: string;
+  tagName!: string;
+
+  @Example("제품의 AI 기능 개발 목표")
+  objective!: string;
 
   @Example("성과 미리보기 기능 완성")
   expectedOutcome!: string;
 
-  @Example(8)
-  taskCount!: number;
-
   @Example("달성")
   achievementStatus!: string;
-}
 
-export class WeeklyReflectionDto {
-  @Example("AI 기능 개발과 문서화를 완료했다.")
-  workSummary!: string;
-
-  @Example("OpenAI API, Prisma, TSOA")
-  resourcesUsed!: string;
-
-  @Example("Prompt 설계와 응답 파싱 구조를 익혔다.")
-  learning!: string;
+  @Example("AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다.")
+  insight!: string;
 }

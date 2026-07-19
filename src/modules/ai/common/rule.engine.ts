@@ -1,7 +1,8 @@
 import { ApiError } from "../../../common/errors/api.error";
 import { ErrorCode } from "../../../common/errors/error.code";
 
-import { PromptCOutputDto } from "../dashboard/dto/prompt/prompt.c.output";
+import { PromptCOutputDto } from "../dashboard/dto/prompt/prompt.c.output.dto";
+import { PromptDOutputDto } from "../dashboard/dto/prompt/prompt.d.output.dto";
 import { KpiOutputDto } from "../kpi/dto/prompt/kpi.output.dto";
 import { PromptAOutputDto } from "../performance/dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "../performance/dto/prompt/prompt.b.output.dto";
@@ -112,25 +113,22 @@ export class RuleEngine {
       output.tagAnalyses,
       "태그 분석 결과가 없습니다.",
     );
+  }
 
-    if (!output.weeklyReflection) {
-      throw new ApiError(
-        ErrorCode.INTERNAL_SERVER_ERROR.status,
-        ErrorCode.INTERNAL_SERVER_ERROR.code,
-        "주간 회고 결과가 없습니다.",
-      );
-    }
+  validatePromptD(
+    output: PromptDOutputDto,
+  ): void {
     this.requireString(
-      output.weeklyReflection.workSummary,
-      "주간 업무 요약이 없습니다.",
+      output.summary,
+      "대시보드 요약이 없습니다.",
     );
-    this.requireString(
-      output.weeklyReflection.resourcesUsed,
-      "활용한 리소스가 없습니다.",
+    this.requireArray(
+      output.kpis,
+      "KPI 결과가 없습니다.",
     );
-    this.requireString(
-      output.weeklyReflection.learning,
-      "학습 내용이 없습니다.",
+    this.requireArray(
+      output.tagAnalyses,
+      "태그 분석 결과가 없습니다.",
     );
   }
 

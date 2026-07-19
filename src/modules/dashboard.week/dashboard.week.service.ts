@@ -10,11 +10,11 @@ import {
   createDashboard,
 } from "./dashboard.week.repository.js";
 
-import { AiService } from "../ai/ai.service.js";
-import { LlmClient } from "../ai/llm.client.js";
-import { PromptManager } from "../ai/prompt.manager.js";
-import { ResponseParser } from "../ai/response.parser.js";
-import { RuleEngine } from "../ai/rule.engine.js";
+import { DashboardService } from "../ai/dashboard/dashboard.service.js";
+import { LlmClient } from "../ai/common/llm.client.js";
+import { PromptManager } from "../ai/common/prompt.manager.js";
+import { ResponseParser } from "../ai/common/response.parser.js";
+import { RuleEngine } from "../ai/common/rule.engine.js";
 import { prisma } from "../../db.config.js";
 
 const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
@@ -55,7 +55,7 @@ export const getEligibility = async (userId: string, baseDate?: string) => {
     requiredDays: REQUIRED_DAYS,
     weekStart: toDateStr(start),
     weekEnd: toDateStr(end),
-    entries: entries.map((e) => ({
+    entries: entries.map((e: typeof entries[number]) => ({
       dailyEntryId: e.dailyEntryId,
       entryDate: toDateStr(e.entryDate),
     })),
@@ -65,7 +65,7 @@ export const getEligibility = async (userId: string, baseDate?: string) => {
 // 대시보드 목록 조회
 export const getDashboardList = async (userId: string) => {
   const dashboards = await findDashboards(userId);
-  return dashboards.map((d) => ({
+  return dashboards.map((d: typeof dashboards[number]) => ({
     dashboardId: d.dashboardId,
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
@@ -94,18 +94,18 @@ export const getDashboardDetail = async (
     tagCount: d.tagCount,
     insights: d.insights,
     kpis: d.kpis,
-    tagAnalyses: d.tagAnalyses.map((t) => ({
+    tagAnalyses: d.tagAnalyses.map((t: typeof d.tagAnalyses[number]) => ({
       ...t,
       periodStart: t.periodStart ? toDateStr(t.periodStart) : null,
       periodEnd: t.periodEnd ? toDateStr(t.periodEnd) : null,
     })),
     weeklyReflections: d.weeklyReflections,
-    performances: d.performances.map((p) => ({
+    performances: d.performances.map((p: typeof d.performances[number]) => ({
       achievementRate: p.dailyPerformance.achievementRate,
       summary: p.dailyPerformance.summary,
       growthInsight: p.dailyPerformance.growthInsight,
       nextAction: p.dailyPerformance.nextAction,
-      items: p.dailyPerformance.performanceItems.map((item) => ({
+      items: p.dailyPerformance.performanceItems.map((item: typeof p.dailyPerformance.performanceItems[number]) => ({
         output: item.output,
         impact: item.impact,
       })),
@@ -182,7 +182,7 @@ export const createDashboardWithAI = async (
   endDate: string
 ) => {
   // 1. AI 서비스 인스턴스 생성 (ai.controller.ts와 동일한 방식)
-  const aiService = new AiService(
+  const aiService = new DashboardService(
     new LlmClient(),
     new PromptManager(),
     new ResponseParser(),
@@ -191,7 +191,7 @@ export const createDashboardWithAI = async (
   );
 
   // 2. AI로 대시보드 내용 생성 (summary, kpis, tagAnalyses, reflection)
-  const aiResult = await aiService.generateDashboard({
+  const aiResult = await aiService.generateWeeklyDashboard({
     userId,
     startDate,
     endDate,
@@ -203,12 +203,11 @@ export const createDashboardWithAI = async (
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     summary: aiResult.summary,
-    journalDays: aiResult.performanceCount, // TODO: 실제 일지 수로 교체 필요 (팀 확인)
+    journalDays: aiResult.performanceCount,
     performanceCount: aiResult.performanceCount,
-    tagCount: aiResult.tagAnalyses.length, // 태그 분석 개수로 계산
+    tagCount: aiResult.tagAnalyses.length,
     kpis: aiResult.kpis,
     tagAnalyses: aiResult.tagAnalyses,
-    weeklyReflection: aiResult.weeklyReflection,
   });
 
   return { dashboardId: saved.dashboardId };

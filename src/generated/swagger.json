@@ -172,31 +172,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponse_null_": {
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"code": {
-						"type": "string"
-					},
-					"message": {
-						"type": "string"
-					},
-					"result": {
-						"anyOf": [],
-						"nullable": true
-					}
-				},
-				"required": [
-					"success",
-					"code",
-					"message",
-					"result"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"TaskPriority": {
 				"enum": [
 					"MUST_DO",
@@ -301,55 +276,59 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"TaskApiResponseDto_TaskResponse-Array_": {
+			"ApiResponse_TaskResponse-Array_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
 					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
+					"code": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
 					},
-					"data": {
+					"result": {
 						"items": {
 							"$ref": "#/components/schemas/TaskResponse"
 						},
-						"type": "array"
+						"type": "array",
+						"nullable": true
 					}
 				},
 				"required": [
 					"success",
-					"statusCode",
+					"code",
 					"message",
-					"data"
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"TaskApiResponseDto_TaskResponse_": {
+			"ApiResponse_TaskResponse_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
 					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
+					"code": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
 					},
-					"data": {
-						"$ref": "#/components/schemas/TaskResponse"
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TaskResponse"
+							}
+						],
+						"nullable": true
 					}
 				},
 				"required": [
 					"success",
-					"statusCode",
+					"code",
 					"message",
-					"data"
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -406,31 +385,27 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"TaskApiResponseDto_null_": {
+			"ApiResponse_null_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
 					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
+					"code": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
 					},
-					"data": {
-						"type": "number",
-						"enum": [
-							null
-						],
+					"result": {
+						"anyOf": [],
 						"nullable": true
 					}
 				},
 				"required": [
 					"success",
-					"statusCode",
+					"code",
 					"message",
-					"data"
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -505,19 +480,18 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponseDto_TagResponse-Array-or-null_": {
+			"ApiResponse_TagResponse-Array_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
 					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
+					"code": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
 					},
-					"data": {
+					"result": {
 						"items": {
 							"$ref": "#/components/schemas/TagResponse"
 						},
@@ -527,26 +501,25 @@
 				},
 				"required": [
 					"success",
-					"statusCode",
+					"code",
 					"message",
-					"data"
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponseDto_TagResponse-or-null_": {
+			"ApiResponse_TagResponse_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
 					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
+					"code": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
 					},
-					"data": {
+					"result": {
 						"allOf": [
 							{
 								"$ref": "#/components/schemas/TagResponse"
@@ -557,9 +530,9 @@
 				},
 				"required": [
 					"success",
-					"statusCode",
+					"code",
 					"message",
-					"data"
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -623,31 +596,209 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponseDto_null_": {
+			"PlanType": {
+				"enum": [
+					"FREE",
+					"PRO"
+				],
+				"type": "string"
+			},
+			"LandingHomeData": {
+				"properties": {
+					"screenType": {
+						"type": "string",
+						"enum": [
+							"landing"
+						],
+						"nullable": false
+					},
+					"plan": {
+						"$ref": "#/components/schemas/PlanType"
+					}
+				},
+				"required": [
+					"screenType",
+					"plan"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskSummary": {
+				"properties": {
+					"taskId": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"priority": {
+						"$ref": "#/components/schemas/TaskPriority"
+					},
+					"status": {
+						"$ref": "#/components/schemas/TaskStatus"
+					},
+					"tag": {
+						"properties": {
+							"color": {
+								"type": "string",
+								"nullable": true
+							},
+							"tagName": {
+								"type": "string"
+							},
+							"tagId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"color",
+							"tagName",
+							"tagId"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"taskId",
+					"title",
+					"priority",
+					"status",
+					"tag"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DayRecord": {
+				"properties": {
+					"date": {
+						"type": "string"
+					},
+					"hasRecord": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"date",
+					"hasRecord"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DayTasks": {
+				"properties": {
+					"date": {
+						"type": "string"
+					},
+					"tasks": {
+						"items": {
+							"$ref": "#/components/schemas/TaskSummary"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"date",
+					"tasks"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DashboardHomeData": {
+				"properties": {
+					"screenType": {
+						"type": "string",
+						"enum": [
+							"dashboard"
+						],
+						"nullable": false
+					},
+					"plan": {
+						"$ref": "#/components/schemas/PlanType"
+					},
+					"userName": {
+						"type": "string",
+						"nullable": true
+					},
+					"todayTasks": {
+						"items": {
+							"$ref": "#/components/schemas/TaskSummary"
+						},
+						"type": "array"
+					},
+					"streakDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"weekRecords": {
+						"items": {
+							"$ref": "#/components/schemas/DayRecord"
+						},
+						"type": "array"
+					},
+					"weekTasks": {
+						"items": {
+							"$ref": "#/components/schemas/DayTasks"
+						},
+						"type": "array"
+					},
+					"recentRecord": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DayTasks"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"screenType",
+					"plan",
+					"userName",
+					"todayTasks",
+					"streakDays",
+					"weekRecords",
+					"weekTasks",
+					"recentRecord"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HomeData": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/LandingHomeData"
+					},
+					{
+						"$ref": "#/components/schemas/DashboardHomeData"
+					}
+				]
+			},
+			"ApiResponse_HomeData_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
 					},
-					"statusCode": {
-						"type": "number",
-						"format": "double"
+					"code": {
+						"type": "string"
 					},
 					"message": {
 						"type": "string"
 					},
-					"data": {
-						"type": "number",
-						"enum": [
-							null
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/HomeData"
+							}
 						],
 						"nullable": true
 					}
 				},
 				"required": [
 					"success",
-					"statusCode",
+					"code",
 					"message",
-					"data"
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -705,6 +856,35 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_EligibilityResponse_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/EligibilityResponse"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"DashboardListItem": {
 				"properties": {
 					"dashboardId": {
@@ -729,6 +909,34 @@
 					"endDate",
 					"summary",
 					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_DashboardListItem-Array_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/DashboardListItem"
+						},
+						"type": "array",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -838,12 +1046,8 @@
 			},
 			"PerformanceItemDto": {
 				"properties": {
-					"output": {
-						"type": "string"
-					},
-					"impact": {
-						"type": "string"
-					}
+					"output": {},
+					"impact": {}
 				},
 				"required": [
 					"output",
@@ -861,13 +1065,8 @@
 					"summary": {
 						"type": "string"
 					},
-					"growthInsight": {
-						"type": "string"
-					},
-					"nextAction": {
-						"type": "string",
-						"nullable": true
-					},
+					"growthInsight": {},
+					"nextAction": {},
 					"items": {
 						"items": {
 							"$ref": "#/components/schemas/PerformanceItemDto"
@@ -959,6 +1158,59 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_DashboardDetail_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DashboardDetail"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_any_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"CreateWeeklyReflectionRequest": {
 				"properties": {
 					"workSummary": {
@@ -1035,6 +1287,35 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_MonthlyEligibilityResponse_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MonthlyEligibilityResponse"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"MonthlyDashboardListItem": {
 				"properties": {
 					"dashboardId": {
@@ -1059,6 +1340,34 @@
 					"endDate",
 					"summary",
 					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_MonthlyDashboardListItem-Array_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/MonthlyDashboardListItem"
+						},
+						"type": "array",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1168,12 +1477,8 @@
 			},
 			"MonthlyPerformanceItemDto": {
 				"properties": {
-					"output": {
-						"type": "string"
-					},
-					"impact": {
-						"type": "string"
-					}
+					"output": {},
+					"impact": {}
 				},
 				"required": [
 					"output",
@@ -1191,13 +1496,8 @@
 					"summary": {
 						"type": "string"
 					},
-					"growthInsight": {
-						"type": "string"
-					},
-					"nextAction": {
-						"type": "string",
-						"nullable": true
-					},
+					"growthInsight": {},
+					"nextAction": {},
 					"items": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyPerformanceItemDto"
@@ -1289,6 +1589,35 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_MonthlyDashboardDetail_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MonthlyDashboardDetail"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"CreateMonthlyReflectionRequest": {
 				"properties": {
 					"workSummary": {
@@ -1301,6 +1630,542 @@
 						"type": "string"
 					}
 				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MonthlyCountCard": {
+				"properties": {
+					"count": {
+						"type": "number",
+						"format": "double"
+					},
+					"diffFromLastMonth": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"count",
+					"diffFromLastMonth"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"StreakCard": {
+				"properties": {
+					"currentStreak": {
+						"type": "number",
+						"format": "double"
+					},
+					"maxStreak": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"currentStreak",
+					"maxStreak"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TopCategoryCard": {
+				"properties": {
+					"tagName": {
+						"type": "string",
+						"nullable": true
+					},
+					"color": {
+						"type": "string",
+						"nullable": true
+					},
+					"percentage": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"tagName",
+					"color",
+					"percentage"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyEntriesSummaryResponse": {
+				"properties": {
+					"monthlyCount": {
+						"$ref": "#/components/schemas/MonthlyCountCard"
+					},
+					"streak": {
+						"$ref": "#/components/schemas/StreakCard"
+					},
+					"topCategory": {
+						"$ref": "#/components/schemas/TopCategoryCard"
+					}
+				},
+				"required": [
+					"monthlyCount",
+					"streak",
+					"topCategory"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_DailyEntriesSummaryResponse_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DailyEntriesSummaryResponse"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TagChip": {
+				"properties": {
+					"tagName": {
+						"type": "string"
+					},
+					"color": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"tagName",
+					"color"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MonthlyRecordItem": {
+				"properties": {
+					"yearMonth": {
+						"type": "string"
+					},
+					"year": {
+						"type": "number",
+						"format": "double"
+					},
+					"month": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalDays": {
+						"type": "number",
+						"format": "double"
+					},
+					"tags": {
+						"items": {
+							"$ref": "#/components/schemas/TagChip"
+						},
+						"type": "array"
+					},
+					"summary": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"yearMonth",
+					"year",
+					"month",
+					"totalDays",
+					"tags",
+					"summary"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_MonthlyRecordItem-Array_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/MonthlyRecordItem"
+						},
+						"type": "array",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyRecordItem": {
+				"properties": {
+					"dailyEntryId": {
+						"type": "string"
+					},
+					"entryDate": {
+						"type": "string"
+					},
+					"day": {
+						"type": "number",
+						"format": "double"
+					},
+					"tags": {
+						"items": {
+							"$ref": "#/components/schemas/TagChip"
+						},
+						"type": "array"
+					},
+					"mainTaskTitle": {
+						"type": "string",
+						"nullable": true
+					},
+					"extraTaskCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"summary": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"dailyEntryId",
+					"entryDate",
+					"day",
+					"tags",
+					"mainTaskTitle",
+					"extraTaskCount",
+					"summary"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_DailyRecordItem-Array_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/DailyRecordItem"
+						},
+						"type": "array",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SearchResultItem": {
+				"properties": {
+					"dailyEntryId": {
+						"type": "string"
+					},
+					"entryDate": {
+						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"$ref": "#/components/schemas/TagChip"
+						},
+						"type": "array"
+					},
+					"title": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"dailyEntryId",
+					"entryDate",
+					"tags",
+					"title"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyEntriesSearchResponse": {
+				"properties": {
+					"keyword": {
+						"type": "string"
+					},
+					"entryCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"tagCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"results": {
+						"items": {
+							"$ref": "#/components/schemas/SearchResultItem"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"keyword",
+					"entryCount",
+					"tagCount",
+					"results"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_DailyEntriesSearchResponse_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DailyEntriesSearchResponse"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AttachmentItem": {
+				"properties": {
+					"fileType": {
+						"type": "string"
+					},
+					"fileUrl": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"fileType",
+					"fileUrl",
+					"fileName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskResultItem": {
+				"properties": {
+					"taskResultId": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"attachments": {
+						"items": {
+							"$ref": "#/components/schemas/AttachmentItem"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"taskResultId",
+					"content",
+					"attachments"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyEntriesTaskItem": {
+				"properties": {
+					"taskId": {
+						"type": "string"
+					},
+					"tag": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TagChip"
+							}
+						],
+						"nullable": true
+					},
+					"title": {
+						"type": "string"
+					},
+					"memo": {
+						"type": "string",
+						"nullable": true
+					},
+					"priority": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string"
+					},
+					"results": {
+						"items": {
+							"$ref": "#/components/schemas/TaskResultItem"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"taskId",
+					"tag",
+					"title",
+					"memo",
+					"priority",
+					"status",
+					"results"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DailyEntriesDetailResponse": {
+				"properties": {
+					"dailyEntryId": {
+						"type": "string"
+					},
+					"entryDate": {
+						"type": "string"
+					},
+					"reflectionContent": {
+						"type": "string"
+					},
+					"completedCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"incompleteCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"tasks": {
+						"items": {
+							"$ref": "#/components/schemas/DailyEntriesTaskItem"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"dailyEntryId",
+					"entryDate",
+					"reflectionContent",
+					"completedCount",
+					"incompleteCount",
+					"tasks"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_DailyEntriesDetailResponse_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DailyEntriesDetailResponse"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__dailyEntryId-string__": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"properties": {
+							"dailyEntryId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"dailyEntryId"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -1942,52 +2807,33 @@
 			},
 			"DashboardTagAnalysisDto": {
 				"properties": {
-					"goal": {
+					"tagName": {
 						"type": "string",
 						"example": "AI 기능 구현"
+					},
+					"objective": {
+						"type": "string",
+						"example": "제품의 AI 기능 개발 목표"
 					},
 					"expectedOutcome": {
 						"type": "string",
 						"example": "성과 미리보기 기능 완성"
 					},
-					"taskCount": {
-						"type": "number",
-						"format": "double",
-						"example": 8
-					},
 					"achievementStatus": {
 						"type": "string",
 						"example": "달성"
+					},
+					"insight": {
+						"type": "string",
+						"example": "AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다."
 					}
 				},
 				"required": [
-					"goal",
+					"tagName",
+					"objective",
 					"expectedOutcome",
-					"taskCount",
-					"achievementStatus"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"WeeklyReflectionDto": {
-				"properties": {
-					"workSummary": {
-						"type": "string",
-						"example": "AI 기능 개발과 문서화를 완료했다."
-					},
-					"resourcesUsed": {
-						"type": "string",
-						"example": "OpenAI API, Prisma, TSOA"
-					},
-					"learning": {
-						"type": "string",
-						"example": "Prompt 설계와 응답 파싱 구조를 익혔다."
-					}
-				},
-				"required": [
-					"workSummary",
-					"resourcesUsed",
-					"learning"
+					"achievementStatus",
+					"insight"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -2029,16 +2875,32 @@
 						"items": {
 							"$ref": "#/components/schemas/DashboardKpiDto"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"kpiName": "Swagger API 문서 작성",
+								"progress": "100%"
+							},
+							{
+								"kpiName": "AI 기능 구현",
+								"progress": "80%"
+							}
+						]
 					},
 					"tagAnalyses": {
 						"items": {
 							"$ref": "#/components/schemas/DashboardTagAnalysisDto"
 						},
-						"type": "array"
-					},
-					"weeklyReflection": {
-						"$ref": "#/components/schemas/WeeklyReflectionDto"
+						"type": "array",
+						"example": [
+							{
+								"tagName": "AI 기능 구현",
+								"objective": "제품의 AI 기능 개발 목표",
+								"expectedOutcome": "성과 미리보기 기능 완성",
+								"achievementStatus": "달성",
+								"insight": "AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다."
+							}
+						]
 					}
 				},
 				"required": [
@@ -2050,8 +2912,7 @@
 					"performanceCount",
 					"tagCount",
 					"kpis",
-					"tagAnalyses",
-					"weeklyReflection"
+					"tagAnalyses"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -2182,26 +3043,6 @@
 								}
 							}
 						}
-					},
-					"401": {
-						"description": "인증이 필요합니다.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "사용자 프로필을 찾을 수 없습니다.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
-								}
-							}
-						}
 					}
 				},
 				"description": "JWT 토큰의 사용자 ID를 기준으로 내 프로필 정보 조회",
@@ -2231,7 +3072,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/TaskApiResponseDto_TaskResponse-Array_"
+									"$ref": "#/components/schemas/ApiResponse_TaskResponse-Array_"
 								}
 							}
 						}
@@ -2268,7 +3109,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/TaskApiResponseDto_TaskResponse_"
+									"$ref": "#/components/schemas/ApiResponse_TaskResponse_"
 								}
 							}
 						}
@@ -2309,7 +3150,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/TaskApiResponseDto_TaskResponse_"
+									"$ref": "#/components/schemas/ApiResponse_TaskResponse_"
 								}
 							}
 						}
@@ -2346,7 +3187,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/TaskApiResponseDto_TaskResponse_"
+									"$ref": "#/components/schemas/ApiResponse_TaskResponse_"
 								}
 							}
 						}
@@ -2393,7 +3234,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/TaskApiResponseDto_null_"
+									"$ref": "#/components/schemas/ApiResponse_null_"
 								}
 							}
 						}
@@ -2432,7 +3273,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponseDto_TagResponse-Array-or-null_"
+									"$ref": "#/components/schemas/ApiResponse_TagResponse-Array_"
 								}
 							}
 						}
@@ -2462,7 +3303,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponseDto_TagResponse-or-null_"
+									"$ref": "#/components/schemas/ApiResponse_TagResponse_"
 								}
 							}
 						}
@@ -2504,7 +3345,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponseDto_TagResponse-or-null_"
+									"$ref": "#/components/schemas/ApiResponse_TagResponse_"
 								}
 							}
 						}
@@ -2542,7 +3383,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponseDto_TagResponse-or-null_"
+									"$ref": "#/components/schemas/ApiResponse_TagResponse_"
 								}
 							}
 						}
@@ -2590,7 +3431,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponseDto_null_"
+									"$ref": "#/components/schemas/ApiResponse_null_"
 								}
 							}
 						}
@@ -2621,6 +3462,256 @@
 				]
 			}
 		},
+		"/home": {
+			"get": {
+				"operationId": "GetHome",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_HomeData_"
+								},
+								"examples": {
+									"첫 방문 - 랜딩 화면": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "홈 화면 조회 성공",
+											"result": {
+												"screenType": "landing",
+												"plan": "FREE"
+											}
+										}
+									},
+									"재방문 - 대시보드 화면": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "홈 화면 조회 성공",
+											"result": {
+												"screenType": "dashboard",
+												"plan": "FREE",
+												"userName": "홍길동",
+												"todayTasks": [
+													{
+														"taskId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+														"title": "Product Strategy Alignment 회의 준비",
+														"priority": "MUST_DO",
+														"status": "IN_PROGRESS",
+														"tag": {
+															"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+															"tagName": "온보딩 리뉴얼",
+															"color": "#00C48C"
+														}
+													}
+												],
+												"streakDays": 4,
+												"weekRecords": [
+													{
+														"date": "2026-08-16",
+														"hasRecord": true
+													},
+													{
+														"date": "2026-08-17",
+														"hasRecord": false
+													},
+													{
+														"date": "2026-08-18",
+														"hasRecord": true
+													},
+													{
+														"date": "2026-08-19",
+														"hasRecord": true
+													},
+													{
+														"date": "2026-08-20",
+														"hasRecord": true
+													},
+													{
+														"date": "2026-08-21",
+														"hasRecord": true
+													},
+													{
+														"date": "2026-08-22",
+														"hasRecord": false
+													}
+												],
+												"weekTasks": [
+													{
+														"date": "2026-08-16",
+														"tasks": [
+															{
+																"taskId": "1a2b3c4d-1111-4562-b3fc-2c963f66afa6",
+																"title": "주간 회고 정리",
+																"priority": "COULD_DO",
+																"status": "COMPLETED",
+																"tag": {
+																	"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																	"tagName": "온보딩 리뉴얼",
+																	"color": "#00C48C"
+																}
+															}
+														]
+													},
+													{
+														"date": "2026-08-17",
+														"tasks": []
+													},
+													{
+														"date": "2026-08-18",
+														"tasks": [
+															{
+																"taskId": "2b3c4d5e-2222-4562-b3fc-2c963f66afa6",
+																"title": "온보딩 가이드 초안 작성",
+																"priority": "SHOULD_DO",
+																"status": "COMPLETED",
+																"tag": {
+																	"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																	"tagName": "온보딩 리뉴얼",
+																	"color": "#00C48C"
+																}
+															}
+														]
+													},
+													{
+														"date": "2026-08-19",
+														"tasks": [
+															{
+																"taskId": "3c4d5e6f-3333-4562-b3fc-2c963f66afa6",
+																"title": "디자인 리뷰 피드백 반영",
+																"priority": "MUST_DO",
+																"status": "COMPLETED",
+																"tag": {
+																	"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																	"tagName": "온보딩 리뉴얼",
+																	"color": "#00C48C"
+																}
+															}
+														]
+													},
+													{
+														"date": "2026-08-20",
+														"tasks": [
+															{
+																"taskId": "4c9e2b3a-1234-4562-b3fc-2c963f66afa6",
+																"title": "전일 업무 정리 1",
+																"priority": "SHOULD_DO",
+																"status": "IN_PROGRESS",
+																"tag": {
+																	"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																	"tagName": "온보딩 리뉴얼",
+																	"color": "#00C48C"
+																}
+															},
+															{
+																"taskId": "7d1f4c5b-5678-4562-b3fc-2c963f66afa6",
+																"title": "전일 업무 정리 2",
+																"priority": "COULD_DO",
+																"status": "IN_PROGRESS",
+																"tag": {
+																	"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																	"tagName": "온보딩 리뉴얼",
+																	"color": "#00C48C"
+																}
+															}
+														]
+													},
+													{
+														"date": "2026-08-21",
+														"tasks": [
+															{
+																"taskId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																"title": "Product Strategy Alignment 회의 준비",
+																"priority": "MUST_DO",
+																"status": "IN_PROGRESS",
+																"tag": {
+																	"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																	"tagName": "온보딩 리뉴얼",
+																	"color": "#00C48C"
+																}
+															}
+														]
+													},
+													{
+														"date": "2026-08-22",
+														"tasks": []
+													}
+												],
+												"recentRecord": {
+													"date": "2026-08-20",
+													"tasks": [
+														{
+															"taskId": "4c9e2b3a-1234-4562-b3fc-2c963f66afa6",
+															"title": "전일 업무 정리 1",
+															"priority": "SHOULD_DO",
+															"status": "IN_PROGRESS",
+															"tag": {
+																"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																"tagName": "온보딩 리뉴얼",
+																"color": "#00C48C"
+															}
+														},
+														{
+															"taskId": "7d1f4c5b-5678-4562-b3fc-2c963f66afa6",
+															"title": "전일 업무 정리 2",
+															"priority": "COULD_DO",
+															"status": "IN_PROGRESS",
+															"tag": {
+																"tagId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+																"tagName": "온보딩 리뉴얼",
+																"color": "#00C48C"
+															}
+														}
+													]
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "인증이 필요합니다.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": false,
+											"code": "E401",
+											"message": "인증이 필요합니다.",
+											"result": null
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "요금제가 없는 유저(첫 방문)는 랜딩 화면, 있는 유저는 대시보드 화면을 반환",
+				"summary": "홈 화면 조회",
+				"tags": [
+					"Home"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/dashboards/eligibility": {
 			"get": {
 				"operationId": "GetEligibility",
@@ -2630,13 +3721,39 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/EligibilityResponse"
+									"$ref": "#/components/schemas/ApiResponse_EligibilityResponse_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"eligible": true,
+												"journalDays": 4,
+												"requiredDays": 3,
+												"weekStart": "2026-06-15",
+												"weekEnd": "2026-06-21",
+												"entries": [
+													{
+														"dailyEntryId": "uuid-1",
+														"entryDate": "2026-06-15"
+													},
+													{
+														"dailyEntryId": "uuid-2",
+														"entryDate": "2026-06-16"
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
 					}
 				},
-				"description": "생성 조건 충족 여부 조회",
+				"summary": "주간 대시보드 생성 조건 조회",
 				"tags": [
 					"Dashboard"
 				],
@@ -2663,21 +3780,83 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/DashboardListItem"
-									},
-									"type": "array"
+									"$ref": "#/components/schemas/ApiResponse_DashboardListItem-Array_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": [
+												{
+													"dashboardId": "uuid-dashboard-1",
+													"startDate": "2026-06-15",
+													"endDate": "2026-06-21",
+													"summary": "이번 주는 온보딩 리뉴얼에 집중했습니다.",
+													"createdAt": "2026-06-21T10:00:00.000Z"
+												}
+											]
+										}
+									}
 								}
 							}
 						}
 					}
 				},
-				"description": "목록 조회",
+				"summary": "주간 대시보드 목록 조회",
 				"tags": [
 					"Dashboard"
 				],
 				"security": [],
 				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateDashboard",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
+							}
+						}
+					}
+				},
+				"summary": "주간 대시보드 생성 (AI)",
+				"tags": [
+					"Dashboard"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"endDate": {
+										"type": "string"
+									},
+									"startDate": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"endDate",
+									"startDate"
+								],
+								"type": "object"
+							},
+							"example": {
+								"startDate": "2026-06-15",
+								"endDate": "2026-06-21"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/dashboards/{dashboardId}": {
@@ -2689,13 +3868,13 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/DashboardDetail"
+									"$ref": "#/components/schemas/ApiResponse_DashboardDetail_"
 								}
 							}
 						}
 					}
 				},
-				"description": "대시보드 상세 조회",
+				"summary": "주간 대시보드 상세 조회",
 				"tags": [
 					"Dashboard"
 				],
@@ -2720,12 +3899,14 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
 							}
 						}
 					}
 				},
-				"description": "주간 회고 작성",
+				"summary": "주간 회고 작성",
 				"tags": [
 					"Dashboard"
 				],
@@ -2746,6 +3927,11 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateWeeklyReflectionRequest"
+							},
+							"example": {
+								"workSummary": "이번 주 온보딩 리뉴얼 완료",
+								"resourcesUsed": "인터뷰 데이터 분석",
+								"learning": "사용자 관점의 중요성"
 							}
 						}
 					}
@@ -2760,11 +3946,14 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
 							}
 						}
 					}
 				},
+				"summary": "주간 회고 수정",
 				"tags": [
 					"Dashboard"
 				],
@@ -2793,6 +3982,10 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateWeeklyReflectionRequest"
+							},
+							"example": {
+								"workSummary": "수정된 업무 정리",
+								"learning": "수정된 배운 점"
 							}
 						}
 					}
@@ -2808,13 +4001,43 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/MonthlyEligibilityResponse"
+									"$ref": "#/components/schemas/ApiResponse_MonthlyEligibilityResponse_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"eligible": true,
+												"weeklyDashboardCount": 4,
+												"requiredCount": 3,
+												"monthStart": "2026-06-01",
+												"monthEnd": "2026-06-30",
+												"weeklyDashboards": [
+													{
+														"dashboardId": "uuid-week-1",
+														"startDate": "2026-06-01",
+														"endDate": "2026-06-07",
+														"summary": "1주차: 온보딩 리뉴얼 착수"
+													},
+													{
+														"dashboardId": "uuid-week-2",
+														"startDate": "2026-06-08",
+														"endDate": "2026-06-14",
+														"summary": "2주차: 프로토타입 진행"
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
 					}
 				},
-				"description": "월간 생성 조건 충족 여부 조회",
+				"summary": "월간 대시보드 생성 조건 조회",
 				"tags": [
 					"MonthlyDashboard"
 				],
@@ -2841,21 +4064,83 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/MonthlyDashboardListItem"
-									},
-									"type": "array"
+									"$ref": "#/components/schemas/ApiResponse_MonthlyDashboardListItem-Array_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": [
+												{
+													"dashboardId": "uuid-month-1",
+													"startDate": "2026-06-01",
+													"endDate": "2026-06-30",
+													"summary": "6월은 온보딩 개선에 집중한 달이었습니다.",
+													"createdAt": "2026-06-30T10:00:00.000Z"
+												}
+											]
+										}
+									}
 								}
 							}
 						}
 					}
 				},
-				"description": "월간 대시보드 목록 조회",
+				"summary": "월간 대시보드 목록 조회",
 				"tags": [
 					"MonthlyDashboard"
 				],
 				"security": [],
 				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateDashboard",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
+							}
+						}
+					}
+				},
+				"summary": "월간 대시보드 생성 (AI)",
+				"tags": [
+					"MonthlyDashboard"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"endDate": {
+										"type": "string"
+									},
+									"startDate": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"endDate",
+									"startDate"
+								],
+								"type": "object"
+							},
+							"example": {
+								"startDate": "2026-06-01",
+								"endDate": "2026-06-30"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/dashboards/monthly/{dashboardId}": {
@@ -2867,13 +4152,75 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/MonthlyDashboardDetail"
+									"$ref": "#/components/schemas/ApiResponse_MonthlyDashboardDetail_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"dashboardId": "uuid-month-1",
+												"startDate": "2026-06-01",
+												"endDate": "2026-06-30",
+												"summary": "6월은 온보딩 개선에 집중한 달이었습니다.",
+												"journalDays": 20,
+												"performanceCount": 30,
+												"tagCount": 5,
+												"insights": [
+													{
+														"journalDays": 20,
+														"performanceCount": 30,
+														"tagCount": 5
+													}
+												],
+												"kpis": [
+													{
+														"kpiName": "월간 핵심 목표 달성률",
+														"progress": "85% 달성"
+													}
+												],
+												"tagAnalyses": [
+													{
+														"goal": "온보딩 전면 개선",
+														"expectedOutcome": "이탈률 30% 감소",
+														"taskCount": 30,
+														"periodStart": "2026-06-01",
+														"periodEnd": "2026-06-30",
+														"achievementStatus": "목표 초과 달성"
+													}
+												],
+												"weeklyReflections": [
+													{
+														"workSummary": "6월 온보딩 리뉴얼 완료",
+														"resourcesUsed": "사용자 인터뷰, 로그 분석",
+														"learning": "데이터 기반 의사결정의 중요성"
+													}
+												],
+												"performances": [
+													{
+														"achievementRate": 85,
+														"summary": "월간 목표 대부분 달성",
+														"growthInsight": "팀 협업 효율 향상",
+														"nextAction": "다음 달 확장 작업 준비",
+														"items": [
+															{
+																"output": "온보딩 전면 개편",
+																"impact": "이탈률 30% 감소"
+															}
+														]
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
 					}
 				},
-				"description": "월간 대시보드 상세 조회",
+				"summary": "월간 대시보드 상세 조회",
 				"tags": [
 					"MonthlyDashboard"
 				],
@@ -2898,12 +4245,30 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S201",
+											"message": "생성에 성공했습니다.",
+											"result": {
+												"weeklyReflectionId": "uuid-reflection-1",
+												"workSummary": "6월 한 달간 온보딩 리뉴얼 완료",
+												"resourcesUsed": "사용자 인터뷰와 로그 데이터 분석",
+												"learning": "데이터 기반 의사결정의 중요성을 배웠다",
+												"createdAt": "2026-06-30T10:00:00.000Z"
+											}
+										}
+									}
+								}
 							}
 						}
 					}
 				},
-				"description": "월간 회고 작성",
+				"summary": "월간 회고 작성",
 				"tags": [
 					"MonthlyDashboard"
 				],
@@ -2924,10 +4289,311 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateMonthlyReflectionRequest"
+							},
+							"example": {
+								"workSummary": "6월 한 달간 온보딩 리뉴얼 완료",
+								"resourcesUsed": "사용자 인터뷰와 로그 데이터 분석",
+								"learning": "데이터 기반 의사결정의 중요성을 배웠다"
 							}
 						}
 					}
 				}
+			}
+		},
+		"/dailyentries/summary": {
+			"get": {
+				"operationId": "GetSummary",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_DailyEntriesSummaryResponse_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"monthlyCount": {
+													"count": 4,
+													"diffFromLastMonth": 2
+												},
+												"streak": {
+													"currentStreak": 12,
+													"maxStreak": 21
+												},
+												"topCategory": {
+													"tagName": "온보딩 리뉴얼",
+													"color": "#7C3AED",
+													"percentage": 38
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"summary": "나의 요약 (상단 카드 3개)",
+				"tags": [
+					"DailyEntries"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/dailyentries/monthly": {
+			"get": {
+				"operationId": "GetMonthly",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_MonthlyRecordItem-Array_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": [
+												{
+													"yearMonth": "2026-08",
+													"year": 2026,
+													"month": 8,
+													"totalDays": 5,
+													"tags": [
+														{
+															"tagName": "광고",
+															"color": "#F59E0B"
+														},
+														{
+															"tagName": "회의",
+															"color": "#3B82F6"
+														},
+														{
+															"tagName": "디자인",
+															"color": "#EC4899"
+														}
+													],
+													"summary": "광고, 회의, 디자인 중심으로 총 5일의 기록을 남긴 달이에요."
+												}
+											]
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"summary": "월별 기록 목록 (접힌 상태)",
+				"tags": [
+					"DailyEntries"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/dailyentries/monthly/{yearMonth}": {
+			"get": {
+				"operationId": "GetMonthlyEntries",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_DailyRecordItem-Array_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": [
+												{
+													"dailyEntryId": "uuid-entry-1",
+													"entryDate": "2026-08-21",
+													"day": 21,
+													"tags": [
+														{
+															"tagName": "회의",
+															"color": "#3B82F6"
+														}
+													],
+													"mainTaskTitle": "Product Strategy Alignment 회의 준비",
+													"extraTaskCount": 7,
+													"summary": "회의 준비와 디자인 시스템 V2 정리를 병행한 날이에요."
+												}
+											]
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"summary": "월별 일자 목록 (월 펼쳤을 때)",
+				"tags": [
+					"DailyEntries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "조회할 연월 (YYYY-MM)",
+						"in": "path",
+						"name": "yearMonth",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/dailyentries/search": {
+			"get": {
+				"operationId": "Search",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_DailyEntriesSearchResponse_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"keyword": "회의",
+												"entryCount": 7,
+												"tagCount": 3,
+												"results": [
+													{
+														"dailyEntryId": "uuid-entry-1",
+														"entryDate": "2026-06-21",
+														"tags": [
+															{
+																"tagName": "온보딩 리뉴얼",
+																"color": "#10B981"
+															}
+														],
+														"title": "Product Strategy Alignment 회의 준비"
+													}
+												]
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"summary": "일지 검색",
+				"tags": [
+					"DailyEntries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "검색어 (업무 내용 또는 키워드)",
+						"in": "query",
+						"name": "query",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "정렬 (latest: 최신순 / oldest: 오래된순)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "latest",
+							"type": "string",
+							"enum": [
+								"latest",
+								"oldest"
+							]
+						}
+					}
+				]
+			}
+		},
+		"/dailyentries/{dailyEntryId}": {
+			"get": {
+				"operationId": "GetDetail",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_DailyEntriesDetailResponse_"
+								}
+							}
+						}
+					}
+				},
+				"summary": "일자 상세 조회",
+				"tags": [
+					"DailyEntries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "dailyEntryId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeleteDailyEntry",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__dailyEntryId-string__"
+								}
+							}
+						}
+					}
+				},
+				"summary": "일지 삭제 (소프트 삭제)",
+				"tags": [
+					"DailyEntries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "dailyEntryId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		},
 		"/auth/signup": {
@@ -3394,13 +5060,14 @@
 												{
 													"taskId": "task-550e8400",
 													"output": [
-														"Swagger 문서를 작성했습니다."
+														"협업 문서를 작성했습니다."
 													],
 													"impact": [
-														"프론트 개발자가 API를 쉽게 사용할 수 있습니다."
+														"협업자가 API를 쉽게 사용할 수 있습니다."
 													]
 												}
-											]
+											],
+											"reflectionSnapshotId": "reflection-snapshot-550e8400"
 										}
 									}
 								}
@@ -3449,6 +5116,7 @@
 														"priority": "SHOULD_DO",
 														"completed": true,
 														"title": "Swagger 문서 작성",
+														"memo": "API 예시 추가",
 														"result": "API 예시 데이터를 추가했다."
 													}
 												],
@@ -3461,6 +5129,30 @@
 													"answer": "Swagger Example 적용 방법을 찾는 것이었습니다."
 												}
 											]
+										}
+									},
+									"Example 2": {
+										"value": {
+											"status": "COMPLETED",
+											"summary": "보충 답변을 반영해 성과 분석을 완료했습니다.",
+											"growthInsights": [
+												"문제 해결 과정에서 기술 이해도가 향상되었습니다."
+											],
+											"nextActions": [
+												"Dashboard API 구현"
+											],
+											"taskPerformances": [
+												{
+													"taskId": "task-550e8400",
+													"output": [
+														"Swagger 예시 구조를 개선했습니다."
+													],
+													"impact": [
+														"프론트 협업 효율이 향상됩니다."
+													]
+												}
+											],
+											"reflectionSnapshotId": "reflection-snapshot-550e8400"
 										}
 									}
 								}
@@ -3503,7 +5195,7 @@
 											"tagName": "AI 업무 관리",
 											"projectName": "Wordy",
 											"goal": "업무 생산성 향상",
-											"expectedOutcome": "사용자가 성과를 시각적으로 확인할 수 있다.",
+											"expectedOutcome": "사용자가 매일 업무를 기록하고 성과를 확인할 수 있다.",
 											"period": "4주",
 											"userJob": "백엔드 개발자"
 										}
@@ -3540,7 +5232,7 @@
 				}
 			}
 		},
-		"/api/v1/ai/dashboard": {
+		"/api/v1/ai/dashboard/weekly": {
 			"post": {
 				"operationId": "CreateDashboard",
 				"responses": {
@@ -3561,32 +5253,32 @@
 									},
 									"Example 2": {
 										"value": {
-											"dashboardId": "dashboard-01",
+											"dashboardId": "dashboard-weekly-001",
 											"startDate": "2026-07-07",
 											"endDate": "2026-07-13",
-											"summary": "이번 주에는 AI 기능과 Swagger 문서화를 완료했습니다.",
+											"summary": "이번 주에는 AI 성과 분석 기능과 Swagger 문서화를 완료했습니다.",
 											"journalDays": 7,
 											"performanceCount": 12,
 											"tagCount": 3,
 											"kpis": [
 												{
-													"kpiName": "Swagger 문서 작성",
+													"kpiName": "Swagger API 문서 작성",
 													"progress": "100%"
+												},
+												{
+													"kpiName": "AI 기능 구현",
+													"progress": "80%"
 												}
 											],
 											"tagAnalyses": [
 												{
-													"goal": "AI 기능 구현",
-													"expectedOutcome": "성과 미리보기 기능 완성",
-													"taskCount": 8,
-													"achievementStatus": "달성"
+													"tagName": "AI 기능 구현",
+													"objective": "업무 성과를 분석하고 시각화하는 AI 기능 개발",
+													"expectedOutcome": "사용자가 자신의 업무 성과를 확인할 수 있음",
+													"achievementStatus": "COMPLETED",
+													"insight": "AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다."
 												}
-											],
-											"weeklyReflection": {
-												"workSummary": "AI 기능 개발",
-												"resourcesUsed": "OpenAI API, Prisma",
-												"learning": "Prompt 설계와 응답 파싱을 익혔다."
-											}
+											]
 										}
 									}
 								}
@@ -3595,6 +5287,85 @@
 					}
 				},
 				"summary": "주간 대시보드 생성",
+				"tags": [
+					"AI"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DashboardRequestDto"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ai/dashboard/monthly": {
+			"post": {
+				"operationId": "CreateMonthlyDashboard",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DashboardResponseDto"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"userId": "550e8400-e29b-41d4-a716-446655440000",
+											"startDate": "2026-07-01",
+											"endDate": "2026-07-31"
+										}
+									},
+									"Example 2": {
+										"value": {
+											"dashboardId": "dashboard-monthly-001",
+											"startDate": "2026-07-01",
+											"endDate": "2026-07-31",
+											"summary": "이번 달에는 AI 기능 개발과 업무 관리 시스템 개선을 중심으로 성장했습니다.",
+											"journalDays": 20,
+											"performanceCount": 4,
+											"tagCount": 2,
+											"kpis": [
+												{
+													"kpiName": "AI 기능 개발 완료율",
+													"progress": "90%"
+												},
+												{
+													"kpiName": "주간 회고 작성률",
+													"progress": "100%"
+												}
+											],
+											"tagAnalyses": [
+												{
+													"tagName": "AI 개발",
+													"objective": "AI 기반 업무 분석 시스템 구축",
+													"expectedOutcome": "사용자가 업무 성과를 정리하고 확인할 수 있음",
+													"achievementStatus": "달성",
+													"insight": "주간 성과 데이터를 기반으로 월간 성장 흐름을 분석했습니다."
+												},
+												{
+													"tagName": "백엔드 개발",
+													"objective": "안정적인 API 구조 설계",
+													"expectedOutcome": "서비스의 원활한 API 연동",
+													"achievementStatus": "진행중",
+													"insight": "API 구조 개선과 코드 안정화 작업을 진행했습니다."
+												}
+											]
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"summary": "월간 대시보드 생성",
 				"tags": [
 					"AI"
 				],

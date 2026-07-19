@@ -7,6 +7,7 @@ export interface StructuredTaskDto {
   taskId: string;
   action: string;
   outputCandidates: string[];
+  resultCandidates: string[];
   impactCandidates: string[];
   tagLinkedKpiCandidates?: string[];
   growthSignals: string[];

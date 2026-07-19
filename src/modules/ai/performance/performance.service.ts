@@ -125,17 +125,10 @@ export class PerformanceService {
         data:
           promptAResult.followUpQuestions.map(
             (question, index) => ({
-              reflectionSnapshotId:
-                snapshot.reflectionSnapshotId,
-
-              questionContent:
-                question.question,
-
-              reason:
-                question.reason ?? null,
-
-              order:
-                index + 1,
+              reflectionSnapshotId: snapshot.reflectionSnapshotId,
+              questionContent: question.question,
+              reason: question.reason ?? null,
+              order: index + 1,
             }),
           ),
       });
@@ -201,7 +194,6 @@ export class PerformanceService {
     const promptBRequest =
       this.promptManager.buildPromptB({
         tasks: promptAResult.tasks,
-        reflection: request.reflectionContent,
         userJob: request.userJob,
         projectTag: request.projectTag,
       });

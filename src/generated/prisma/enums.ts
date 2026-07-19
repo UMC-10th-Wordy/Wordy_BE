@@ -17,6 +17,14 @@ export const AuthProvider = {
 export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
 
 
+export const PlanType = {
+  FREE: 'FREE',
+  PRO: 'PRO'
+} as const
+
+export type PlanType = (typeof PlanType)[keyof typeof PlanType]
+
+
 export const AgreementType = {
   TERMS_OF_SERVICE: 'TERMS_OF_SERVICE',
   PRIVACY_POLICY: 'PRIVACY_POLICY',
@@ -102,6 +110,7 @@ export const PromptType = {
   PROMPT_A: 'PROMPT_A',
   PROMPT_B: 'PROMPT_B',
   PROMPT_C: 'PROMPT_C',
+  PROMPT_D: 'PROMPT_D',
   KPI: 'KPI'
 } as const
 
