@@ -17,6 +17,7 @@ export interface PromptTaskDto {
 
 export interface PromptProjectDto {
   title: string;
+  goal?: string;
   description?: string;
   kpis?: string[];
 }

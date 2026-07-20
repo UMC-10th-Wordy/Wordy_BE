@@ -5,23 +5,28 @@ import { prisma } from "../../db.config.js";
 
 // 특정 기간 내 주간 대시보드 목록 조회 (월간 생성 재료)
 export const findWeeklyDashboards = async (
-  userId: string,
-  startDate: Date,
-  endDate: Date
-) => {
+  userId:string,
+  startDate:Date,
+  endDate:Date
+)=>{
   return prisma.dashboard.findMany({
-    where: {
-      userId,
-      deletedAt: null,
-      startDate: { gte: startDate, lte: endDate },
-      // TODO: type: "WEEKLY" 조건 추가 (스키마 수정 후)
+    where:{
+    userId,
+    deletedAt:null,
+    startDate:{
+      gte:startDate,
     },
-    orderBy: { startDate: "asc" },
-    select: {
-      dashboardId: true,
-      startDate: true,
-      endDate: true,
-      summary: true,
+    endDate:{
+      lte:endDate,
+    },
+    },
+    orderBy:{
+    startDate:"asc",
+    },
+    include:{
+    kpis:true,
+    tagAnalyses:true,
+    weeklyReflections:true,
     },
   });
 };
@@ -94,17 +99,11 @@ export const createMonthlyDashboard = async (data: {
   performanceCount: number;
   tagCount: number;
   kpis: { kpiName: string; progress: string }[];
-  tagAnalyses: {
-    goal: string;
-    expectedOutcome: string;
-    taskCount: number;
-    achievementStatus: string;
+  tagAnalyses:{
+    tagName:string;
+    achievementStatus:string;
+    insight:string;
   }[];
-  weeklyReflection: {
-    workSummary: string;
-    resourcesUsed: string;
-    learning: string;
-  };
 }) => {
   return prisma.dashboard.create({
     data: {
@@ -121,22 +120,12 @@ export const createMonthlyDashboard = async (data: {
           progress: k.progress,
         })),
       },
-      tagAnalyses: {
-        create: data.tagAnalyses.map((t) => ({
-          goal: t.goal,
-          expectedOutcome: t.expectedOutcome,
-          taskCount: t.taskCount,
-          achievementStatus: t.achievementStatus,
-        })),
-      },
-      weeklyReflections: {
-        create: [
-          {
-            workSummary: data.weeklyReflection.workSummary,
-            resourcesUsed: data.weeklyReflection.resourcesUsed,
-            learning: data.weeklyReflection.learning,
-          },
-        ],
+      tagAnalyses:{
+        create:data.tagAnalyses.map((t)=>({
+          tagName:t.tagName,
+          achievementStatus:t.achievementStatus,
+          insight:t.insight,
+        }))
       },
       insights: {
         create: [

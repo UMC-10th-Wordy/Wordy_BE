@@ -2,23 +2,18 @@ export interface PromptCOutputDto {
   summary: string;
   kpis: DashboardKpiOutputDto[];
   tagAnalyses: DashboardTagAnalysisOutputDto[];
-  weeklyReflection: WeeklyReflectionOutputDto;
 }
 
 export interface DashboardKpiOutputDto {
   kpiName: string;
   progress: string;
+  relatedAchievement: string;
 }
 
 export interface DashboardTagAnalysisOutputDto {
-  goal: string;
+  tagName: string;
+  objective: string;
   expectedOutcome: string;
-  taskCount: number;
   achievementStatus: string;
-}
-
-export interface WeeklyReflectionOutputDto {
-  workSummary: string;
-  resourcesUsed: string;
-  learning: string;
+  insight: string;
 }

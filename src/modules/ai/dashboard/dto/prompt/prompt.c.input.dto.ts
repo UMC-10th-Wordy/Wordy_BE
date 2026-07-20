@@ -1,27 +1,32 @@
 export interface PromptCInputDto {
   startDate: string;
   endDate: string;
-  performances: DashboardPerformanceDto[];
-  reflections: DashboardReflectionDto[];
-  tasks: DashboardTaskDto[];
+  weeklySummaryCandidates: WeeklySummaryCandidateDto[];
+  tagAnalyses: DashboardTagInputDto[];
+  kpiProgress: DashboardKpiInputDto[];
 }
 
-export interface DashboardPerformanceDto {
-  summary: string;
-  growthInsight: any;
-  nextAction: any;
+export interface WeeklySummaryCandidateDto {
+  performanceId: string;
+  projectTag: string;
+  output: string;
+  impact: string;
+  highlight: boolean;
 }
 
-export interface DashboardReflectionDto {
-  date: string;
-  content: string;
+export interface DashboardTagInputDto {
+  tagName: string;
+  objective: string;
+  expectedOutcome: string;
+  performances:{
+    output:string;
+    impact:string;
+  }[];
+  kpis:string[];
 }
 
-export interface DashboardTaskDto {
-  taskId: string;
-  title: string;
-  tag: string;
-  priority: string;
-  completed: boolean;
-  memo?: string;
+export interface DashboardKpiInputDto {
+  kpiName:string;
+  target:string;
+  relatedPerformances:string[];
 }

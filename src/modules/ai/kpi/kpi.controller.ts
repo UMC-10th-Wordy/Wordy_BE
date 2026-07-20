@@ -34,7 +34,7 @@ export class KpiController extends Controller {
     tagName: "AI 업무 관리",
     projectName: "Wordy",
     goal: "업무 생산성 향상",
-    expectedOutcome: "사용자가 성과를 시각적으로 확인할 수 있다.",
+    expectedOutcome: "사용자가 매일 업무를 기록하고 성과를 확인할 수 있다.",
     period: "4주",
     userJob: "백엔드 개발자"
   })

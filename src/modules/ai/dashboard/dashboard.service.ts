@@ -3,14 +3,16 @@ import { LlmClient } from "../common/llm.client";
 import { ResponseParser } from "../common/response.parser";
 import { RuleEngine } from "../common/rule.engine";
 
-import { PrismaClient, DailyPerformance } from "../../../generated/prisma/client";
+import { PrismaClient, DailyPerformance, PromptType, AiRunStatus } from "../../../generated/prisma/client";
 import { ApiError } from "../../../common/errors/api.error";
 import { ErrorCode } from "../../../common/errors/error.code";
 
 import { DashboardRequestDto }from "./dto/api/dashboard.request.dto";
 import { DashboardResponseDto }from "./dto/api/dashboard.response.dto";
-import { PromptCInputDto }from "./dto/prompt/prompt.c.input.dto";
-import { PromptCOutputDto }from "./dto/prompt/prompt.c.output";
+import { DashboardKpiInputDto, DashboardTagInputDto, PromptCInputDto, WeeklySummaryCandidateDto }from "./dto/prompt/prompt.c.input.dto";
+import { PromptCOutputDto }from "./dto/prompt/prompt.c.output.dto";
+import { PromptDOutputDto } from "./dto/prompt/prompt.d.output.dto";
+import { PromptDInputDto } from "./dto/prompt/prompt.d.input.dto";
 
 export class DashboardService {
   constructor(
@@ -19,14 +21,15 @@ export class DashboardService {
     private readonly responseParser: ResponseParser,
     private readonly ruleEngine: RuleEngine,
     private readonly prisma: PrismaClient,
-  ){}
+  ) {}
 
-  // 대시보드 생성
-  async generateDashboard(
+
+  // 주간 대시보드 AI 생성
+  async generateWeeklyDashboard(
     request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
 
-    // 1. 일주일간 성과 변환 조회
+    // 1. 주간 성과 조회
     const performances: DailyPerformance[] =
       await this.prisma.dailyPerformance.findMany({
         where: {
@@ -42,7 +45,6 @@ export class DashboardService {
         },
       });
 
-    // 2. 최소 생성 조건 확인
     if (performances.length < 3) {
       throw new ApiError(
         ErrorCode.BAD_REQUEST.status,
@@ -51,142 +53,324 @@ export class DashboardService {
       );
     }
 
-    // 3. Dashboard(Prompt C) Input 생성
-    const dashboardInput: PromptCInputDto = {
+    // 2. Prompt C Input 생성
+    const promptCInput: PromptCInputDto = {
       startDate: request.startDate,
       endDate: request.endDate,
 
-      performances:
-        performances.map(
-          (performance) => ({
-            summary: performance.summary,
-            growthInsight: performance.growthInsight,
-            nextAction: performance.nextAction,
-          })
+      // 주간 핵심 성과 후보
+      weeklySummaryCandidates:
+        this.createWeeklySummaryCandidates(
+          performances,
         ),
 
-      reflections: [],
-      tasks: [],
+      // 태그별 분석 데이터
+      tagAnalyses:
+        this.createTagAnalysisInput(
+          performances,
+        ),
+
+      // KPI 진행 데이터
+      kpiProgress:
+        this.createKpiInput(
+          performances,
+        ),
     };
 
-    // 4. Prompt 생성
-    const dashboardPrompt =
-      this.promptManager.buildDashboardPrompt(
-        dashboardInput,
+    // 3. Prompt 생성
+    const promptRequest =
+      this.promptManager.buildPromptC(
+        promptCInput,
       );
 
-    // 5. LLM 호출
-    const dashboardResponse =
+    // 4. LLM 호출
+    const promptResponse =
       await this.llmClient.generate(
-        dashboardPrompt,
+        promptRequest,
       );
+
+    // 5. AIRun 저장
+    await this.prisma.aIRun.create({
+      data: {
+        promptType: PromptType.PROMPT_C,
+        promptVersion: "v1",
+        request: promptRequest,
+        response: promptResponse,
+        status: AiRunStatus.SUCCESS,
+      },
+    });
 
     // 6. Parsing
     const dashboardResult =
       this.responseParser.parse<PromptCOutputDto>(
-        dashboardResponse,
+        promptResponse,
       );
 
-    // 7. 룰 검증
+    // 7. Rule 검증
     this.ruleEngine.validatePromptC(
       dashboardResult,
     );
 
-    // 8. DB 저장
-    const dashboard =
-      await this.prisma.dashboard.create({
-        data: {
-          startDate: new Date(request.startDate),
-          endDate: new Date(request.endDate),
-          summary: dashboardResult.summary,
-          journalDays: 0,
-          performanceCount: performances.length,
-          tagCount: dashboardResult.tagAnalyses.length,
-          userId: request.userId,
-        },
-      });
-
-
-      // DailyPerformance 연결
-      await this.prisma.dashboardPerformance.createMany({
-        data: performances.map((performance) => ({
-          dashboardId: dashboard.dashboardId,
-          dailyPerformanceId: performance.dailyPerformanceId,
-        })),
-      });
-
-
-      // KPI 저장
-      if (dashboardResult.kpis.length > 0) {
-        await this.prisma.dashboardKPI.createMany({
-          data: dashboardResult.kpis.map((kpi) => ({
-            dashboardId: dashboard.dashboardId,
+    // 12. Response 반환
+    return {
+      dashboardId: "",
+      startDate: request.startDate,
+      endDate: request.endDate,
+      summary: dashboardResult.summary,
+      journalDays: 0,
+      performanceCount: performances.length,
+      tagCount: dashboardResult.tagAnalyses.length,
+      kpis:
+        dashboardResult.kpis.map(
+          (kpi) => ({
             kpiName: kpi.kpiName,
             progress: kpi.progress,
-          })),
-        });
-      }
-
-
-      // Tag Analysis 저장
-      if (dashboardResult.tagAnalyses.length > 0) {
-        await this.prisma.dashboardTagAnalysis.createMany({
-          data: dashboardResult.tagAnalyses.map((analysis) => ({
-            dashboardId: dashboard.dashboardId,
-            goal: analysis.goal,
-            expectedOutcome: analysis.expectedOutcome,
-            taskCount: analysis.taskCount,
-            achievementStatus: analysis.achievementStatus,
-            periodStart: new Date(request.startDate),
-            periodEnd: new Date(request.endDate),
-          })),
-        });
-      }
-
-
-      // Weekly Reflection 저장
-      await this.prisma.weeklyReflection.create({
-        data: {
-          dashboardId: dashboard.dashboardId,
-          workSummary:
-            dashboardResult.weeklyReflection.workSummary,
-          resourcesUsed:
-            dashboardResult.weeklyReflection.resourcesUsed,
-          learning:
-            dashboardResult.weeklyReflection.learning,
-        },
-      });
-
-
-      // Dashboard Insight 저장
-      await this.prisma.dashboardInsight.create({
-        data: {
-          dashboardId: dashboard.dashboardId,
-          journalDays: 0,
-          performanceCount: performances.length,
-          tagCount: dashboardResult.tagAnalyses.length,
-        },
-      });
-
-    // 8. Response 반환
-    return {
-      dashboardId:dashboard.dashboardId,
-      startDate:
-        request.startDate,
-      endDate:
-        request.endDate,
-      summary:
-        dashboardResult.summary,
-      journalDays: 0,
-      performanceCount:
-        performances.length,
-      tagCount: 0,
-      kpis:
-        dashboardResult.kpis,
+          }),
+        ),
       tagAnalyses:
-        dashboardResult.tagAnalyses,
-      weeklyReflection:
-        dashboardResult.weeklyReflection,
+        dashboardResult.tagAnalyses.map(
+          (analysis) => ({
+            tagName: analysis.tagName,
+            objective: analysis.objective,
+            expectedOutcome: analysis.expectedOutcome,
+            achievementStatus: analysis.achievementStatus,
+            insight: analysis.insight,
+          }),
+        ),
+    };
+  }
+
+  // 주간 핵심 성과 후보 생성
+  private createWeeklySummaryCandidates(
+    performances: DailyPerformance[],
+  ): WeeklySummaryCandidateDto[] {
+
+    const highlighted =
+      performances.filter(
+        (performance) => performance.highlight,
+      );
+
+    const candidates =
+      highlighted.length > 0
+        ? highlighted
+        : performances;
+
+    return candidates.map(
+      (performance) => ({
+        performanceId: performance.dailyPerformanceId,
+        projectTag: performance.projectTag ?? "",
+        output: performance.output ?? "",
+        impact: performance.impact ?? "",
+        highlight: performance.highlight ?? false,
+      }),
+    );
+  }
+
+  // 태그별 Prompt C Input 생성
+  private createTagAnalysisInput(
+    performances: DailyPerformance[],
+  ): DashboardTagInputDto[] {
+    const tagMap =
+      new Map<string, DashboardTagInputDto>();
+    performances.forEach((performance) => {
+      const tagName =
+        performance.projectTag ?? "기타";
+
+      if (!tagMap.has(tagName)) {
+        tagMap.set(
+          tagName,
+          {
+            tagName,
+            objective: "",
+            expectedOutcome: "",
+            performances: [],
+            kpis: [],
+          },
+        );
+      }
+
+      const tag =
+        tagMap.get(tagName)!;
+        tag.performances.push({
+          output: performance.output ?? "",
+          impact: performance.impact ?? "",
+        });
+      },
+    );
+
+    return Array.from(
+      tagMap.values(),
+    );
+  }
+
+  // KPI Prompt C Input 생성
+  private createKpiInput(
+    performances: DailyPerformance[],
+  ): DashboardKpiInputDto[] {
+    const kpiMap =
+      new Map<string, DashboardKpiInputDto>();
+
+    performances.forEach(
+      (performance) => {
+        const kpiName = performance.kpiName;
+
+        if (!kpiName) {
+          return;
+        }
+
+        if (!kpiMap.has(kpiName)) {
+          kpiMap.set(
+            kpiName,
+            {
+              kpiName,
+              target: performance.kpiTarget ?? "",
+              relatedPerformances: [],
+            },
+          );
+        }
+
+        kpiMap
+          .get(kpiName)!
+          .relatedPerformances
+          .push(performance.output ?? "");
+      },
+    );
+
+    return Array.from(
+      kpiMap.values(),
+    );
+  }
+
+  // 월간 대시보드 AI 생성
+  async generateMonthlyDashboard(
+    request: DashboardRequestDto,
+  ): Promise<DashboardResponseDto> {
+
+    // 1. 주간 대시보드 조회
+    const weeklyDashboards =
+      await this.prisma.dashboard.findMany({
+        where:{
+          userId:request.userId,
+          startDate:{
+            gte:new Date(request.startDate),
+          },
+          endDate:{
+            lte:new Date(request.endDate),
+          },
+        },
+        include:{
+          kpis:true,
+          dashboardTagAnalysis:true,
+          weeklyReflection:true,
+        },
+      });
+
+    if(weeklyDashboards.length === 0){
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "월간 대시보드를 생성할 주간 데이터가 없습니다.",
+      );
+    }
+
+    // 2. Prompt D Input 생성
+    const promptDInput:PromptDInputDto = {
+      startDate: request.startDate,
+      endDate: request.endDate,
+      weeklyDashboards:
+        weeklyDashboards.map(
+          (dashboard: typeof weeklyDashboards[number])=>({
+            dashboardId: dashboard.dashboardId,
+            startDate: dashboard.startDate.toISOString(),
+            endDate: dashboard.endDate.toISOString(),
+            summary: dashboard.summary,
+            kpis:
+              dashboard.dashboardKPI.map(
+                (kpi: typeof dashboard.dashboardKPI[number])=>({
+                  kpiName:kpi.kpiName,
+                  progress:kpi.progress,
+                }),
+              ),
+            tagAnalyses:
+              dashboard.dashboardTagAnalysis.map(
+                (tag: typeof dashboard.dashboardTagAnalysis[number])=>({
+                  tagName:tag.tagName,
+                  achievementStatus:
+                    tag.achievementStatus,
+                  insight:
+                    tag.insight,
+                }),
+              ),
+            weeklyReflection:
+              dashboard.weeklyReflection
+                ? {
+                  workSummary: dashboard.weeklyReflection.workSummary,
+                  resourcesUsed: dashboard.weeklyReflection.resourcesUsed,
+                  learning: dashboard.weeklyReflection.learning,
+                }
+                : undefined,
+          }),
+        ),
+    };
+
+    // 3. Prompt 생성
+    const promptRequest =
+      this.promptManager.buildPromptD(
+        promptDInput,
+      );
+
+    // 4. LLM
+    const promptResponse =
+      await this.llmClient.generate(
+        promptRequest,
+      );
+
+    // 5. AIRun 저장
+    await this.prisma.aIRun.create({
+      data:{
+        promptType:PromptType.PROMPT_D,
+        promptVersion:"v1",
+        request:promptRequest,
+        response:promptResponse,
+        status:AiRunStatus.SUCCESS,
+      },
+    });
+
+    // 6. Parsing
+    const monthlyResult =
+      this.responseParser.parse<PromptDOutputDto>(
+        promptResponse,
+      );
+
+    this.ruleEngine.validatePromptD(
+      monthlyResult,
+    );
+
+    return {
+      dashboardId: "",
+      startDate: request.startDate,
+      endDate: request.endDate,
+      summary: monthlyResult.summary,
+      journalDays:0,
+      performanceCount: weeklyDashboards.length,
+      tagCount: monthlyResult.tagAnalyses.length,
+      kpis:
+        monthlyResult.kpis.map(
+          (kpi)=>({
+            kpiName:kpi.kpiName,
+            progress:kpi.progress,
+          }),
+        ),
+      tagAnalyses:
+        monthlyResult.tagAnalyses.map(
+          (tag)=>({
+            tagName:tag.tagName,
+            objective:"",
+            expectedOutcome:"",
+            achievementStatus: tag.achievementStatus,
+            insight: tag.insight,
+          }),
+        ),
     };
   }
 }

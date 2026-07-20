@@ -48,8 +48,7 @@ export class KpiService {
       result,
     );
     return {
-      kpiRecommendations:
-        result.kpis,
+      kpiRecommendations: result.kpis,
     };
   }
 }

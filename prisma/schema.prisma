@@ -78,6 +78,7 @@ enum PromptType {
   PROMPT_A
   PROMPT_B
   PROMPT_C
+  PROMPT_D
   KPI
 }
 
