@@ -4300,7 +4300,7 @@
 				}
 			}
 		},
-		"/dailyentries/summary": {
+		"/daily-entries/summary": {
 			"get": {
 				"operationId": "GetSummary",
 				"responses": {
@@ -4347,7 +4347,7 @@
 				"parameters": []
 			}
 		},
-		"/dailyentries/monthly": {
+		"/daily-entries/monthly": {
 			"get": {
 				"operationId": "GetMonthly",
 				"responses": {
@@ -4402,7 +4402,7 @@
 				"parameters": []
 			}
 		},
-		"/dailyentries/monthly/{yearMonth}": {
+		"/daily-entries/monthly/{yearMonth}": {
 			"get": {
 				"operationId": "GetMonthlyEntries",
 				"responses": {
@@ -4460,7 +4460,7 @@
 				]
 			}
 		},
-		"/dailyentries/search": {
+		"/daily-entries/search": {
 			"get": {
 				"operationId": "Search",
 				"responses": {
@@ -4534,7 +4534,7 @@
 				]
 			}
 		},
-		"/dailyentries/{dailyEntryId}": {
+		"/daily-entries/{dailyEntryId}": {
 			"get": {
 				"operationId": "GetDetail",
 				"responses": {
@@ -5006,7 +5006,7 @@
 				}
 			}
 		},
-		"/api/v1/ai/performance-preview": {
+		"/ai/performance-preview": {
 			"post": {
 				"operationId": "CreatePerformancePreview",
 				"responses": {
@@ -5093,7 +5093,7 @@
 				}
 			}
 		},
-		"/api/v1/ai/performance-preview/complete": {
+		"/ai/performance-preview/complete": {
 			"post": {
 				"operationId": "CompletePerformancePreview",
 				"responses": {
@@ -5178,7 +5178,7 @@
 				}
 			}
 		},
-		"/api/v1/ai/project-tags/kpi-recommendation": {
+		"/ai/project-tags/kpi-recommendation": {
 			"post": {
 				"operationId": "CreateKpiRecommendation",
 				"responses": {
@@ -5232,7 +5232,7 @@
 				}
 			}
 		},
-		"/api/v1/ai/dashboard/weekly": {
+		"/ai/dashboard/weekly": {
 			"post": {
 				"operationId": "CreateDashboard",
 				"responses": {
@@ -5304,7 +5304,7 @@
 				}
 			}
 		},
-		"/api/v1/ai/dashboard/monthly": {
+		"/ai/dashboard/monthly": {
 			"post": {
 				"operationId": "CreateMonthlyDashboard",
 				"responses": {
@@ -5386,7 +5386,7 @@
 	},
 	"servers": [
 		{
-			"url": "/"
+			"url": "/api/v1"
 		}
 	]
 }

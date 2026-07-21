@@ -10,7 +10,7 @@ import { KpiResponseDto } from "./dto/api/kpi.response.dto";
 import { KpiService } from "./kpi.service";
 import { prisma } from "../../../common/prisma/prisma.client";
 
-@Route("api/v1/ai")
+@Route("ai")
 @Tags("AI")
 export class KpiController extends Controller {
   private readonly kpiService: KpiService;

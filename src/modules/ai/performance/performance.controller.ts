@@ -13,7 +13,7 @@ import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.re
 import { TaskPriority } from "../../tasks/task.dto";
 import { JobRole } from "../../users/users.dto";
 
-@Route("api/v1/ai")
+@Route("ai")
 @Tags("AI")
 export class PerformanceController extends Controller {
   private readonly performanceService: PerformanceService;
@@ -81,6 +81,7 @@ export class PerformanceController extends Controller {
     ],
     reflectionSnapshotId: "reflection-snapshot-550e8400"
   })
+  
   public async createPerformancePreview(
     @Body() request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
@@ -139,6 +140,7 @@ export class PerformanceController extends Controller {
     ],
     reflectionSnapshotId: "reflection-snapshot-550e8400"
   })
+
   public async completePerformancePreview(
     @Body() request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {
