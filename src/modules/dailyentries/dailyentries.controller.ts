@@ -18,7 +18,7 @@ import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
 
-@Route("dailyentries")
+@Route("daily-entries")
 @Tags("DailyEntries")
 export class DailyEntriesController extends Controller {
   /**

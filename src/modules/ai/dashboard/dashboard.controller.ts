@@ -1,3 +1,5 @@
+console.log("dashboard.controller.ts loaded");
+
 import { Body, Controller, Example, Post, Route, Tags } from "tsoa";
 
 import { prisma } from "../../../common/prisma/prisma.client";
@@ -10,7 +12,7 @@ import { DashboardRequestDto } from "./dto/api/dashboard.request.dto";
 import { DashboardResponseDto } from "./dto/api/dashboard.response.dto";
 import { DashboardService } from "./dashboard.service";
 
-@Route("api/v1/ai")
+@Route("ai")
 @Tags("AI")
 export class DashboardAiController extends Controller {
   private readonly dashboardService: DashboardService;
@@ -25,7 +27,7 @@ export class DashboardAiController extends Controller {
       prisma,
     );
   }
-
+  
   /**
    * @summary 주간 대시보드 생성
    */
@@ -69,6 +71,7 @@ export class DashboardAiController extends Controller {
   public async createDashboard(
     @Body() request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
+    console.log("컨트롤러 진입");
     return this.dashboardService.generateWeeklyDashboard(
       request,
     );

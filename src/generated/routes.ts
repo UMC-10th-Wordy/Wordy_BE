@@ -1152,7 +1152,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 body: {"in":"body","name":"body","required":true,"ref":"CompleteProfileRequest"},
         };
-        app.post('/users/profile',
+        app.post('/api/v1/users/profile',
             ...(fetchMiddlewares<RequestHandler>(UsersController)),
             ...(fetchMiddlewares<RequestHandler>(UsersController.prototype.completeProfile)),
 
@@ -1182,7 +1182,7 @@ export function RegisterRoutes(app: Router) {
         const argsUsersController_getMyProfile: Record<string, TsoaRoute.ParameterSchema> = {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
         };
-        app.get('/users/profile',
+        app.get('/api/v1/users/profile',
             ...(fetchMiddlewares<RequestHandler>(UsersController)),
             ...(fetchMiddlewares<RequestHandler>(UsersController.prototype.getMyProfile)),
 
@@ -1213,7 +1213,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
                 date: {"in":"query","name":"date","required":true,"dataType":"string"},
         };
-        app.get('/tasks',
+        app.get('/api/v1/tasks',
             ...(fetchMiddlewares<RequestHandler>(TaskController)),
             ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.getTasksByDate)),
 
@@ -1244,7 +1244,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateTaskRequest"},
         };
-        app.post('/tasks',
+        app.post('/api/v1/tasks',
             ...(fetchMiddlewares<RequestHandler>(TaskController)),
             ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.createTask)),
 
@@ -1275,7 +1275,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
                 taskId: {"in":"path","name":"taskId","required":true,"dataType":"string"},
         };
-        app.get('/tasks/:taskId',
+        app.get('/api/v1/tasks/:taskId',
             ...(fetchMiddlewares<RequestHandler>(TaskController)),
             ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.getTask)),
 
@@ -1307,7 +1307,7 @@ export function RegisterRoutes(app: Router) {
                 taskId: {"in":"path","name":"taskId","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"UpdateTaskRequest"},
         };
-        app.patch('/tasks/:taskId',
+        app.patch('/api/v1/tasks/:taskId',
             ...(fetchMiddlewares<RequestHandler>(TaskController)),
             ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.updateTask)),
 
@@ -1338,7 +1338,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
                 taskId: {"in":"path","name":"taskId","required":true,"dataType":"string"},
         };
-        app.delete('/tasks/:taskId',
+        app.delete('/api/v1/tasks/:taskId',
             ...(fetchMiddlewares<RequestHandler>(TaskController)),
             ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.deleteTask)),
 
@@ -1368,7 +1368,7 @@ export function RegisterRoutes(app: Router) {
         const argsTagController_getTags: Record<string, TsoaRoute.ParameterSchema> = {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
         };
-        app.get('/tags',
+        app.get('/api/v1/tags',
             ...(fetchMiddlewares<RequestHandler>(TagController)),
             ...(fetchMiddlewares<RequestHandler>(TagController.prototype.getTags)),
 
@@ -1399,7 +1399,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateTagRequest"},
         };
-        app.post('/tags',
+        app.post('/api/v1/tags',
             ...(fetchMiddlewares<RequestHandler>(TagController)),
             ...(fetchMiddlewares<RequestHandler>(TagController.prototype.createTag)),
 
@@ -1430,7 +1430,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 tagId: {"in":"path","name":"tagId","required":true,"dataType":"string"},
         };
-        app.get('/tags/:tagId',
+        app.get('/api/v1/tags/:tagId',
             ...(fetchMiddlewares<RequestHandler>(TagController)),
             ...(fetchMiddlewares<RequestHandler>(TagController.prototype.getTag)),
 
@@ -1462,7 +1462,7 @@ export function RegisterRoutes(app: Router) {
                 tagId: {"in":"path","name":"tagId","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"UpdateTagRequest"},
         };
-        app.patch('/tags/:tagId',
+        app.patch('/api/v1/tags/:tagId',
             ...(fetchMiddlewares<RequestHandler>(TagController)),
             ...(fetchMiddlewares<RequestHandler>(TagController.prototype.updateTag)),
 
@@ -1493,7 +1493,7 @@ export function RegisterRoutes(app: Router) {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 tagId: {"in":"path","name":"tagId","required":true,"dataType":"string"},
         };
-        app.delete('/tags/:tagId',
+        app.delete('/api/v1/tags/:tagId',
             ...(fetchMiddlewares<RequestHandler>(TagController)),
             ...(fetchMiddlewares<RequestHandler>(TagController.prototype.deleteTag)),
 
@@ -1523,7 +1523,7 @@ export function RegisterRoutes(app: Router) {
         const argsHomeController_getHome: Record<string, TsoaRoute.ParameterSchema> = {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
         };
-        app.get('/home',
+        app.get('/api/v1/home',
             ...(fetchMiddlewares<RequestHandler>(HomeController)),
             ...(fetchMiddlewares<RequestHandler>(HomeController.prototype.getHome)),
 
@@ -1553,7 +1553,7 @@ export function RegisterRoutes(app: Router) {
         const argsDashboardController_getEligibility: Record<string, TsoaRoute.ParameterSchema> = {
                 baseDate: {"in":"query","name":"baseDate","dataType":"string"},
         };
-        app.get('/dashboards/eligibility',
+        app.get('/api/v1/dashboards/eligibility',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
             ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.getEligibility)),
 
@@ -1582,7 +1582,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardController_getList: Record<string, TsoaRoute.ParameterSchema> = {
         };
-        app.get('/dashboards',
+        app.get('/api/v1/dashboards',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
             ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.getList)),
 
@@ -1612,7 +1612,7 @@ export function RegisterRoutes(app: Router) {
         const argsDashboardController_getDetail: Record<string, TsoaRoute.ParameterSchema> = {
                 dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
         };
-        app.get('/dashboards/:dashboardId',
+        app.get('/api/v1/dashboards/:dashboardId',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
             ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.getDetail)),
 
@@ -1643,7 +1643,7 @@ export function RegisterRoutes(app: Router) {
                 dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateWeeklyReflectionRequest"},
         };
-        app.post('/dashboards/:dashboardId/reflection',
+        app.post('/api/v1/dashboards/:dashboardId/reflection',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
             ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.createReflection)),
 
@@ -1675,7 +1675,7 @@ export function RegisterRoutes(app: Router) {
                 reflectionId: {"in":"path","name":"reflectionId","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateWeeklyReflectionRequest"},
         };
-        app.patch('/dashboards/:dashboardId/reflection/:reflectionId',
+        app.patch('/api/v1/dashboards/:dashboardId/reflection/:reflectionId',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
             ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.updateReflection)),
 
@@ -1705,7 +1705,7 @@ export function RegisterRoutes(app: Router) {
         const argsDashboardController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"endDate":{"dataType":"string","required":true},"startDate":{"dataType":"string","required":true}}},
         };
-        app.post('/dashboards',
+        app.post('/api/v1/dashboards',
             ...(fetchMiddlewares<RequestHandler>(DashboardController)),
             ...(fetchMiddlewares<RequestHandler>(DashboardController.prototype.createDashboard)),
 
@@ -1735,7 +1735,7 @@ export function RegisterRoutes(app: Router) {
         const argsMonthlyDashboardController_getEligibility: Record<string, TsoaRoute.ParameterSchema> = {
                 baseDate: {"in":"query","name":"baseDate","dataType":"string"},
         };
-        app.get('/dashboards/monthly/eligibility',
+        app.get('/api/v1/dashboards/monthly/eligibility',
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.getEligibility)),
 
@@ -1764,7 +1764,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsMonthlyDashboardController_getList: Record<string, TsoaRoute.ParameterSchema> = {
         };
-        app.get('/dashboards/monthly',
+        app.get('/api/v1/dashboards/monthly',
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.getList)),
 
@@ -1794,7 +1794,7 @@ export function RegisterRoutes(app: Router) {
         const argsMonthlyDashboardController_getDetail: Record<string, TsoaRoute.ParameterSchema> = {
                 dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
         };
-        app.get('/dashboards/monthly/:dashboardId',
+        app.get('/api/v1/dashboards/monthly/:dashboardId',
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.getDetail)),
 
@@ -1825,7 +1825,7 @@ export function RegisterRoutes(app: Router) {
                 dashboardId: {"in":"path","name":"dashboardId","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateMonthlyReflectionRequest"},
         };
-        app.post('/dashboards/monthly/:dashboardId/reflection',
+        app.post('/api/v1/dashboards/monthly/:dashboardId/reflection',
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.createReflection)),
 
@@ -1855,7 +1855,7 @@ export function RegisterRoutes(app: Router) {
         const argsMonthlyDashboardController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"endDate":{"dataType":"string","required":true},"startDate":{"dataType":"string","required":true}}},
         };
-        app.post('/dashboards/monthly',
+        app.post('/api/v1/dashboards/monthly',
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController)),
             ...(fetchMiddlewares<RequestHandler>(MonthlyDashboardController.prototype.createDashboard)),
 
@@ -1884,7 +1884,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDailyEntriesController_getSummary: Record<string, TsoaRoute.ParameterSchema> = {
         };
-        app.get('/dailyentries/summary',
+        app.get('/api/v1/daily-entries/summary',
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.getSummary)),
 
@@ -1913,7 +1913,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDailyEntriesController_getMonthly: Record<string, TsoaRoute.ParameterSchema> = {
         };
-        app.get('/dailyentries/monthly',
+        app.get('/api/v1/daily-entries/monthly',
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.getMonthly)),
 
@@ -1943,7 +1943,7 @@ export function RegisterRoutes(app: Router) {
         const argsDailyEntriesController_getMonthlyEntries: Record<string, TsoaRoute.ParameterSchema> = {
                 yearMonth: {"in":"path","name":"yearMonth","required":true,"dataType":"string"},
         };
-        app.get('/dailyentries/monthly/:yearMonth',
+        app.get('/api/v1/daily-entries/monthly/:yearMonth',
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.getMonthlyEntries)),
 
@@ -1974,7 +1974,7 @@ export function RegisterRoutes(app: Router) {
                 query: {"in":"query","name":"query","required":true,"dataType":"string"},
                 sort: {"default":"latest","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["latest"]},{"dataType":"enum","enums":["oldest"]}]},
         };
-        app.get('/dailyentries/search',
+        app.get('/api/v1/daily-entries/search',
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.search)),
 
@@ -2004,7 +2004,7 @@ export function RegisterRoutes(app: Router) {
         const argsDailyEntriesController_getDetail: Record<string, TsoaRoute.ParameterSchema> = {
                 dailyEntryId: {"in":"path","name":"dailyEntryId","required":true,"dataType":"string"},
         };
-        app.get('/dailyentries/:dailyEntryId',
+        app.get('/api/v1/daily-entries/:dailyEntryId',
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.getDetail)),
 
@@ -2034,7 +2034,7 @@ export function RegisterRoutes(app: Router) {
         const argsDailyEntriesController_deleteDailyEntry: Record<string, TsoaRoute.ParameterSchema> = {
                 dailyEntryId: {"in":"path","name":"dailyEntryId","required":true,"dataType":"string"},
         };
-        app.delete('/dailyentries/:dailyEntryId',
+        app.delete('/api/v1/daily-entries/:dailyEntryId',
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
             ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.deleteDailyEntry)),
 
@@ -2064,7 +2064,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_signup: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"SignupRequest"},
         };
-        app.post('/auth/signup',
+        app.post('/api/v1/auth/signup',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.signup)),
 
@@ -2094,7 +2094,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_verifyEmail: Record<string, TsoaRoute.ParameterSchema> = {
                 token: {"in":"query","name":"token","required":true,"dataType":"string"},
         };
-        app.get('/auth/verify-email',
+        app.get('/api/v1/auth/verify-email',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.verifyEmail)),
 
@@ -2124,7 +2124,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_login: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"LoginRequest"},
         };
-        app.post('/auth/login',
+        app.post('/api/v1/auth/login',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.login)),
 
@@ -2154,7 +2154,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_logout: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"LogoutRequest"},
         };
-        app.post('/auth/logout',
+        app.post('/api/v1/auth/logout',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.logout)),
 
@@ -2184,7 +2184,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_refresh: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"RefreshRequest"},
         };
-        app.post('/auth/refresh',
+        app.post('/api/v1/auth/refresh',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.refresh)),
 
@@ -2214,7 +2214,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_googleLogin: Record<string, TsoaRoute.ParameterSchema> = {
                 redirect: {"in":"res","name":"302","required":true,"dataType":"void"},
         };
-        app.get('/auth/google',
+        app.get('/api/v1/auth/google',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.googleLogin)),
 
@@ -2244,7 +2244,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_googleCallback: Record<string, TsoaRoute.ParameterSchema> = {
                 code: {"in":"query","name":"code","required":true,"dataType":"string"},
         };
-        app.get('/auth/google/callback',
+        app.get('/api/v1/auth/google/callback',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.googleCallback)),
 
@@ -2274,7 +2274,7 @@ export function RegisterRoutes(app: Router) {
         const argsAuthController_completeGoogleSignup: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"ref":"GoogleCompleteSignupRequest"},
         };
-        app.post('/auth/google/complete',
+        app.post('/api/v1/auth/google/complete',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),
             ...(fetchMiddlewares<RequestHandler>(AuthController.prototype.completeGoogleSignup)),
 
