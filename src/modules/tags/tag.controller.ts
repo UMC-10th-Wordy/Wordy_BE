@@ -177,7 +177,6 @@ export class TagController extends Controller {
       userId: "5d90d6f3-ef0d-4ef2-9d77-f7a67b2b2d2a",
     },
   })
-  @Patch('{tagId}')
   public async updateTag(
     @Header('Authorization') authorization: string | undefined,
     @Path() tagId: string,
