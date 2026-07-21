@@ -1,3 +1,5 @@
+import { Example } from 'tsoa';
+
 export enum TaskPriority {
   MUST_DO = 'MUST_DO',
   SHOULD_DO = 'SHOULD_DO',
@@ -9,40 +11,93 @@ export enum TaskStatus {
   COMPLETED = 'COMPLETED',
 }
 
-export interface CreateTaskRequest {
-  title: string;
-  priority: TaskPriority;
-  taskDate: string;
-  tagId: string;
+export class CreateTaskRequest {
+  @Example('백엔드 API 구현')
+  title!: string;
+
+  @Example(TaskPriority.MUST_DO)
+  priority!: TaskPriority;
+
+  @Example('2026-07-21')
+  taskDate!: string;
+
+  @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
+  tagId!: string;
+
+  @Example('Swagger Example 추가')
   memo?: string;
 }
 
-export interface UpdateTaskRequest {
+export class UpdateTaskRequest {
+  @Example('백엔드 API 수정')
   title?: string;
+
+  @Example(TaskPriority.SHOULD_DO)
   priority?: TaskPriority;
+
+  @Example(TaskStatus.COMPLETED)
   status?: TaskStatus;
+
+  @Example('2026-07-22')
   taskDate?: string;
+
+  @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
   tagId?: string;
+
+  @Example('메모 수정')
   memo?: string | null;
 }
 
-export interface TaskResponse {
-  taskId: string;
-  title: string;
-  priority: TaskPriority;
-  memo: string | null;
-  status: TaskStatus;
-  taskDate: Date;
-  completedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  userId: string;
-  tagId: string;
-  tag?: {
-    tagId: string;
-    tagName: string;
-    color: string | null;
-    projectName: string | null;
-  };
+export class TaskTagResponse {
+  @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
+  tagId!: string;
+
+  @Example('Wordy')
+  tagName!: string;
+
+  @Example('#4F46E5')
+  color!: string | null;
+
+  @Example('Wordy 프로젝트')
+  projectName!: string | null;
+}
+
+export class TaskResponse {
+  @Example('0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a')
+  taskId!: string;
+
+  @Example('백엔드 API 구현')
+  title!: string;
+
+  @Example(TaskPriority.MUST_DO)
+  priority!: TaskPriority;
+
+  @Example('Swagger Example 추가')
+  memo!: string | null;
+
+  @Example(TaskStatus.IN_PROGRESS)
+  status!: TaskStatus;
+
+  @Example('2026-07-21T00:00:00.000Z')
+  taskDate!: Date;
+
+  @Example('2026-07-21T14:30:00.000Z')
+  completedAt!: Date | null;
+
+  @Example('2026-07-20T09:00:00.000Z')
+  createdAt!: Date;
+
+  @Example('2026-07-21T10:15:00.000Z')
+  updatedAt!: Date;
+
+  @Example(null)
+  deletedAt!: Date | null;
+
+  @Example('5d90d6f3-ef0d-4ef2-9d77-f7a67b2b2d0a')
+  userId!: string;
+
+  @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
+  tagId!: string;
+
+  tag?: TaskTagResponse;
 }
