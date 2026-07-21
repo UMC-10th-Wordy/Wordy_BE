@@ -94,6 +94,7 @@ model ApiLog {
   @@index([userId, createdAt])
   @@map("ApiLog")
 }
+
 model User {
   userId       String       @id @default(uuid()) @map("user_id") @db.Char(36)
   email        String       @unique @db.VarChar(255)
@@ -203,7 +204,7 @@ model Task {
 
   user                    User                     @relation(fields: [userId], references: [userId])
   tag                     Tag                      @relation(fields: [tagId], references: [tagId])
-  taskResults             TaskResult[]
+  taskResult              TaskResult?
   reflectionTasks         ReflectionTask[]
   reflectionTaskSnapshots ReflectionTaskSnapshot[]
   performanceItems        PerformanceItem[]
@@ -223,7 +224,6 @@ model DailyEntry {
   userId            String    @map("user_id") @db.Char(36)
 
   user                User                 @relation(fields: [userId], references: [userId])
-  taskResults         TaskResult[]
   reflectionTasks     ReflectionTask[]
   reflectionSnapshots ReflectionSnapshot[]
 
@@ -249,16 +249,12 @@ model TaskResult {
   createdAt    DateTime  @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt    DateTime? @map("deleted_at") @db.DateTime(0)
-  taskId       String    @map("task_id") @db.Char(36)
-  dailyEntryId String    @map("daily_entry_id") @db.Char(36)
+  taskId       String    @unique @map("task_id") @db.Char(36)
 
   task                          Task                           @relation(fields: [taskId], references: [taskId])
-  dailyEntry                    DailyEntry                     @relation(fields: [dailyEntryId], references: [dailyEntryId])
   attachments                   Attachment[]
   reflectionTaskResultSnapshots ReflectionTaskResultSnapshot[]
 
-  @@index([taskId])
-  @@index([dailyEntryId])
   @@map("TaskResult")
 }
 
@@ -328,14 +324,14 @@ model ReflectionTaskResultSnapshot {
 }
 
 model AIQuestion {
-  aiQuestionId         String    @id @default(uuid()) @map("ai_question_id") @db.Char(36)
-  questionContent      String    @map("question_content") @db.Text
-  answer               String?   @db.Text
-  reason               String?   @db.Text
-  order                Int       @default(1)
-  status               AIQuestionStatus   @default(WAITING)
-  createdAt            DateTime  @default(now()) @map("created_at") @db.DateTime(0)
-  reflectionSnapshotId String    @map("reflection_snapshot_id") @db.Char(36)
+  aiQuestionId         String           @id @default(uuid()) @map("ai_question_id") @db.Char(36)
+  questionContent      String           @map("question_content") @db.Text
+  answer               String?          @db.Text
+  reason               String?          @db.Text
+  order                Int              @default(1)
+  status               AIQuestionStatus @default(WAITING)
+  createdAt            DateTime         @default(now()) @map("created_at") @db.DateTime(0)
+  reflectionSnapshotId String           @map("reflection_snapshot_id") @db.Char(36)
 
   reflectionSnapshot ReflectionSnapshot @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
 
@@ -344,9 +340,9 @@ model AIQuestion {
 }
 
 model AIRun {
-  aiRunId              String       @id @default(uuid()) @map("ai_run_id") @db.Char(36)
+  aiRunId              String      @id @default(uuid()) @map("ai_run_id") @db.Char(36)
   promptType           PromptType
-  promptVersion        String       @map("prompt_version") @db.VarChar(50)
+  promptVersion        String      @map("prompt_version") @db.VarChar(50)
   request              Json?
   response             Json?
   status               AiRunStatus
@@ -383,30 +379,30 @@ model RuleEngineLog {
 }
 
 model DailyPerformance {
-  dailyPerformanceId  String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
-  achievementRate     Int      @map("achievement_rate") @db.TinyInt
-  summary             String   @db.Text
-  growthInsight       Json     @map("growth_insight")
-  nextAction          Json     @map("next_action")
-  structuredResult    Json     @map("structured_result")
-  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(0)
-  reflectionSnapshotId String  @map("reflection_snapshot_id") @db.Char(36)
+  dailyPerformanceId   String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
+  achievementRate      Int      @map("achievement_rate") @db.TinyInt
+  summary              String   @db.Text
+  growthInsight        Json     @map("growth_insight")
+  nextAction           Json     @map("next_action")
+  structuredResult     Json     @map("structured_result")
+  createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  reflectionSnapshotId String   @map("reflection_snapshot_id") @db.Char(36)
 
-  reflectionSnapshot  ReflectionSnapshot  @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
-  performanceItems    PerformanceItem[]
-  dashboardLinks      DashboardPerformance[]
+  reflectionSnapshot ReflectionSnapshot     @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+  performanceItems   PerformanceItem[]
+  dashboardLinks     DashboardPerformance[]
 
   @@index([reflectionSnapshotId])
   @@map("DailyPerformance")
 }
 
 model PerformanceItem {
-  performanceItemId   String   @id @default(uuid()) @map("performance_item_id") @db.Char(36)
-  output              Json
-  impact              Json
-  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(0)
-  taskId              String   @map("task_id") @db.Char(36)
-  dailyPerformanceId  String   @map("daily_performance_id") @db.Char(36)
+  performanceItemId  String   @id @default(uuid()) @map("performance_item_id") @db.Char(36)
+  output             Json
+  impact             Json
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  taskId             String   @map("task_id") @db.Char(36)
+  dailyPerformanceId String   @map("daily_performance_id") @db.Char(36)
 
   task             Task             @relation(fields: [taskId], references: [taskId])
   dailyPerformance DailyPerformance @relation(fields: [dailyPerformanceId], references: [dailyPerformanceId])
