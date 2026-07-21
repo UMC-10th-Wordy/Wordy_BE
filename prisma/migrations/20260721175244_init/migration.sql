@@ -1,16 +1,43 @@
 -- CreateTable
+CREATE TABLE `ApiLog` (
+    `log_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` CHAR(36) NULL,
+    `method` VARCHAR(10) NOT NULL,
+    `path` TEXT NOT NULL,
+    `ip_address` VARCHAR(45) NOT NULL,
+    `status_code` INTEGER NOT NULL,
+    `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+
+    INDEX `ApiLog_user_id_created_at_idx`(`user_id`, `created_at`),
+    PRIMARY KEY (`log_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `User` (
     `user_id` CHAR(36) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `provider` ENUM('local', 'google') NOT NULL DEFAULT 'local',
     `password` VARCHAR(255) NULL,
     `refresh_token` VARCHAR(512) NULL,
+    `last_login_at` DATETIME(0) NULL,
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` DATETIME(0) NOT NULL,
     `deleted_at` DATETIME(0) NULL,
 
     UNIQUE INDEX `User_email_key`(`email`),
     PRIMARY KEY (`user_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Plan` (
+    `plan_id` CHAR(36) NOT NULL,
+    `type` ENUM('FREE', 'PRO') NOT NULL DEFAULT 'FREE',
+    `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `updated_at` DATETIME(0) NOT NULL,
+    `user_id` CHAR(36) NOT NULL,
+
+    UNIQUE INDEX `Plan_user_id_key`(`user_id`),
+    PRIMARY KEY (`plan_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -49,11 +76,21 @@ CREATE TABLE `UserAgreement` (
 CREATE TABLE `Tag` (
     `tag_id` CHAR(36) NOT NULL,
     `tag_name` VARCHAR(30) NOT NULL,
+    `color` VARCHAR(20) NULL,
+    `project_name` VARCHAR(100) NULL,
+    `project_purpose` TEXT NULL,
+    `expected_outcome` TEXT NULL,
+    `expected_start_date` DATE NULL,
+    `expected_end_date` DATE NULL,
+    `kpis` JSON NULL,
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `updated_at` DATETIME(0) NOT NULL,
     `deleted_at` DATETIME(0) NULL,
     `user_id` CHAR(36) NOT NULL,
 
     INDEX `Tag_user_id_idx`(`user_id`),
+    INDEX `Tag_user_id_deleted_at_idx`(`user_id`, `deleted_at`),
+    INDEX `Tag_user_id_expected_start_date_expected_end_date_idx`(`user_id`, `expected_start_date`, `expected_end_date`),
     PRIMARY KEY (`tag_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -108,10 +145,8 @@ CREATE TABLE `TaskResult` (
     `updated_at` DATETIME(0) NOT NULL,
     `deleted_at` DATETIME(0) NULL,
     `task_id` CHAR(36) NOT NULL,
-    `daily_entry_id` CHAR(36) NOT NULL,
 
-    INDEX `TaskResult_task_id_idx`(`task_id`),
-    INDEX `TaskResult_daily_entry_id_idx`(`daily_entry_id`),
+    UNIQUE INDEX `TaskResult_task_id_key`(`task_id`),
     PRIMARY KEY (`task_result_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -132,6 +167,8 @@ CREATE TABLE `Attachment` (
 -- CreateTable
 CREATE TABLE `ReflectionSnapshot` (
     `reflection_snapshot_id` CHAR(36) NOT NULL,
+    `prompt_a_result` JSON NULL,
+    `prompt_b_result` JSON NULL,
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `daily_entry_id` CHAR(36) NOT NULL,
 
@@ -172,7 +209,9 @@ CREATE TABLE `AIQuestion` (
     `ai_question_id` CHAR(36) NOT NULL,
     `question_content` TEXT NOT NULL,
     `answer` TEXT NULL,
-    `is_skipped` BOOLEAN NOT NULL DEFAULT false,
+    `reason` TEXT NULL,
+    `order` INTEGER NOT NULL DEFAULT 1,
+    `status` ENUM('WAITING', 'ANSWERED', 'SKIPPED') NOT NULL DEFAULT 'WAITING',
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `reflection_snapshot_id` CHAR(36) NOT NULL,
 
@@ -183,8 +222,10 @@ CREATE TABLE `AIQuestion` (
 -- CreateTable
 CREATE TABLE `AIRun` (
     `ai_run_id` CHAR(36) NOT NULL,
-    `prompt_type` VARCHAR(20) NOT NULL,
+    `promptType` ENUM('PROMPT_A', 'PROMPT_B', 'PROMPT_C', 'PROMPT_D', 'KPI') NOT NULL,
     `prompt_version` VARCHAR(50) NOT NULL,
+    `request` JSON NULL,
+    `response` JSON NULL,
     `status` ENUM('success', 'failed') NOT NULL,
     `input_tokens` INTEGER NOT NULL DEFAULT 0,
     `output_tokens` INTEGER NULL,
@@ -218,8 +259,8 @@ CREATE TABLE `DailyPerformance` (
     `daily_performance_id` CHAR(36) NOT NULL,
     `achievement_rate` TINYINT NOT NULL,
     `summary` TEXT NOT NULL,
-    `growth_insight` TEXT NOT NULL,
-    `next_action` TEXT NULL,
+    `growth_insight` JSON NOT NULL,
+    `next_action` JSON NOT NULL,
     `structured_result` JSON NOT NULL,
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `reflection_snapshot_id` CHAR(36) NOT NULL,
@@ -231,8 +272,8 @@ CREATE TABLE `DailyPerformance` (
 -- CreateTable
 CREATE TABLE `PerformanceItem` (
     `performance_item_id` CHAR(36) NOT NULL,
-    `output` TEXT NOT NULL,
-    `impact` TEXT NOT NULL,
+    `output` JSON NOT NULL,
+    `impact` JSON NOT NULL,
     `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `task_id` CHAR(36) NOT NULL,
     `daily_performance_id` CHAR(36) NOT NULL,
@@ -320,6 +361,9 @@ CREATE TABLE `WeeklyReflection` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
+ALTER TABLE `Plan` ADD CONSTRAINT `Plan_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Profile` ADD CONSTRAINT `Profile_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -345,9 +389,6 @@ ALTER TABLE `ReflectionTask` ADD CONSTRAINT `ReflectionTask_daily_entry_id_fkey`
 
 -- AddForeignKey
 ALTER TABLE `TaskResult` ADD CONSTRAINT `TaskResult_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `Task`(`task_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `TaskResult` ADD CONSTRAINT `TaskResult_daily_entry_id_fkey` FOREIGN KEY (`daily_entry_id`) REFERENCES `DailyEntry`(`daily_entry_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Attachment` ADD CONSTRAINT `Attachment_task_result_id_fkey` FOREIGN KEY (`task_result_id`) REFERENCES `TaskResult`(`task_result_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
