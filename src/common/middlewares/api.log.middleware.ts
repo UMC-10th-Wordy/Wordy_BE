@@ -14,6 +14,11 @@ function extractUserId(authorization: string | undefined): string | null {
 }
 
 export function apiLogMiddleware(req: Request, res: Response, next: NextFunction): void {
+  if (!req.originalUrl.startsWith('/api')) {
+    next();
+    return;
+  }
+
   res.on('finish', () => {
     prisma.apiLog
       .create({
