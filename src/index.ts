@@ -18,6 +18,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
+app.set('trust proxy', true);
+
 // 미들웨어 설정
 app.use(cors());
 app.use(express.static('public'));
