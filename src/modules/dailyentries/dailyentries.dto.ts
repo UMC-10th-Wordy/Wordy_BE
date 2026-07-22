@@ -1,6 +1,8 @@
 // 날짜 형식은 웬만하면 YYYY-MM-DD (대시보드 모듈과 동일 규칙)
 
-// 1 나의 요약 (상단 카드 3개)
+// ============================================================
+// 1) 나의 요약 (상단 카드 3개)
+// ============================================================
 export interface DailyEntriesSummaryResponse {
   monthlyCount: MonthlyCountCard; // 이번 달 작성 일지
   streak: StreakCard;             // 연속 작성
@@ -26,7 +28,9 @@ export interface TopCategoryCard {
   percentage: number;     // 전체 중 비중 (%) ("전체의 38%")
 }
 
-// 2 월별 기록 목록 (접힌 상태)
+// ============================================================
+// 2) 월별 기록 목록 (접힌 상태)
+// ============================================================
 export interface MonthlyRecordItem {
   yearMonth: string;      // "2026-08"
   year: number;
@@ -41,9 +45,9 @@ export interface TagChip {
   color: string | null;
 }
 
-
-// 3 월별 일자 목록 (월 펼쳤을 때)
-
+// ============================================================
+// 3) 월별 일자 목록 (월 펼쳤을 때)
+// ============================================================
 export interface DailyRecordItem {
   dailyEntryId: string;
   entryDate: string;            // YYYY-MM-DD
@@ -54,7 +58,9 @@ export interface DailyRecordItem {
   summary: string | null;       // 하루 한 줄 요약 (reflectionContent 기반)
 }
 
-// 4 일자 상세
+// ============================================================
+// 4) 일자 상세
+// ============================================================
 export interface DailyEntriesDetailResponse {
   dailyEntryId: string;
   entryDate: string;
@@ -71,7 +77,7 @@ export interface DailyEntriesTaskItem {
   memo: string | null;
   priority: string;             // MUST_DO | SHOULD_DO | COULD_DO
   status: string;               // IN_PROGRESS | COMPLETED
-  results: TaskResultItem[];    // 업무 결과 (여러 개 가능)
+  result: TaskResultItem | null; // 업무 결과 (Task당 0..1개)
 }
 
 export interface TaskResultItem {
@@ -86,7 +92,9 @@ export interface AttachmentItem {
   fileName: string;
 }
 
-// 5 검색
+// ============================================================
+// 5) 검색
+// ============================================================
 export interface DailyEntriesSearchResponse {
   keyword: string;
   entryCount: number;         // "업무 일지" 탭 카운트

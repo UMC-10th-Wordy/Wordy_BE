@@ -49,7 +49,7 @@ const pickTags = (
   return [...seen.values()];
 };
 
-// 1) 나의 요약 (상단 카드 3개)
+// 1 나의 요약 (상단 카드 3개)
 export const getDailyEntriesSummary = async (
   userId: string
 ): Promise<DailyEntriesSummaryResponse> => {
@@ -57,7 +57,7 @@ export const getDailyEntriesSummary = async (
   const y = now.getFullYear();
   const m = now.getMonth() + 1;
 
-  // --- 이번 달 / 지난 달 개수 ---
+  // 이번 달 / 지난 달 개수 
   const thisMonth = getMonthRange(y, m);
   const lastMonth = getMonthRange(m === 1 ? y - 1 : y, m === 1 ? 12 : m - 1);
 
@@ -66,13 +66,13 @@ export const getDailyEntriesSummary = async (
     countEntriesBetween(userId, lastMonth.start, lastMonth.end),
   ]);
 
-  // --- 연속 작성 streak ---
+  // 연속 작성 streak 
   const dateRows = await findAllEntryDates(userId);
   const { currentStreak, maxStreak } = calcStreaks(
     dateRows.map((r) => toDateStr(r.entryDate))
   );
 
-  // --- 최다 기록 카테고리 ---
+  // 최다 기록 카테고리 
   const entries = await findEntriesWithTags(userId);
   const topCategory = calcTopCategory(entries);
 
@@ -160,7 +160,7 @@ const calcTopCategory = (
   };
 };
 
-// 2) 월별 기록 목록 (접힌 상태)
+// 2 월별 기록 목록 (접힌 상태)
 export const getMonthlyList = async (
   userId: string
 ): Promise<MonthlyRecordItem[]> => {
@@ -215,7 +215,7 @@ const buildMonthlySummary = (tagNames: string[], totalDays: number): string => {
   return `${top} 중심으로 총 ${totalDays}일의 기록을 남긴 달이에요.`;
 };
 
-// 3) 월별 일자 목록 (월 펼쳤을 때)
+// 3 월별 일자 목록 (월 펼쳤을 때)
 // yearMonth: "2026-08"
 export const getMonthlyEntries = async (
   userId: string,
@@ -266,26 +266,24 @@ export const getDailyEntriesDetail = async (
     throw new Error("해당 일지를 찾을 수 없습니다.");
   }
 
-  // 이 일지의 업무 결과를 taskId 별로 묶기
-  const resultsByTask = new Map<string, typeof entry.taskResults>();
-  for (const r of entry.taskResults) {
-    if (!resultsByTask.has(r.taskId)) resultsByTask.set(r.taskId, []);
-    resultsByTask.get(r.taskId)!.push(r);
-  }
-
   const tasks = entry.reflectionTasks
     .map((rt) => rt.task)
     .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt)
     .map((t) => {
-      const results = (resultsByTask.get(t.taskId) ?? []).map((r) => ({
-        taskResultId: r.taskResultId,
-        content: r.content,
-        attachments: r.attachments.map((a) => ({
-          fileType: a.fileType,
-          fileUrl: a.fileUrl,
-          fileName: a.fileName,
-        })),
-      }));
+      // Task당 결과 0..1개. 결과가 있고 삭제되지 않았을 때만 매핑.
+      const tr = t.taskResult;
+      const result =
+        tr && !tr.deletedAt
+          ? {
+              taskResultId: tr.taskResultId,
+              content: tr.content,
+              attachments: tr.attachments.map((a) => ({
+                fileType: a.fileType,
+                fileUrl: a.fileUrl,
+                fileName: a.fileName,
+              })),
+            }
+          : null;
 
       return {
         taskId: t.taskId,
@@ -294,7 +292,7 @@ export const getDailyEntriesDetail = async (
         memo: t.memo ?? null,
         priority: t.priority,
         status: t.status,
-        results,
+        result,
       };
     });
 
@@ -311,7 +309,7 @@ export const getDailyEntriesDetail = async (
   };
 };
 
-// 5) 일지 삭제 (소프트 삭제)
+// 5 일지 삭제 (소프트 삭제)
 export const removeDailyEntry = async (userId: string, dailyEntryId: string) => {
   const found = await findEntryById(userId, dailyEntryId);
   if (!found) {
@@ -322,7 +320,7 @@ export const removeDailyEntry = async (userId: string, dailyEntryId: string) => 
   return { dailyEntryId };
 };
 
-// 6) 검색
+// 6 검색
 export const searchDailyEntries = async (
   userId: string,
   keyword: string,
