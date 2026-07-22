@@ -1,7 +1,8 @@
 import { prisma } from "../../db.config.js";
 
+// ============================================================
 // 요약 카드용
-
+// ============================================================
 
 // 기간 내 일지 개수 (이번 달 / 지난 달 비교용)
 export const countEntriesBetween = async (
@@ -27,8 +28,10 @@ export const findAllEntryDates = async (userId: string) => {
   });
 };
 
+// ============================================================
 // 월별 목록 / 태그 집계용
 // 일지 + 연결된 업무(ReflectionTask → Task → Tag) 정보
+// ============================================================
 export const findEntriesWithTags = async (userId: string) => {
   return prisma.dailyEntry.findMany({
     where: { userId, deletedAt: null },
@@ -87,22 +90,27 @@ export const findEntriesByMonth = async (
   });
 };
 
+// ============================================================
 // 일자 상세
+// ============================================================
 export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
   return prisma.dailyEntry.findFirst({
     where: { dailyEntryId, userId, deletedAt: null },
     include: {
-      // 이 일지에 포함된 업무들
+      // 이 일지에 연결된 업무들 (ReflectionTask → Task)
       reflectionTasks: {
         include: {
-          task: { include: { tag: true } },
-        },
-      },
-      // 이 일지의 업무 결과 + 첨부파일
-      taskResults: {
-        where: { deletedAt: null },
-        include: {
-          attachments: { where: { deletedAt: null } },
+          task: {
+            include: {
+              tag: true,
+              // Task 1개당 결과 0..1개 (단수) + 첨부파일
+              taskResult: {
+                include: {
+                  attachments: { where: { deletedAt: null } },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -125,7 +133,9 @@ export const softDeleteEntry = async (dailyEntryId: string) => {
   });
 };
 
+// ============================================================
 // 검색
+// ============================================================
 
 // 업무 일지 검색: 회고 내용 / 업무 제목 / 업무 결과 내용에서 키워드 매칭
 export const searchEntries = async (
@@ -145,8 +155,13 @@ export const searchEntries = async (
           },
         },
         {
-          taskResults: {
-            some: { content: { contains: keyword }, deletedAt: null },
+          reflectionTasks: {
+            some: {
+              task: {
+                taskResult: { content: { contains: keyword }, deletedAt: null },
+                deletedAt: null,
+              },
+            },
           },
         },
       ],
