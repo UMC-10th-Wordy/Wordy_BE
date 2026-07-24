@@ -33,25 +33,13 @@ export class DashboardService {
     const performances: DailyPerformance[] =
       await this.prisma.dailyPerformance.findMany({
         where: {
-          reflectionSnapshot: {
-            dailyEntry: {
-              userId: request.userId,
-            },
-          },
+          userId: request.userId,
           createdAt: {
             gte: new Date(request.startDate),
             lte: new Date(request.endDate),
           },
         },
       });
-
-    if (performances.length < 3) {
-      throw new ApiError(
-        ErrorCode.BAD_REQUEST.status,
-        ErrorCode.BAD_REQUEST.code,
-        "일주일간 성과 변환 3회 이상부터 대시보드를 생성할 수 있습니다.",
-      );
-    }
 
     // 2. Prompt C Input 생성
     const promptCInput: PromptCInputDto = {
