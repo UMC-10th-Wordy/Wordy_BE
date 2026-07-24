@@ -18,6 +18,8 @@ import { DashboardController } from './../modules/dashboard.week/dashboard.week.
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MonthlyDashboardController } from './../modules/dashboard.month/dashboard.month.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DailyEntriesWriteController } from './../modules/dailyentries/dailyentries.write.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DailyEntriesController } from './../modules/dailyentries/dailyentries.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller';
@@ -731,6 +733,38 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateDailyEntryResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "dailyEntryId": {"dataType":"string","required":true},
+            "entryDate": {"dataType":"string","required":true},
+            "reflectionContent": {"dataType":"string","required":true},
+            "linkedTaskCount": {"dataType":"double","required":true},
+            "createdAt": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_CreateDailyEntryResponse_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "code": {"dataType":"string","required":true},
+            "message": {"dataType":"string","required":true},
+            "result": {"dataType":"union","subSchemas":[{"ref":"CreateDailyEntryResponse"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateDailyEntryRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "entryDate": {"dataType":"string","required":true},
+            "reflectionContent": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "MonthlyCountCard": {
         "dataType": "refObject",
         "properties": {
@@ -900,7 +934,7 @@ const models: TsoaRoute.Models = {
             "memo": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "priority": {"dataType":"string","required":true},
             "status": {"dataType":"string","required":true},
-            "results": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskResultItem"},"required":true},
+            "result": {"dataType":"union","subSchemas":[{"ref":"TaskResultItem"},{"dataType":"enum","enums":[null]}],"required":true},
         },
         "additionalProperties": false,
     },
@@ -1979,6 +2013,37 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'createDashboard',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDailyEntriesWriteController_create: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateDailyEntryRequest"},
+        };
+        app.post('/daily-entries',
+            ...(fetchMiddlewares<RequestHandler>(DailyEntriesWriteController)),
+            ...(fetchMiddlewares<RequestHandler>(DailyEntriesWriteController.prototype.create)),
+
+            async function DailyEntriesWriteController_create(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDailyEntriesWriteController_create, request, response });
+
+                const controller = new DailyEntriesWriteController();
+
+              await templateService.apiHandler({
+                methodName: 'create',
                 controller,
                 response,
                 next,
