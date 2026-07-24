@@ -1,4 +1,5 @@
 import { Example } from 'tsoa';
+import { TaskResultResponse } from '../task-results/task-result.dto';
 
 export enum TaskPriority {
   MUST_DO = 'MUST_DO',
@@ -100,4 +101,9 @@ export class TaskResponse {
   tagId!: string;
 
   tag?: TaskTagResponse;
+}
+
+export class TaskWithResultResponse extends TaskResponse {
+  @Example(null)
+  taskResult!: TaskResultResponse | null;
 }
