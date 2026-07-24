@@ -8,6 +8,7 @@ import express, { Express, Router, Request, Response, NextFunction } from 'expre
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { ValidateError } from 'tsoa';
+import { MulterError } from 'multer';
 import { RegisterRoutes } from './generated/routes';
 import { ErrorCode } from './common/errors/error.code';
 import { ApiError } from './common/errors/api.error';
@@ -23,6 +24,7 @@ app.set('trust proxy', true);
 // 미들웨어 설정
 app.use(cors());
 app.use(express.static('public'));
+app.use('/uploads', express.static(path.resolve(process.env.UPLOAD_DIR || 'public/uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(apiLogMiddleware);
@@ -37,6 +39,17 @@ RegisterRoutes(apiRouter);
 app.use('/api/v1', apiRouter);
 
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof MulterError) {
+    return res.status(ErrorCode.BAD_REQUEST.status).json({
+      success: false,
+      code: ErrorCode.BAD_REQUEST.code,
+      message: err.code === 'LIMIT_FILE_SIZE'
+        ? '파일 크기는 5MB를 초과할 수 없습니다.'
+        : '파일 업로드 요청이 올바르지 않습니다.',
+      result: null,
+    });
+  }
+
   if (err instanceof ValidateError) {
     return res.status(ErrorCode.BAD_REQUEST.status).json({
       success: false,

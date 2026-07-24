@@ -1,3 +1,5 @@
+import { PlanType } from '../home/home.dto';
+
 export enum AgreementType {
   TERMS_OF_SERVICE = 'TERMS_OF_SERVICE',
   PRIVACY_POLICY = 'PRIVACY_POLICY',
@@ -29,11 +31,25 @@ export interface LogoutRequest {
   refreshToken: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface GoogleCompleteSignupRequest {
   token: string;
   agreements: AgreementInput[];
 }
 
+export interface AuthSessionResult {
+  accessToken: string;
+  refreshToken: string;
+  email: string;
+  userName: string | null;
+  plan: PlanType;
+  profileImgUrl: string | null;
+}
+
 export type GoogleCallbackResult =
-  | { status: "login"; accessToken: string; refreshToken: string; email: string }
+  | ({ status: "login" } & AuthSessionResult)
   | { status: "pending"; pendingToken: string; email: string };

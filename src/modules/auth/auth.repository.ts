@@ -11,6 +11,13 @@ export class AuthRepository {
     return prisma.user.findUnique({ where: { userId } });
   }
 
+  public async findByIdWithProfileAndPlan(userId: string) {
+    return prisma.user.findUnique({
+      where: { userId },
+      include: { profile: true, plan: true },
+    });
+  }
+
   public async createUser(
     email: string,
     password: string | null,
@@ -50,6 +57,20 @@ export class AuthRepository {
     return prisma.user.update({
       where: { userId },
       data: { refreshToken: null },
+    });
+  }
+
+  public async updatePassword(userId: string, passwordHash: string) {
+    return prisma.user.update({
+      where: { userId },
+      data: { password: passwordHash },
+    });
+  }
+
+  public async withdrawUser(userId: string) {
+    return prisma.user.update({
+      where: { userId },
+      data: { deletedAt: new Date(), refreshToken: null },
     });
   }
 }

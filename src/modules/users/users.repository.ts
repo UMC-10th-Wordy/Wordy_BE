@@ -32,4 +32,11 @@ export class UsersRepository {
   public async findById(userId: string) {
     return prisma.user.findUnique({ where: { userId }, include: { profile: true } });
   }
+
+  public async updateProfileImage(userId: string, profileImgUrl: string) {
+    return prisma.profile.update({
+      where: { userId },
+      data: { profileImgUrl },
+    });
+  }
 }
