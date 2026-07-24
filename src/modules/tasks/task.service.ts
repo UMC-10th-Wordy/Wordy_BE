@@ -3,6 +3,7 @@ import { TaskRepository } from './task.repository';
 import {
   CreateTaskRequest,
   TaskResponse,
+  TaskWithResultResponse,
   UpdateTaskRequest,
 } from './task.dto';
 import { ApiError } from '../../common/errors/api.error';
@@ -37,13 +38,13 @@ export class TaskService {
   public async getTasksByDate(
     authorization: string | undefined,
     date: string,
-  ): Promise<TaskResponse[]> {
+  ): Promise<TaskWithResultResponse[]> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     this.validateDate(date);
 
     const tasks = await this.taskRepository.findManyByUserIdAndDate(userId, new Date(date));
-    return tasks as unknown as TaskResponse[];
+    return tasks as unknown as TaskWithResultResponse[];
   }
 
   public async createTask(
@@ -70,7 +71,7 @@ export class TaskService {
   public async getTask(
     authorization: string | undefined,
     taskId: string,
-  ): Promise<TaskResponse> {
+  ): Promise<TaskWithResultResponse> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
     const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
@@ -79,7 +80,7 @@ export class TaskService {
       throw new NotFoundError('업무카드를 찾을 수 없습니다.');
     }
 
-    return task as unknown as TaskResponse;
+    return task as unknown as TaskWithResultResponse;
   }
 
   public async updateTask(

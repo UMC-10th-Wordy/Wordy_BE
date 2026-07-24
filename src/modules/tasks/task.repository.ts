@@ -19,6 +19,14 @@ export class TaskRepository {
             projectName: true,
           },
         },
+        taskResult: {
+          select: {
+            taskResultId: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        }
       },
       orderBy: {
         createdAt: 'asc',
@@ -42,6 +50,14 @@ export class TaskRepository {
             projectName: true,
           },
         },
+        taskResult: {
+          select: {
+            taskResultId: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        }
       },
     });
   }
