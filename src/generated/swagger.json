@@ -94,6 +94,47 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ProfileImageData": {
+				"properties": {
+					"profileImgUrl": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"profileImgUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_ProfileImageData_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ProfileImageData"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"UserProfileData": {
 				"properties": {
 					"userId": {
@@ -2606,7 +2647,41 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponse__accessToken-string--refreshToken-string--email-string__": {
+			"AuthSessionResult": {
+				"properties": {
+					"accessToken": {
+						"type": "string"
+					},
+					"refreshToken": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"userName": {
+						"type": "string",
+						"nullable": true
+					},
+					"plan": {
+						"$ref": "#/components/schemas/PlanType"
+					},
+					"profileImgUrl": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"accessToken",
+					"refreshToken",
+					"email",
+					"userName",
+					"plan",
+					"profileImgUrl"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_AuthSessionResult_": {
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -2618,23 +2693,11 @@
 						"type": "string"
 					},
 					"result": {
-						"properties": {
-							"email": {
-								"type": "string"
-							},
-							"refreshToken": {
-								"type": "string"
-							},
-							"accessToken": {
-								"type": "string"
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AuthSessionResult"
 							}
-						},
-						"required": [
-							"email",
-							"refreshToken",
-							"accessToken"
 						],
-						"type": "object",
 						"nullable": true
 					}
 				},
@@ -2671,6 +2734,22 @@
 				},
 				"required": [
 					"refreshToken"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ChangePasswordRequest": {
+				"properties": {
+					"currentPassword": {
+						"type": "string"
+					},
+					"newPassword": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"currentPassword",
+					"newPassword"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -2727,31 +2806,26 @@
 			"GoogleCallbackResult": {
 				"anyOf": [
 					{
-						"properties": {
-							"email": {
-								"type": "string"
-							},
-							"refreshToken": {
-								"type": "string"
-							},
-							"accessToken": {
-								"type": "string"
-							},
-							"status": {
-								"type": "string",
-								"enum": [
-									"login"
+						"allOf": [
+							{
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"login"
+										],
+										"nullable": false
+									}
+								},
+								"required": [
+									"status"
 								],
-								"nullable": false
+								"type": "object"
+							},
+							{
+								"$ref": "#/components/schemas/AuthSessionResult"
 							}
-						},
-						"required": [
-							"email",
-							"refreshToken",
-							"accessToken",
-							"status"
-						],
-						"type": "object"
+						]
 					},
 					{
 						"properties": {
@@ -2848,7 +2922,7 @@
 				"properties": {
 					"taskId": {
 						"type": "string",
-						"example": "task-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
 					"output": {
 						"items": {
@@ -2927,7 +3001,7 @@
 					},
 					"reflectionSnapshotId": {
 						"type": "string",
-						"example": "reflection-snapshot-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					}
 				},
 				"required": [
@@ -2936,15 +3010,28 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TaskResultDto": {
+				"properties": {
+					"taskResultId": {
+						"type": "string",
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
+					},
+					"result": {
+						"type": "string",
+						"example": "Swagger 문서를 모두 작성했다."
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"TaskDto": {
 				"properties": {
 					"taskId": {
 						"type": "string",
-						"example": "task-550e8400"
-					},
-					"taskResultId": {
-						"type": "string",
-						"example": "task-result-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
 					"priority": {
 						"$ref": "#/components/schemas/TaskPriority",
@@ -2962,16 +3049,16 @@
 						"type": "string",
 						"example": "Request/Response 예시 추가"
 					},
-					"result": {
-						"type": "string",
-						"example": "Swagger 문서를 모두 작성했다."
+					"taskResult": {
+						"$ref": "#/components/schemas/TaskResultDto"
 					}
 				},
 				"required": [
 					"taskId",
 					"priority",
 					"completed",
-					"title"
+					"title",
+					"taskResult"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -2980,7 +3067,7 @@
 				"properties": {
 					"projectTagId": {
 						"type": "string",
-						"example": "project-tag-01"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
 					"title": {
 						"type": "string",
@@ -3014,9 +3101,9 @@
 			},
 			"PerformanceRequestDto": {
 				"properties": {
-					"dailyEntryId": {
+					"userId": {
 						"type": "string",
-						"example": "daily-entry-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
 					"tasks": {
 						"items": {
@@ -3037,7 +3124,7 @@
 					}
 				},
 				"required": [
-					"dailyEntryId",
+					"userId",
 					"tasks",
 					"reflectionContent",
 					"userJob"
@@ -3047,6 +3134,10 @@
 			},
 			"QuestionAnswerDto": {
 				"properties": {
+					"aiQuestionId": {
+						"type": "string",
+						"example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+					},
 					"question": {
 						"type": "string",
 						"example": "이번 작업에서 가장 어려웠던 점은 무엇인가요?"
@@ -3057,6 +3148,7 @@
 					}
 				},
 				"required": [
+					"aiQuestionId",
 					"question",
 					"answer"
 				],
@@ -3369,6 +3461,65 @@
 					}
 				}
 			},
+			"put": {
+				"operationId": "UpdateProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__userId-string--email-string__"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "프로필이 수정되었습니다.",
+											"result": {
+												"userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+												"email": "uesr@email.com"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "닉네임/연차/직무/프로필 이미지 중 원하는 값을 보내면 됨 - 등록과 동일하게 upsert로 동작",
+				"summary": "프로필 수정",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CompleteProfileRequest"
+							},
+							"example": {
+								"userName": "홍길동",
+								"yearsOfService": "ONE_TO_3",
+								"jobRole": "DEVELOPMENT"
+							}
+						}
+					}
+				}
+			},
 			"get": {
 				"operationId": "GetMyProfile",
 				"responses": {
@@ -3417,6 +3568,70 @@
 						}
 					}
 				]
+			}
+		},
+		"/users/profile/image": {
+			"post": {
+				"operationId": "UploadProfileImage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_ProfileImageData_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S201",
+											"message": "프로필 이미지가 업로드되었습니다.",
+											"result": {
+												"profileImgUrl": "http://localhost:3000/uploads/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "프로필이 이미 등록된 경우 즉시 반영되고, 등록 전이면 응답으로 받은 URL을 프로필 등록 API의 profileImgUrl로 함께 보내면 됨 (jpg/png/webp/gif, 최대 5MB)",
+				"summary": "프로필 이미지 업로드",
+				"tags": [
+					"Users"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"image": {
+										"type": "string",
+										"format": "binary"
+									}
+								},
+								"required": [
+									"image"
+								]
+							}
+						}
+					}
+				}
 			}
 		},
 		"/tasks": {
@@ -5511,7 +5726,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+									"$ref": "#/components/schemas/ApiResponse_AuthSessionResult_"
 								},
 								"examples": {
 									"Example 1": {
@@ -5522,7 +5737,10 @@
 											"result": {
 												"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
 												"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
-												"email": "user@email.com"
+												"email": "user@email.com",
+												"userName": null,
+												"plan": "FREE",
+												"profileImgUrl": null
 											}
 										}
 									}
@@ -5557,7 +5775,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+									"$ref": "#/components/schemas/ApiResponse_AuthSessionResult_"
 								},
 								"examples": {
 									"Example 1": {
@@ -5568,7 +5786,10 @@
 											"result": {
 												"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
 												"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
-												"email": "user@email.com"
+												"email": "user@email.com",
+												"userName": "홍길동",
+												"plan": "FREE",
+												"profileImgUrl": "http://localhost:3000/uploads/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg"
 											}
 										}
 									}
@@ -5644,6 +5865,106 @@
 						}
 					}
 				}
+			}
+		},
+		"/auth/password": {
+			"post": {
+				"operationId": "ChangePassword",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "비밀번호가 변경되었습니다.",
+											"result": null
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "현재 비밀번호 확인 후 새 비밀번호로 변경 - 성공 시 기존 리프레시 토큰이 무효화되어 다른 기기는 재로그인 필요, 구글 계정은 401",
+				"summary": "비밀번호 변경",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ChangePasswordRequest"
+							},
+							"example": {
+								"currentPassword": "OldPassword123!",
+								"newPassword": "NewPassword123!"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/withdraw": {
+			"delete": {
+				"operationId": "Withdraw",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "탈퇴가 완료되었습니다.",
+											"result": null
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "액세스 토큰만으로 동작하는 단일 버튼 탈퇴 - 별도 확인 없이 즉시 소프트 삭제되며 재로그인 불가",
+				"summary": "회원 탈퇴",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		},
 		"/auth/refresh": {
@@ -5749,7 +6070,10 @@
 												"status": "login",
 												"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
 												"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
-												"email": "uesr@google.com"
+												"email": "uesr@google.com",
+												"userName": "홍길동",
+												"plan": "FREE",
+												"profileImgUrl": null
 											}
 										}
 									}
@@ -5785,7 +6109,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse__accessToken-string--refreshToken-string--email-string__"
+									"$ref": "#/components/schemas/ApiResponse_AuthSessionResult_"
 								},
 								"examples": {
 									"Example 1": {
@@ -5796,7 +6120,10 @@
 											"result": {
 												"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
 												"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
-												"email": "uesr@google.com"
+												"email": "uesr@google.com",
+												"userName": null,
+												"plan": "FREE",
+												"profileImgUrl": null
 											}
 										}
 									}
@@ -5859,20 +6186,23 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"dailyEntryId": "daily-entry-550e8400",
+											"userId": "550e8400-e29b-41d4-a716-446655440000",
 											"tasks": [
 												{
-													"taskId": "task-550e8400",
+													"taskId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 													"priority": "SHOULD_DO",
 													"completed": true,
 													"title": "Swagger 문서 작성",
 													"memo": "Request/Response 예시 추가",
-													"result": "Swagger 문서와 API 예시 데이터를 작성했다."
+													"taskResult": {
+														"taskResultId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+														"result": "Swagger 문서와 API 예시 데이터를 작성했다."
+													}
 												}
 											],
 											"reflectionContent": "오늘 Swagger 문서를 작성하면서 TSOA Example 사용법을 익혔다.",
 											"projectTag": {
-												"projectTagId": "project-tag-01",
+												"projectTagId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 												"title": "AI 기능",
 												"description": "AI 관련 업무",
 												"kpis": [
@@ -5881,32 +6211,6 @@
 												]
 											},
 											"userJob": "DEVELOPMENT"
-										}
-									},
-									"Example 2": {
-										"value": {
-											"status": "COMPLETED",
-											"summary": "오늘은 Swagger 문서와 AI API를 구현했습니다.",
-											"growthInsights": [
-												"API 설계 능력이 향상되었습니다.",
-												"Swagger 활용 경험을 쌓았습니다."
-											],
-											"nextActions": [
-												"Dashboard API 구현",
-												"응답 파서 테스트"
-											],
-											"taskPerformances": [
-												{
-													"taskId": "task-550e8400",
-													"output": [
-														"협업 문서를 작성했습니다."
-													],
-													"impact": [
-														"협업자가 API를 쉽게 사용할 수 있습니다."
-													]
-												}
-											],
-											"reflectionSnapshotId": "reflection-snapshot-550e8400"
 										}
 									}
 								}
@@ -5946,17 +6250,20 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"reflectionSnapshotId": "reflection-snapshot-550e8400",
+											"reflectionSnapshotId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 											"originalRequest": {
-												"dailyEntryId": "daily-entry-550e8400",
+												"userId": "550e8400-e29b-41d4-a716-446655440000",
 												"tasks": [
 													{
-														"taskId": "task-550e8400",
+														"taskId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 														"priority": "SHOULD_DO",
 														"completed": true,
 														"title": "Swagger 문서 작성",
 														"memo": "API 예시 추가",
-														"result": "API 예시 데이터를 추가했다."
+														"taskResult": {
+															"taskResultId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+															"result": "API 예시 데이터를 추가했다."
+														}
 													}
 												],
 												"reflectionContent": "오늘 API 문서화를 진행했다.",
@@ -5964,34 +6271,11 @@
 											},
 											"answers": [
 												{
+													"aiQuestionId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 													"question": "이번 작업에서 가장 어려웠던 점은 무엇인가요?",
 													"answer": "Swagger Example 적용 방법을 찾는 것이었습니다."
 												}
 											]
-										}
-									},
-									"Example 2": {
-										"value": {
-											"status": "COMPLETED",
-											"summary": "보충 답변을 반영해 성과 분석을 완료했습니다.",
-											"growthInsights": [
-												"문제 해결 과정에서 기술 이해도가 향상되었습니다."
-											],
-											"nextActions": [
-												"Dashboard API 구현"
-											],
-											"taskPerformances": [
-												{
-													"taskId": "task-550e8400",
-													"output": [
-														"Swagger 예시 구조를 개선했습니다."
-													],
-													"impact": [
-														"프론트 협업 효율이 향상됩니다."
-													]
-												}
-											],
-											"reflectionSnapshotId": "reflection-snapshot-550e8400"
 										}
 									}
 								}

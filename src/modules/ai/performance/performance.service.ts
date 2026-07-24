@@ -9,9 +9,7 @@ import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
-import { PrismaClient, TaskStatus, PromptType, AiRunStatus } from "../../../generated/prisma/client";
-import { ApiError } from "../../../common/errors/api.error";
-import { ErrorCode } from "../../../common/errors/error.code";
+import { PrismaClient, TaskStatus, PromptType, AiRunStatus, AIQuestionStatus } from "../../../generated/prisma/client";
 
 export class PerformanceService {
   constructor(
@@ -21,6 +19,8 @@ export class PerformanceService {
     private readonly ruleEngine: RuleEngine,
     private readonly prisma: PrismaClient,
   ) {}
+
+  
 
   // 첫 번째 호출
   async generatePerformancePreview(
@@ -70,7 +70,6 @@ export class PerformanceService {
     ) {
       const reflectionSnapshotId =
       await this.saveQuestionSnapshot(
-        request,
         promptAResult,
       );
 
@@ -91,28 +90,11 @@ export class PerformanceService {
   
   // 질문 단계 snapshot 생성
   private async saveQuestionSnapshot(
-    request: PerformanceRequestDto,
     promptAResult: PromptAOutputDto,
   ) {
-    const dailyEntry =
-      await this.prisma.dailyEntry.findUnique({
-        where: {
-          dailyEntryId: request.dailyEntryId,
-        },
-      });
-
-    if (!dailyEntry) {
-      throw new ApiError(
-        ErrorCode.NOT_FOUND.status,
-        ErrorCode.NOT_FOUND.code,
-        "DailyEntry를 찾을 수 없습니다.",
-      );
-    }
-
     const snapshot =
       await this.prisma.reflectionSnapshot.create({
         data: {
-          dailyEntryId: dailyEntry.dailyEntryId,
           promptAResult,
         },
       });
@@ -122,15 +104,15 @@ export class PerformanceService {
       promptAResult.followUpQuestions.length > 0
     ) {
       await this.prisma.aIQuestion.createMany({
-        data:
-          promptAResult.followUpQuestions.map(
-            (question, index) => ({
-              reflectionSnapshotId: snapshot.reflectionSnapshotId,
-              questionContent: question.question,
-              reason: question.reason ?? null,
-              order: index + 1,
-            }),
-          ),
+        data: promptAResult.followUpQuestions.map(
+          (question, index) => ({
+            reflectionSnapshotId:
+              snapshot.reflectionSnapshotId,
+            questionContent: question.question,
+            reason: question.reason ?? null,
+            order: index + 1,
+          }),
+        ),
       });
     }
 
@@ -141,6 +123,35 @@ export class PerformanceService {
   async completePerformancePreview(
     request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {
+
+    // AIQuestion 상태 업데이트
+    const questionStatus =
+      request.answers.length > 0  // 프론트에서 답변 건너뛰기 시 빈 배열을 보냄
+        ? AIQuestionStatus.ANSWERED
+        : AIQuestionStatus.SKIPPED;
+
+    if (request.answers.length > 0) {
+      for (const answer of request.answers) {
+        await this.prisma.aIQuestion.update({
+          where: {
+            aiQuestionId: answer.aiQuestionId,
+          },
+          data: {
+            answer: answer.answer,
+            status: AIQuestionStatus.ANSWERED,
+          },
+        });
+      }
+    } else {
+      await this.prisma.aIQuestion.updateMany({
+        where: {
+          reflectionSnapshotId: request.reflectionSnapshotId,
+        },
+        data: {
+          status: AIQuestionStatus.SKIPPED,
+        },
+      });
+    }
 
     // 답변 포함해서 Prompt A 재호출
     const promptARequest =
@@ -215,30 +226,6 @@ export class PerformanceService {
       promptBResult,
     );
 
-    // 실제 저장된 DailyEntry + Task 데이터 조회
-    const dailyEntry =
-      await this.prisma.dailyEntry.findUnique({
-        where: {
-          dailyEntryId: request.dailyEntryId,
-        },
-        include: {
-          reflectionTasks: {
-            include: {
-              task: {
-                include: {
-                  taskResults: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-    if (!dailyEntry) {
-      throw new Error(
-        "DailyEntry not found",
-      );
-    }
     let snapshot;
 
     // 질문 후 완료 → 기존 Snapshot 업데이트
@@ -258,7 +245,6 @@ export class PerformanceService {
       snapshot =
         await this.prisma.reflectionSnapshot.create({
           data: {
-            dailyEntryId: dailyEntry.dailyEntryId,
             promptAResult,
             promptBResult,
           },
@@ -278,9 +264,7 @@ export class PerformanceService {
   });
 
     // Task Snapshot 저장
-    for (const reflectionTask of dailyEntry.reflectionTasks) {
-      const task = reflectionTask.task;
-
+    for (const task of request.tasks) {
       const taskSnapshot =
         await this.prisma.reflectionTaskSnapshot.create({
           data: {
@@ -300,13 +284,14 @@ export class PerformanceService {
           },
         });
 
-      // Task Result Snapshot 저장
-      for (const taskResult of task.taskResults) {
+      // TaskResult Snapshot 저장
+      if (task.taskResult) {
         await this.prisma.reflectionTaskResultSnapshot.create({
-          data:{
-            reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
-            taskResultId: taskResult.taskResultId,
-            content: taskResult.content,
+          data: {
+            reflectionTaskSnapshotId:
+              taskSnapshot.reflectionTaskSnapshotId,
+            taskResultId: task.taskResult.taskResultId!,
+            content: task.taskResult.result,
           },
         });
       }
@@ -327,6 +312,7 @@ export class PerformanceService {
     const performance =
       await this.prisma.dailyPerformance.create({
         data: {
+          userId: request.userId,
           achievementRate: completionRate,
           summary: promptBResult.summary,
           growthInsight: promptBResult.growthInsights,

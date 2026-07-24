@@ -34,20 +34,23 @@ export class PerformanceController extends Controller {
    */
   @Post("performance-preview")
   @Example<PerformanceRequestDto>({
-    dailyEntryId: "daily-entry-550e8400",
+    userId: "550e8400-e29b-41d4-a716-446655440000",
     tasks: [
       {
-        taskId: "task-550e8400",
+        taskId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
         priority: TaskPriority.SHOULD_DO,
         completed: true,
         title: "Swagger 문서 작성",
         memo: "Request/Response 예시 추가",
-        result: "Swagger 문서와 API 예시 데이터를 작성했다."
+        taskResult: {
+          taskResultId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+          result: "Swagger 문서와 API 예시 데이터를 작성했다."
+        }
       }
     ],
     reflectionContent: "오늘 Swagger 문서를 작성하면서 TSOA Example 사용법을 익혔다.",
     projectTag: {
-      projectTagId: "project-tag-01",
+      projectTagId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
       title: "AI 기능",
       description: "AI 관련 업무",
       kpis: [
@@ -57,31 +60,6 @@ export class PerformanceController extends Controller {
     },
     userJob: JobRole.DEVELOPMENT
   })
-  @Example<PerformanceResponseDto>({
-    status: "COMPLETED",
-    summary: "오늘은 Swagger 문서와 AI API를 구현했습니다.",
-    growthInsights: [
-      "API 설계 능력이 향상되었습니다.",
-      "Swagger 활용 경험을 쌓았습니다."
-    ],
-    nextActions: [
-      "Dashboard API 구현",
-      "응답 파서 테스트"
-    ],
-    taskPerformances: [
-      {
-        taskId: "task-550e8400",
-        output: [
-          "협업 문서를 작성했습니다."
-        ],
-        impact: [
-          "협업자가 API를 쉽게 사용할 수 있습니다."
-        ]
-      }
-    ],
-    reflectionSnapshotId: "reflection-snapshot-550e8400"
-  })
-  
   public async createPerformancePreview(
     @Body() request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
@@ -95,17 +73,20 @@ export class PerformanceController extends Controller {
    */
   @Post("performance-preview/complete")
   @Example<PerformanceQuestionRequestDto>({
-    reflectionSnapshotId: "reflection-snapshot-550e8400",
+    reflectionSnapshotId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
     originalRequest: {
-      dailyEntryId: "daily-entry-550e8400",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
       tasks: [
         {
-          taskId: "task-550e8400",
+          taskId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
           priority: TaskPriority.SHOULD_DO,
           completed: true,
           title: "Swagger 문서 작성",
           memo: "API 예시 추가",
-          result: "API 예시 데이터를 추가했다."
+          taskResult: {
+            taskResultId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+            result: "API 예시 데이터를 추가했다."
+          }
         }
       ],
       reflectionContent: "오늘 API 문서화를 진행했다.",
@@ -113,34 +94,12 @@ export class PerformanceController extends Controller {
     },
     answers: [
       {
+        aiQuestionId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
         question: "이번 작업에서 가장 어려웠던 점은 무엇인가요?",
         answer: "Swagger Example 적용 방법을 찾는 것이었습니다."
       }
     ]
   })
-  @Example<PerformanceResponseDto>({
-    status: "COMPLETED",
-    summary: "보충 답변을 반영해 성과 분석을 완료했습니다.",
-    growthInsights: [
-      "문제 해결 과정에서 기술 이해도가 향상되었습니다."
-    ],
-    nextActions: [
-      "Dashboard API 구현"
-    ],
-    taskPerformances: [
-      {
-        taskId: "task-550e8400",
-        output: [
-          "Swagger 예시 구조를 개선했습니다."
-        ],
-        impact: [
-          "프론트 협업 효율이 향상됩니다."
-        ]
-      }
-    ],
-    reflectionSnapshotId: "reflection-snapshot-550e8400"
-  })
-
   public async completePerformancePreview(
     @Body() request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {

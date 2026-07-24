@@ -23,7 +23,7 @@ export class PerformanceResponseDto {
 
   taskPerformances?: TaskPerformanceDto[];
 
-  @Example("reflection-snapshot-550e8400")
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   reflectionSnapshotId?: string;
 }
 
@@ -36,7 +36,7 @@ export class SupplementQuestionDto {
 }
 
 export class TaskPerformanceDto {
-  @Example("task-550e8400")
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   taskId!: string;
 
   @Example([
