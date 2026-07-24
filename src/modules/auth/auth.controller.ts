@@ -1,13 +1,16 @@
-import { Controller, Post, Get, Route, Tags, Body, Query, Res, TsoaResponse, Example } from "tsoa";
+import { Controller, Post, Get, Delete, Route, Tags, Body, Query, Header, Res, TsoaResponse, Example } from "tsoa";
 import { AuthService } from "./auth.service";
 import {
   SignupRequest,
   LoginRequest,
   LogoutRequest,
   RefreshRequest,
+  ChangePasswordRequest,
   GoogleCompleteSignupRequest,
   GoogleCallbackResult,
+  AuthSessionResult,
 } from "./auth.dto";
+import { PlanType } from "../home/home.dto";
 
 import { ApiResponse } from "../../common/responses/api.response";
 import { success } from "../../common/responses/response";
@@ -52,7 +55,7 @@ export class AuthController extends Controller {
 
   /** @summary 이메일 인증 */
   @Get("verify-email")
-  @Example<ApiResponse<{ accessToken: string; refreshToken: string; email: string }>>({
+  @Example<ApiResponse<AuthSessionResult>>({
     success: true,
     code: "S200",
     message: "이메일 인증이 완료되었습니다. 프로필을 입력해주세요.",
@@ -60,17 +63,14 @@ export class AuthController extends Controller {
       accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
       refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
       email: "user@email.com",
+      userName: null,
+      plan: PlanType.FREE,
+      profileImgUrl: null,
     },
   })
   public async verifyEmail(
     @Query() token: string,
-  ): Promise<
-    ApiResponse<{
-      accessToken: string;
-      refreshToken: string;
-      email: string;
-    }>
-  > {
+  ): Promise<ApiResponse<AuthSessionResult>> {
     const data = await this.authService.verifyEmail(token);
 
     return success(
@@ -86,7 +86,7 @@ export class AuthController extends Controller {
    * @example body {"email": "user@email.com", "password": "TestPassword123!"}
    */
   @Post("login")
-  @Example<ApiResponse<{ accessToken: string; refreshToken: string; email: string }>>({
+  @Example<ApiResponse<AuthSessionResult>>({
     success: true,
     code: "S200",
     message: "로그인이 완료되었습니다.",
@@ -94,17 +94,14 @@ export class AuthController extends Controller {
       accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
       refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
       email: "user@email.com",
+      userName: "홍길동",
+      plan: PlanType.FREE,
+      profileImgUrl: "http://localhost:3000/uploads/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg",
     },
   })
   public async login(
     @Body() body: LoginRequest,
-  ): Promise<
-    ApiResponse<{
-      accessToken: string;
-      refreshToken: string;
-      email: string;
-    }>
-  > {
+  ): Promise<ApiResponse<AuthSessionResult>> {
     const data = await this.authService.login(
       body.email,
       body.password
@@ -136,6 +133,58 @@ export class AuthController extends Controller {
     return success(
       SuccessCode.OK.code,
       "로그아웃이 완료되었습니다.",
+      null
+    );
+  }
+
+  /**
+   * 현재 비밀번호 확인 후 새 비밀번호로 변경 - 성공 시 기존 리프레시 토큰이 무효화되어 다른 기기는 재로그인 필요, 구글 계정은 401
+   * @summary 비밀번호 변경
+   * @example body {"currentPassword": "OldPassword123!", "newPassword": "NewPassword123!"}
+   */
+  @Post("password")
+  @Example<ApiResponse<null>>({
+    success: true,
+    code: "S200",
+    message: "비밀번호가 변경되었습니다.",
+    result: null,
+  })
+  public async changePassword(
+    @Header("Authorization") authorization: string | undefined,
+    @Body() body: ChangePasswordRequest,
+  ): Promise<ApiResponse<null>> {
+    await this.authService.changePassword(
+      authorization,
+      body.currentPassword,
+      body.newPassword
+    );
+
+    return success(
+      SuccessCode.OK.code,
+      "비밀번호가 변경되었습니다.",
+      null
+    );
+  }
+
+  /**
+   * 액세스 토큰만으로 동작하는 단일 버튼 탈퇴 - 별도 확인 없이 즉시 소프트 삭제되며 재로그인 불가
+   * @summary 회원 탈퇴
+   */
+  @Delete("withdraw")
+  @Example<ApiResponse<null>>({
+    success: true,
+    code: "S200",
+    message: "탈퇴가 완료되었습니다.",
+    result: null,
+  })
+  public async withdraw(
+    @Header("Authorization") authorization: string | undefined,
+  ): Promise<ApiResponse<null>> {
+    await this.authService.withdraw(authorization);
+
+    return success(
+      SuccessCode.OK.code,
+      "탈퇴가 완료되었습니다.",
       null
     );
   }
@@ -214,6 +263,9 @@ export class AuthController extends Controller {
         accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
         refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
         email: "uesr@google.com",
+        userName: "홍길동",
+        plan: PlanType.FREE,
+        profileImgUrl: null,
       },
     },
     "기존 유저 - 즉시 로그인",
@@ -238,7 +290,7 @@ export class AuthController extends Controller {
    * @example body {"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "agreements": [{"type": "TERMS_OF_SERVICE", "isAgreed": true}, {"type": "PRIVACY_POLICY", "isAgreed": true}, {"type": "AGE_OVER_14", "isAgreed": true}, {"type": "MARKETING", "isAgreed": false}]}
    */
   @Post("google/complete")
-  @Example<ApiResponse<{ accessToken: string; refreshToken: string; email: string }>>({
+  @Example<ApiResponse<AuthSessionResult>>({
     success: true,
     code: "S201",
     message: "회원가입이 완료되었습니다. 프로필을 입력해주세요.",
@@ -246,17 +298,14 @@ export class AuthController extends Controller {
       accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoiYWNjZXNzIn0...",
       refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIuLi4iLCJwdXJwb3NlIjoicmVmcmVzaCJ9...",
       email: "uesr@google.com",
+      userName: null,
+      plan: PlanType.FREE,
+      profileImgUrl: null,
     },
   })
   public async completeGoogleSignup(
     @Body() body: GoogleCompleteSignupRequest,
-  ): Promise<
-    ApiResponse<{
-      accessToken: string;
-      refreshToken: string;
-      email: string;
-    }>
-  > {
+  ): Promise<ApiResponse<AuthSessionResult>> {
     const data = await this.authService.completeGoogleSignup(
       body.token,
       body.agreements

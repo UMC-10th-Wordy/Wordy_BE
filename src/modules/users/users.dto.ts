@@ -28,6 +28,10 @@ export interface CompleteProfileRequest {
   jobRole: JobRole;
 }
 
+export interface ProfileImageData {
+  profileImgUrl: string;
+}
+
 export interface UserProfileData {
   userId: string;
   email: string;

@@ -1,8 +1,18 @@
+import { randomUUID } from 'crypto';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
 import { verifyAccessToken } from '../../auth.config';
 import { UsersRepository } from './users.repository';
-import { CompleteProfileRequest, UserProfileData, YearsOfService, JobRole } from './users.dto';
+import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfService, JobRole } from './users.dto';
 import { ApiError } from '../../common/errors/api.error';
 import { ErrorCode } from '../../common/errors/error.code';
+
+const PROFILE_IMAGE_EXTENSIONS: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
 
 export class UnauthorizedError extends ApiError {
   constructor() {
@@ -13,6 +23,22 @@ export class UnauthorizedError extends ApiError {
 export class UserNotFoundError extends ApiError {
   constructor() {
     super(ErrorCode.NOT_FOUND.status, ErrorCode.NOT_FOUND.code, '사용자 프로필을 찾을 수 없습니다.');
+  }
+}
+
+export class InvalidImageTypeError extends ApiError {
+  constructor() {
+    super(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      '지원하지 않는 이미지 형식입니다. (jpg, png, webp, gif만 가능)'
+    );
+  }
+}
+
+export class InvalidUserNameError extends ApiError {
+  constructor() {
+    super(ErrorCode.BAD_REQUEST.status, ErrorCode.BAD_REQUEST.code, '닉네임은 5자 이하로 입력해주세요.');
   }
 }
 
@@ -38,8 +64,36 @@ export class UsersService {
    */
   public async completeProfile(authorization: string | undefined, body: CompleteProfileRequest): Promise<{ userId: string; email: string }> {
     const userId = this.extractUserId(authorization);
+    if (body.userName.length > 5) throw new InvalidUserNameError();
+
     const profile = await this.usersRepository.upsertProfile(userId, body);
     return { userId: profile.userId, email: profile.user.email };
+  }
+
+  /**
+   * 프로필 이미지 업로드
+   * - 프로필이 이미 등록된 경우 바로 반영, 등록 전이면 URL만 반환 (프로필 등록 시 profileImgUrl로 함께 전달)
+   */
+  public async uploadProfileImage(authorization: string | undefined, file: Express.Multer.File): Promise<ProfileImageData> {
+    const userId = this.extractUserId(authorization);
+
+    const extension = PROFILE_IMAGE_EXTENSIONS[file.mimetype];
+    if (!extension) throw new InvalidImageTypeError();
+
+    const uploadDir = path.join(path.resolve(process.env.UPLOAD_DIR || 'public/uploads'), 'profile');
+    await mkdir(uploadDir, { recursive: true });
+
+    const fileName = `${randomUUID()}.${extension}`;
+    await writeFile(path.join(uploadDir, fileName), file.buffer);
+
+    const profileImgUrl = `${process.env.SERVER_URL}/uploads/profile/${fileName}`;
+
+    const user = await this.usersRepository.findById(userId);
+    if (user?.profile) {
+      await this.usersRepository.updateProfileImage(userId, profileImgUrl);
+    }
+
+    return { profileImgUrl };
   }
 
   /**

@@ -8,6 +8,10 @@
     "basePath": "/api/v1"
   },
   "routes": {
-    "routesDir": "src/generated"
+    "routesDir": "src/generated",
+    "esm": true
+  },
+  "multerOpts": {
+    "limits": { "fileSize": 5242880 }
   }
 }

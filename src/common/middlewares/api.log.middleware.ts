@@ -3,7 +3,9 @@ import { prisma } from '../../db.config';
 import { verifyAccessToken } from '../../auth.config';
 
 function extractUserId(authorization: string | undefined): string | null {
-  const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+  const token = authorization?.startsWith('Bearer ')
+    ? authorization.slice(7)
+    : null;
   if (!token) return null;
 
   try {
@@ -13,13 +15,14 @@ function extractUserId(authorization: string | undefined): string | null {
   }
 }
 
-export function apiLogMiddleware(req: Request, res: Response, next: NextFunction): void {
-  if (!req.originalUrl.startsWith('/api')) {
-    next();
-    return;
-  }
-
+export function apiLogMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   res.on('finish', () => {
+    if (!req.route) return;
+
     prisma.apiLog
       .create({
         data: {
@@ -34,6 +37,5 @@ export function apiLogMiddleware(req: Request, res: Response, next: NextFunction
         console.error('[apiLogMiddleware] failed to write log:', err);
       });
   });
-
   next();
 }
