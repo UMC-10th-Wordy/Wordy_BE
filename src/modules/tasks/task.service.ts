@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import { TaskRepository } from './task.repository';
 import {
   CreateTaskRequest,
+  TaskPriority,
+  TaskReorderRequest,
+  TaskReorderResponse,
   TaskResponse,
   TaskWithResultResponse,
   UpdateTaskRequest,
@@ -16,19 +19,31 @@ interface AccessTokenPayload {
 
 class UnauthorizedError extends ApiError {
   constructor() {
-    super(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, ErrorCode.UNAUTHORIZED.message);
+    super(
+      ErrorCode.UNAUTHORIZED.status,
+      ErrorCode.UNAUTHORIZED.code,
+      ErrorCode.UNAUTHORIZED.message,
+    );
   }
 }
 
 class BadRequestError extends ApiError {
   constructor(message: string) {
-    super(ErrorCode.BAD_REQUEST.status, ErrorCode.BAD_REQUEST.code, message);
+    super(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      message,
+    );
   }
 }
 
 class NotFoundError extends ApiError {
   constructor(message: string) {
-    super(ErrorCode.NOT_FOUND.status, ErrorCode.NOT_FOUND.code, message);
+    super(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      message,
+    );
   }
 }
 
@@ -39,11 +54,17 @@ export class TaskService {
     authorization: string | undefined,
     date: string,
   ): Promise<TaskWithResultResponse[]> {
-    const userId = this.getUserIdFromAuthorization(authorization);
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
 
     this.validateDate(date);
 
-    const tasks = await this.taskRepository.findManyByUserIdAndDate(userId, new Date(date));
+    const tasks =
+      await this.taskRepository.findManyByUserIdAndDate(
+        userId,
+        new Date(date),
+      );
+
     return tasks as unknown as TaskWithResultResponse[];
   }
 
@@ -51,20 +72,41 @@ export class TaskService {
     authorization: string | undefined,
     body: CreateTaskRequest,
   ): Promise<TaskResponse> {
-    const userId = this.getUserIdFromAuthorization(authorization);
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
 
     this.validateCreateTaskRequest(body);
 
-    const existsTag = await this.taskRepository.existsActiveTagByIdAndUserId(
-      body.tagId,
-      userId,
-    );
+    const existsTag =
+      await this.taskRepository.existsActiveTagByIdAndUserId(
+        body.tagId,
+        userId,
+      );
 
     if (!existsTag) {
-      throw new BadRequestError('존재하지 않거나 사용할 수 없는 태그입니다.');
+      throw new BadRequestError(
+        '존재하지 않거나 사용할 수 없는 태그입니다.',
+      );
     }
 
-    const task = await this.taskRepository.create(userId, body);
+    const taskDate = new Date(body.taskDate);
+
+    /**
+     * 새 업무는 해당 날짜 / priority 그룹의 맨 뒤에 배치
+     */
+    const sortOrder =
+      await this.taskRepository.findNextSortOrder(
+        userId,
+        taskDate,
+        body.priority,
+      );
+
+    const task = await this.taskRepository.create(
+      userId,
+      body,
+      sortOrder,
+    );
+
     return task as unknown as TaskResponse;
   }
 
@@ -72,15 +114,60 @@ export class TaskService {
     authorization: string | undefined,
     taskId: string,
   ): Promise<TaskWithResultResponse> {
-    const userId = this.getUserIdFromAuthorization(authorization);
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
 
-    const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
+    const task =
+      await this.taskRepository.findActiveByIdAndUserId(
+        taskId,
+        userId,
+      );
 
     if (!task) {
-      throw new NotFoundError('업무카드를 찾을 수 없습니다.');
+      throw new NotFoundError(
+        '업무카드를 찾을 수 없습니다.',
+      );
     }
 
     return task as unknown as TaskWithResultResponse;
+  }
+
+  /**
+   * 드래그 앤 드롭으로 업무 순서 및 우선순위를 변경합니다.
+   */
+  public async reorderTasks(
+    authorization: string | undefined,
+    body: TaskReorderRequest,
+  ): Promise<TaskReorderResponse> {
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
+
+    this.validateReorderRequest(body);
+
+    const taskIds =
+      body.tasks.map((task) => task.taskId);
+
+    const ownedTasks =
+      await this.taskRepository.findTasksByIdsAndUserId(
+        taskIds,
+        userId,
+      );
+
+    /**
+     * 존재하지 않거나 다른 사용자의 Task가 하나라도 포함되면 전체 요청 실패
+     */
+    if (ownedTasks.length !== taskIds.length) {
+      throw new BadRequestError(
+        '존재하지 않거나 수정할 수 없는 업무가 포함되어 있습니다.',
+      );
+    }
+
+    const updatedCount =
+      await this.taskRepository.reorderTasks(body.tasks);
+
+    return {
+      updatedCount,
+    };
   }
 
   public async updateTask(
@@ -88,28 +175,81 @@ export class TaskService {
     taskId: string,
     body: UpdateTaskRequest,
   ): Promise<TaskResponse> {
-    const userId = this.getUserIdFromAuthorization(authorization);
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
 
-    const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
+    const task =
+      await this.taskRepository.findActiveByIdAndUserId(
+        taskId,
+        userId,
+      );
 
     if (!task) {
-      throw new NotFoundError('업무카드를 찾을 수 없습니다.');
+      throw new NotFoundError(
+        '업무카드를 찾을 수 없습니다.',
+      );
     }
 
     this.validateUpdateTaskRequest(body);
 
     if (body.tagId !== undefined) {
-      const existsTag = await this.taskRepository.existsActiveTagByIdAndUserId(
-        body.tagId,
-        userId,
-      );
+      const existsTag =
+        await this.taskRepository.existsActiveTagByIdAndUserId(
+          body.tagId,
+          userId,
+        );
 
       if (!existsTag) {
-        throw new BadRequestError('존재하지 않거나 사용할 수 없는 태그입니다.');
+        throw new BadRequestError(
+          '존재하지 않거나 사용할 수 없는 태그입니다.',
+        );
       }
     }
 
-    const updatedTask = await this.taskRepository.update(taskId, body);
+    let nextSortOrder: number | undefined;
+
+    /**
+     * priority 또는 날짜가 변경되면
+     * 새 날짜 / priority 그룹의 맨 뒤로 이동합니다.
+     *
+     * 예:
+     * MUST_DO → SHOULD_DO
+     * 오늘 → 내일
+     */
+    const targetPriority =
+      body.priority ??
+      (task.priority as TaskPriority);
+
+    const targetTaskDate =
+      body.taskDate !== undefined
+        ? new Date(body.taskDate)
+        : task.taskDate;
+
+    const priorityChanged =
+      body.priority !== undefined &&
+      body.priority !== task.priority;
+
+    const dateChanged =
+      body.taskDate !== undefined &&
+      targetTaskDate.getTime() !==
+        task.taskDate.getTime();
+
+    if (priorityChanged || dateChanged) {
+      nextSortOrder =
+        await this.taskRepository.findNextSortOrder(
+          userId,
+          targetTaskDate,
+          targetPriority,
+        );
+    }
+
+    const updatedTask =
+      await this.taskRepository.update(
+        taskId,
+        body,
+        nextSortOrder,
+      );
+
     return updatedTask as unknown as TaskResponse;
   }
 
@@ -117,23 +257,36 @@ export class TaskService {
     authorization: string | undefined,
     taskId: string,
   ): Promise<void> {
-    const userId = this.getUserIdFromAuthorization(authorization);
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
 
-    const task = await this.taskRepository.findActiveByIdAndUserId(taskId, userId);
+    const task =
+      await this.taskRepository.findActiveByIdAndUserId(
+        taskId,
+        userId,
+      );
 
     if (!task) {
-      throw new NotFoundError('업무카드를 찾을 수 없습니다.');
+      throw new NotFoundError(
+        '업무카드를 찾을 수 없습니다.',
+      );
     }
 
     await this.taskRepository.softDelete(taskId);
   }
 
-  private getUserIdFromAuthorization(authorization: string | undefined): string {
-    if (!authorization || !authorization.startsWith('Bearer ')) {
+  private getUserIdFromAuthorization(
+    authorization: string | undefined,
+  ): string {
+    if (
+      !authorization ||
+      !authorization.startsWith('Bearer ')
+    ) {
       throw new UnauthorizedError();
     }
 
-    const token = authorization.replace('Bearer ', '');
+    const token =
+      authorization.replace('Bearer ', '');
 
     try {
       const payload = jwt.verify(
@@ -147,38 +300,62 @@ export class TaskService {
     }
   }
 
-  private validateCreateTaskRequest(body: CreateTaskRequest) {
-    if (!body.title || body.title.trim().length === 0) {
-      throw new BadRequestError('업무카드 제목은 필수입니다.');
+  private validateCreateTaskRequest(
+    body: CreateTaskRequest,
+  ) {
+    if (
+      !body.title ||
+      body.title.trim().length === 0
+    ) {
+      throw new BadRequestError(
+        '업무카드 제목은 필수입니다.',
+      );
     }
 
     if (body.title.length > 100) {
-      throw new BadRequestError('업무카드 제목은 100자 이하로 입력해주세요.');
+      throw new BadRequestError(
+        '업무카드 제목은 100자 이하로 입력해주세요.',
+      );
     }
 
     if (!body.priority) {
-      throw new BadRequestError('우선순위는 필수입니다.');
+      throw new BadRequestError(
+        '우선순위는 필수입니다.',
+      );
     }
 
     if (!body.taskDate) {
-      throw new BadRequestError('업무 날짜는 필수입니다.');
+      throw new BadRequestError(
+        '업무 날짜는 필수입니다.',
+      );
     }
 
     this.validateDate(body.taskDate);
 
     if (!body.tagId) {
-      throw new BadRequestError('태그는 필수입니다.');
+      throw new BadRequestError(
+        '태그는 필수입니다.',
+      );
     }
   }
 
-  private validateUpdateTaskRequest(body: UpdateTaskRequest) {
+  private validateUpdateTaskRequest(
+    body: UpdateTaskRequest,
+  ) {
     if (body.title !== undefined) {
-      if (!body.title || body.title.trim().length === 0) {
-        throw new BadRequestError('업무카드 제목은 비워둘 수 없습니다.');
+      if (
+        !body.title ||
+        body.title.trim().length === 0
+      ) {
+        throw new BadRequestError(
+          '업무카드 제목은 비워둘 수 없습니다.',
+        );
       }
 
       if (body.title.length > 100) {
-        throw new BadRequestError('업무카드 제목은 100자 이하로 입력해주세요.');
+        throw new BadRequestError(
+          '업무카드 제목은 100자 이하로 입력해주세요.',
+        );
       }
     }
 
@@ -187,11 +364,88 @@ export class TaskService {
     }
   }
 
-  private validateDate(date: string) {
-    const parsedDate = new Date(date);
+  private validateReorderRequest(
+    body: TaskReorderRequest,
+  ) {
+    if (
+      !body.tasks ||
+      !Array.isArray(body.tasks) ||
+      body.tasks.length === 0
+    ) {
+      throw new BadRequestError(
+        '변경할 업무가 존재하지 않습니다.',
+      );
+    }
 
-    if (Number.isNaN(parsedDate.getTime())) {
-      throw new BadRequestError('날짜 형식이 올바르지 않습니다.');
+    const taskIds =
+      body.tasks.map((task) => task.taskId);
+
+    const uniqueTaskIds =
+      new Set(taskIds);
+
+    if (
+      uniqueTaskIds.size !== taskIds.length
+    ) {
+      throw new BadRequestError(
+        '중복된 업무가 포함되어 있습니다.',
+      );
+    }
+
+    const hasInvalidSortOrder =
+      body.tasks.some(
+        (task) =>
+          !Number.isInteger(task.sortOrder) ||
+          task.sortOrder < 0,
+      );
+
+    if (hasInvalidSortOrder) {
+      throw new BadRequestError(
+        '업무 순서는 0 이상의 정수여야 합니다.',
+      );
+    }
+
+    /**
+     * 같은 priority 안에서 동일한 sortOrder가 중복되는 요청 방지
+     */
+    const orderKeys =
+      body.tasks.map(
+        (task) =>
+          `${task.priority}:${task.sortOrder}`,
+      );
+
+    const uniqueOrderKeys =
+      new Set(orderKeys);
+
+    if (
+      uniqueOrderKeys.size !== orderKeys.length
+    ) {
+      throw new BadRequestError(
+        '같은 우선순위 내에 중복된 업무 순서가 존재합니다.',
+      );
+    }
+  }
+
+  private validateDate(date: string) {
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(date)
+    ) {
+      throw new BadRequestError(
+        '날짜는 YYYY-MM-DD 형식으로 입력해주세요.',
+      );
+    }
+
+    const parsedDate =
+      new Date(`${date}T00:00:00.000Z`);
+
+    if (
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate
+        .toISOString()
+        .slice(0, 10) !== date
+    ) {
+      throw new BadRequestError(
+        '유효하지 않은 날짜입니다.',
+      );
     }
   }
 }

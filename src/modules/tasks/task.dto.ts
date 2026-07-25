@@ -73,6 +73,9 @@ export class TaskResponse {
   @Example(TaskPriority.MUST_DO)
   priority!: TaskPriority;
 
+  @Example(0)
+  sortOrder!: number;
+
   @Example('Swagger Example 추가')
   memo!: string | null;
 
@@ -106,4 +109,24 @@ export class TaskResponse {
 export class TaskWithResultResponse extends TaskResponse {
   @Example(null)
   taskResult!: TaskResultResponse | null;
+}
+
+export class TaskReorderItem {
+  @Example('11111111-1111-1111-1111-111111111111')
+  taskId!: string;
+
+  @Example(TaskPriority.MUST_DO)
+  priority!: TaskPriority;
+
+  @Example(0)
+  sortOrder!: number;
+}
+
+export class TaskReorderRequest {
+  tasks!: TaskReorderItem[];
+}
+
+export class TaskReorderResponse {
+  @Example(3)
+  updatedCount!: number;
 }
