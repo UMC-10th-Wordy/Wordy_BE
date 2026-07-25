@@ -307,6 +307,11 @@
 						"$ref": "#/components/schemas/TaskPriority",
 						"example": "MUST_DO"
 					},
+					"sortOrder": {
+						"type": "number",
+						"format": "double",
+						"example": 0
+					},
 					"memo": {
 						"type": "string",
 						"nullable": true,
@@ -368,6 +373,7 @@
 					"taskId",
 					"title",
 					"priority",
+					"sortOrder",
 					"memo",
 					"status",
 					"taskDate",
@@ -424,6 +430,11 @@
 						"$ref": "#/components/schemas/TaskPriority",
 						"example": "MUST_DO"
 					},
+					"sortOrder": {
+						"type": "number",
+						"format": "double",
+						"example": 0
+					},
 					"memo": {
 						"type": "string",
 						"nullable": true,
@@ -476,6 +487,7 @@
 					"taskId",
 					"title",
 					"priority",
+					"sortOrder",
 					"memo",
 					"status",
 					"taskDate",
@@ -546,6 +558,88 @@
 					"priority",
 					"taskDate",
 					"tagId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskReorderResponse": {
+				"properties": {
+					"updatedCount": {
+						"type": "number",
+						"format": "double",
+						"example": 3
+					}
+				},
+				"required": [
+					"updatedCount"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_TaskReorderResponse_": {
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TaskReorderResponse"
+							}
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"success",
+					"code",
+					"message",
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskReorderItem": {
+				"properties": {
+					"taskId": {
+						"type": "string",
+						"example": "11111111-1111-1111-1111-111111111111"
+					},
+					"priority": {
+						"$ref": "#/components/schemas/TaskPriority",
+						"example": "MUST_DO"
+					},
+					"sortOrder": {
+						"type": "number",
+						"format": "double",
+						"example": 0
+					}
+				},
+				"required": [
+					"taskId",
+					"priority",
+					"sortOrder"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskReorderRequest": {
+				"properties": {
+					"tasks": {
+						"items": {
+							"$ref": "#/components/schemas/TaskReorderItem"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"tasks"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -3670,6 +3764,7 @@
 													"taskId": "0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a",
 													"title": "백엔드 API 구현",
 													"priority": "MUST_DO",
+													"sortOrder": 0,
 													"memo": "Swagger Example 추가",
 													"status": "COMPLETED",
 													"taskDate": "2026-07-21T00:00:00.000Z",
@@ -3697,6 +3792,7 @@
 													"taskId": "1a6d55f5-48c0-4a6d-8f43-9ef5c41d2e6b",
 													"title": "프론트 연동 테스트",
 													"priority": "SHOULD_DO",
+													"sortOrder": 0,
 													"memo": null,
 													"status": "IN_PROGRESS",
 													"taskDate": "2026-07-21T00:00:00.000Z",
@@ -3777,6 +3873,7 @@
 												"taskId": "0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a",
 												"title": "백엔드 API 구현",
 												"priority": "MUST_DO",
+												"sortOrder": 0,
 												"memo": "Swagger Example 추가",
 												"status": "IN_PROGRESS",
 												"taskDate": "2026-07-21T00:00:00.000Z",
@@ -3827,6 +3924,82 @@
 				}
 			}
 		},
+		"/tasks/reorder": {
+			"patch": {
+				"operationId": "ReorderTasks",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_TaskReorderResponse_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"tasks": [
+												{
+													"taskId": "11111111-1111-1111-1111-111111111111",
+													"priority": "MUST_DO",
+													"sortOrder": 0
+												},
+												{
+													"taskId": "22222222-2222-2222-2222-222222222222",
+													"priority": "MUST_DO",
+													"sortOrder": 1
+												},
+												{
+													"taskId": "33333333-3333-3333-3333-333333333333",
+													"priority": "SHOULD_DO",
+													"sortOrder": 0
+												}
+											]
+										}
+									},
+									"Example 2": {
+										"value": {
+											"success": true,
+											"code": "COMMON200",
+											"message": "업무 순서가 변경되었습니다.",
+											"result": {
+												"updatedCount": 3
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "드래그 앤 드롭으로 업무의 순서 및 우선순위를 변경합니다.\r\n\r\n같은 우선순위 내부에서 순서만 변경할 수도 있고,\r\n다른 우선순위로 이동할 수도 있습니다.",
+				"summary": "업무 순서 변경",
+				"tags": [
+					"Tasks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TaskReorderRequest"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/tasks/{taskId}": {
 			"get": {
 				"operationId": "GetTask",
@@ -3848,6 +4021,7 @@
 												"taskId": "0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a",
 												"title": "백엔드 API 구현",
 												"priority": "MUST_DO",
+												"sortOrder": 0,
 												"memo": "Swagger Example 추가",
 												"status": "IN_PROGRESS",
 												"taskDate": "2026-07-21T00:00:00.000Z",
@@ -3932,6 +4106,7 @@
 												"taskId": "0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a",
 												"title": "백엔드 API 수정",
 												"priority": "SHOULD_DO",
+												"sortOrder": 0,
 												"memo": "메모 수정",
 												"status": "COMPLETED",
 												"taskDate": "2026-07-22T00:00:00.000Z",

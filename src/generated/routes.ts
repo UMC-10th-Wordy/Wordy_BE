@@ -153,6 +153,7 @@ const models: TsoaRoute.Models = {
             "taskId": {"dataType":"string","required":true},
             "title": {"dataType":"string","required":true},
             "priority": {"ref":"TaskPriority","required":true},
+            "sortOrder": {"dataType":"double","required":true},
             "memo": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "status": {"ref":"TaskStatus","required":true},
             "taskDate": {"dataType":"datetime","required":true},
@@ -185,6 +186,7 @@ const models: TsoaRoute.Models = {
             "taskId": {"dataType":"string","required":true},
             "title": {"dataType":"string","required":true},
             "priority": {"ref":"TaskPriority","required":true},
+            "sortOrder": {"dataType":"double","required":true},
             "memo": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "status": {"ref":"TaskStatus","required":true},
             "taskDate": {"dataType":"datetime","required":true},
@@ -218,6 +220,43 @@ const models: TsoaRoute.Models = {
             "taskDate": {"dataType":"string","required":true},
             "tagId": {"dataType":"string","required":true},
             "memo": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskReorderResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "updatedCount": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_TaskReorderResponse_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "code": {"dataType":"string","required":true},
+            "message": {"dataType":"string","required":true},
+            "result": {"dataType":"union","subSchemas":[{"ref":"TaskReorderResponse"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskReorderItem": {
+        "dataType": "refObject",
+        "properties": {
+            "taskId": {"dataType":"string","required":true},
+            "priority": {"ref":"TaskPriority","required":true},
+            "sortOrder": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskReorderRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "tasks": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskReorderItem"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -1494,6 +1533,37 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'createTask',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsTaskController_reorderTasks: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"ref":"TaskReorderRequest"},
+        };
+        app.patch('/tasks/reorder',
+            ...(fetchMiddlewares<RequestHandler>(TaskController)),
+            ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.reorderTasks)),
+
+            async function TaskController_reorderTasks(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsTaskController_reorderTasks, request, response });
+
+                const controller = new TaskController();
+
+              await templateService.apiHandler({
+                methodName: 'reorderTasks',
                 controller,
                 response,
                 next,
