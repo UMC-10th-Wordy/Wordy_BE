@@ -25,7 +25,7 @@ export class PerformanceRequestDto {
 
 export class TaskDto {
 
-  @Example("uuid")
+  @Example("550e8400-e29b-41d4-a716-446655440000")
   taskId!: string;
 
   @Example("SHOULD_DO")

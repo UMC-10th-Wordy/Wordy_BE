@@ -33,7 +33,7 @@ export class DashboardAiController extends Controller {
    */
   @Post("dashboard/weekly")
   @Example<DashboardResponseDto>({
-    dashboardId:"dashboard-weekly-001",
+    dashboardId:"550e8400-e29b-41d4-a716-446655440000",
     startDate:"2026-07-07",
     endDate:"2026-07-13",
 
@@ -77,7 +77,7 @@ export class DashboardAiController extends Controller {
    */
   @Post("dashboard/monthly")
   @Example<DashboardResponseDto>({
-    dashboardId:"dashboard-monthly-001",
+    dashboardId:"550e8400-e29b-41d4-a716-446655440000",
     startDate:"2026-07-01",
     endDate:"2026-07-31",
     summary:"이번 달에는 AI 기능 개발과 업무 관리 시스템 개선을 중심으로 성장했습니다.",

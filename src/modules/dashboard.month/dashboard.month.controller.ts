@@ -11,6 +11,7 @@ import {
   MonthlyDashboardListItem,
   MonthlyDashboardDetail,
   CreateMonthlyReflectionRequest,
+  MonthlyReflectionItem,
 } from "./dashboard.month.dto.js";
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
@@ -141,16 +142,14 @@ export class MonthlyDashboardController extends Controller {
    * @example body {"workSummary": "6월 한 달간 온보딩 리뉴얼 완료", "resourcesUsed": "사용자 인터뷰와 로그 데이터 분석", "learning": "데이터 기반 의사결정의 중요성을 배웠다"}
    */
   @Post("{dashboardId}/reflection")
-  @Example<ApiResponse<any>>({
+  @Example<ApiResponse<MonthlyReflectionItem>>({
     success: true,
     code: "S201",
     message: "생성에 성공했습니다.",
     result: {
-      weeklyReflectionId: "uuid-reflection-1",
       workSummary: "6월 한 달간 온보딩 리뉴얼 완료",
       resourcesUsed: "사용자 인터뷰와 로그 데이터 분석",
       learning: "데이터 기반 의사결정의 중요성을 배웠다",
-      createdAt: "2026-06-30T10:00:00.000Z",
     },
   })
   public async createReflection(
@@ -168,6 +167,78 @@ export class MonthlyDashboardController extends Controller {
    * @example body {"startDate": "2026-06-01", "endDate": "2026-06-30"}
    */
   @Post()
+  @Example<ApiResponse<MonthlyDashboardDetail>>({
+    success: true,
+    code: "S201",
+    message: "생성에 성공했습니다.",
+    result: {
+      dashboardId: "550e8400-e29b-41d4-a716-446655440000",
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+      summary: "AI가 생성한 6월 월간 업무 성과 요약",
+
+      journalDays: 20,
+      performanceCount: 30,
+      tagCount: 5,
+
+      insights: [
+        {
+          journalDays: 20,
+          performanceCount: 30,
+          tagCount: 5,
+        },
+      ],
+
+      kpis: [
+        {
+          kpiName: "월간 핵심 목표 달성률",
+          progress: "85%",
+        },
+      ],
+
+      tagAnalyses: [
+        {
+          goal: "온보딩 전면 개선",
+          expectedOutcome: "사용자 경험 향상",
+          taskCount: 30,
+          periodStart: "2026-06-01",
+          periodEnd: "2026-06-30",
+          achievementStatus: "COMPLETED",
+        },
+      ],
+
+      weeklyReflections: [
+        {
+          workSummary: "6월 주요 업무 정리",
+          resourcesUsed: "사용자 인터뷰 및 로그 분석",
+          learning: "데이터 기반 의사결정 경험",
+        },
+      ],
+
+      performances: [
+        {
+          achievementRate: 85,
+          summary: "월간 목표 대부분 달성",
+          growthInsight: {
+            insight: "팀 협업 효율 향상",
+          },
+          nextAction: {
+            action: "다음 달 확장 작업 준비",
+          },
+          items: [
+            {
+              output: {
+                title: "온보딩 전면 개편",
+              },
+              impact: {
+                description: "사용자 경험 개선",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  })
   public async createDashboard(
     @Body() body: { startDate: string; endDate: string }
   ): Promise<ApiResponse<any>> {
