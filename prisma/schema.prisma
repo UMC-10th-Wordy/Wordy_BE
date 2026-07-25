@@ -194,6 +194,7 @@ model Task {
   title       String       @db.VarChar(100)
   memo        String?      @db.Text
   status      TaskStatus   @default(IN_PROGRESS)
+  sortOrder   Int          @default(0) @map("sort_order")
   createdAt   DateTime     @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt   DateTime     @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt   DateTime?    @map("deleted_at") @db.DateTime(0)
