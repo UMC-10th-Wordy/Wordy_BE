@@ -1283,7 +1283,7 @@ const models: TsoaRoute.Models = {
             "goal": {"dataType":"string","required":true},
             "expectedOutcome": {"dataType":"string","required":true},
             "period": {"dataType":"string"},
-            "userJob": {"dataType":"string","required":true},
+            "userJob": {"ref":"JobRole","required":true},
         },
         "additionalProperties": false,
     },

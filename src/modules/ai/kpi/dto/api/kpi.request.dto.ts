@@ -1,5 +1,5 @@
 import { Example } from "tsoa";
-import { JobRole } from "../../../../../generated/prisma/enums";
+import { JobRole } from "../../../../users/users.dto";
 
 export class KpiRequestDto {
   @Example("AI 업무 관리")
