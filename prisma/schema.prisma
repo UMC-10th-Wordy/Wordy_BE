@@ -227,6 +227,7 @@ model DailyEntry {
   user                User                 @relation(fields: [userId], references: [userId])
   reflectionTasks     ReflectionTask[]
   dailyPerformances   DailyPerformance[]
+  reflectionSnapshots ReflectionSnapshot[]
 
   @@unique([userId, entryDate])
   @@index([userId])
@@ -276,15 +277,17 @@ model Attachment {
 
 model ReflectionSnapshot {
   reflectionSnapshotId String   @id @default(uuid()) @map("reflection_snapshot_id") @db.Char(36)
+  dailyEntryId         String   @map("daily_entry_id") @db.Char(36)
   promptAResult        Json?    @map("prompt_a_result")
   promptBResult        Json?    @map("prompt_b_result")
   createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
-
+  dailyEntry           DailyEntry @relation(fields: [dailyEntryId], references: [dailyEntryId])
   aiQuestions             AIQuestion[]
   dailyPerformances       DailyPerformance[]
   aiRuns                  AIRun[]
   reflectionTaskSnapshots ReflectionTaskSnapshot[]
-
+  
+  @@index([dailyEntryId])
   @@map("ReflectionSnapshot")
 }
 
