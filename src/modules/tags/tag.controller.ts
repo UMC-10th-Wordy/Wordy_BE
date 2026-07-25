@@ -16,7 +16,7 @@ export class TagController extends Controller {
   @Get()
   @Example<ApiResponse<TagResponse[]>>({
     success: true,
-    code: "COMMON200",
+    code: "S200",
     message: "태그 목록 조회 성공",
     result: [
       {
@@ -52,24 +52,9 @@ export class TagController extends Controller {
    * @summary 태그 생성
    */
   @Post()
-  @Example<CreateTagRequest>({
-    tagName: "Wordy",
-    color: "#4F46E5",
-    projectName: "Wordy 프로젝트",
-    projectPurpose: "AI 업무 관리 서비스 개발",
-    expectedOutcome: "업무 성과 분석 자동화",
-    expectedStartDate: "2026-07-01",
-    expectedEndDate: "2026-12-31",
-    kpis: [
-      {
-        name: "AI 기능 개발 완료율",
-        target: "100%",
-      },
-    ],
-  })
   @Example<ApiResponse<TagResponse>>({
     success: true,
-    code: "COMMON201",
+    code: "S201",
     message: "태그가 생성되었습니다.",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
@@ -102,7 +87,7 @@ export class TagController extends Controller {
   @Get('{tagId}')
   @Example<ApiResponse<TagResponse>>({
     success: true,
-    code: "COMMON200",
+    code: "S200",
     message: "태그 상세 조회 성공",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
@@ -137,24 +122,9 @@ export class TagController extends Controller {
    * @summary 태그 수정
    */
   @Patch('{tagId}')
-  @Example<UpdateTagRequest>({
-    tagName: "Wordy Backend",
-    color: "#22C55E",
-    projectName: "Wordy 프로젝트",
-    projectPurpose: "AI 업무 관리 시스템 개선",
-    expectedOutcome: "서비스 안정성 향상",
-    expectedStartDate: "2026-07-15",
-    expectedEndDate: "2026-12-31",
-    kpis: [
-      {
-        name: "API 응답 속도",
-        target: "200ms 이하",
-      },
-    ],
-  })
   @Example<ApiResponse<TagResponse>>({
     success: true,
-    code: "COMMON200",
+    code: "S200",
     message: "태그가 수정되었습니다.",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
@@ -192,7 +162,7 @@ export class TagController extends Controller {
   @Delete('{tagId}')
   @Example<ApiResponse<null>>({
     success: true,
-    code: "COMMON204",
+    code: "S200",
     message: "태그가 삭제되었습니다.",
     result: null,
   })

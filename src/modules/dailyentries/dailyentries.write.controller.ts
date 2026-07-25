@@ -29,11 +29,6 @@ export class DailyEntriesWriteController extends Controller {
    * @param authorization Bearer Access Token
    */
   @Post()
-  @Example<CreateDailyEntryRequest>({
-    entryDate: '2026-07-24',
-    reflectionContent:
-      '오늘 업무 결과 API 구현과 Swagger 문서화를 완료했다.',
-  })
   @Example<ApiResponse<CreateDailyEntryResponse>>({
     success: true,
     code: 'S201',

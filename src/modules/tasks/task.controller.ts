@@ -41,7 +41,7 @@ export class TaskController extends Controller {
   @Get()
   @Example<ApiResponse<TaskWithResultResponse[]>>({
     success: true,
-    code: 'COMMON200',
+    code: 'S200',
     message: '업무카드 목록 조회가 완료되었습니다.',
     result: [
       {
@@ -147,17 +147,9 @@ export class TaskController extends Controller {
    * @summary 업무카드 생성
    */
   @Post()
-  @Example<CreateTaskRequest>({
-    title: '백엔드 API 구현',
-    priority: TaskPriority.MUST_DO,
-    taskDate: '2026-07-21',
-    tagId:
-      '7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2',
-    memo: 'Swagger Example 추가',
-  })
   @Example<ApiResponse<TaskResponse>>({
     success: true,
-    code: 'COMMON201',
+    code: 'S201',
     message: '업무카드가 생성되었습니다.',
     result: {
       taskId:
@@ -220,31 +212,9 @@ export class TaskController extends Controller {
    * @summary 업무 순서 변경
    */
   @Patch('reorder')
-  @Example<TaskReorderRequest>({
-    tasks: [
-      {
-        taskId:
-          '11111111-1111-1111-1111-111111111111',
-        priority: TaskPriority.MUST_DO,
-        sortOrder: 0,
-      },
-      {
-        taskId:
-          '22222222-2222-2222-2222-222222222222',
-        priority: TaskPriority.MUST_DO,
-        sortOrder: 1,
-      },
-      {
-        taskId:
-          '33333333-3333-3333-3333-333333333333',
-        priority: TaskPriority.SHOULD_DO,
-        sortOrder: 0,
-      },
-    ],
-  })
   @Example<ApiResponse<TaskReorderResponse>>({
     success: true,
-    code: 'COMMON200',
+    code: 'S200',
     message: '업무 순서가 변경되었습니다.',
     result: {
       updatedCount: 3,
@@ -278,7 +248,7 @@ export class TaskController extends Controller {
   @Get('{taskId}')
   @Example<ApiResponse<TaskWithResultResponse>>({
     success: true,
-    code: 'COMMON200',
+    code: 'S200',
     message: '업무카드 상세 조회가 완료되었습니다.',
     result: {
       taskId:
@@ -350,18 +320,9 @@ export class TaskController extends Controller {
    * @summary 업무카드 수정
    */
   @Patch('{taskId}')
-  @Example<UpdateTaskRequest>({
-    title: '백엔드 API 수정',
-    priority: TaskPriority.SHOULD_DO,
-    status: TaskStatus.COMPLETED,
-    taskDate: '2026-07-22',
-    tagId:
-      '7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2',
-    memo: '메모 수정',
-  })
   @Example<ApiResponse<TaskResponse>>({
     success: true,
-    code: 'COMMON200',
+    code: 'S200',
     message: '업무카드가 수정되었습니다.',
     result: {
       taskId:
@@ -425,7 +386,7 @@ export class TaskController extends Controller {
   @Delete('{taskId}')
   @Example<ApiResponse<null>>({
     success: true,
-    code: 'COMMON204',
+    code: 'S200',
     message: '업무카드가 삭제되었습니다.',
     result: null,
   })

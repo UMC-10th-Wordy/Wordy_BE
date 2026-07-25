@@ -26,12 +26,9 @@ export class TaskResultController extends Controller {
    * @summary 업무 결과 작성 및 수정
    */
   @Put('{taskId}/result')
-  @Example<UpsertTaskResultRequest>({
-    content: '백엔드 API 구현 및 Swagger 문서화를 완료했습니다.',
-  })
   @Example<ApiResponse<TaskResultResponse>>({
     success: true,
-    code: 'COMMON200',
+    code: 'S200',
     message: '업무 결과가 저장되었습니다.',
     result: {
       taskResultId: 'f3a1e4c2-31b5-46f4-b134-a0e238a1ad01',
