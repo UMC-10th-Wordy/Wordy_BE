@@ -132,7 +132,7 @@ model Plan {
 
 model Profile {
   profileId      String         @id @default(uuid()) @map("profile_id") @db.Char(36)
-  userName       String         @map("user_name") @db.VarChar(5)
+  userName       String         @map("user_name") @db.VarChar(20)
   profileImgUrl  String?        @map("profile_img_url") @db.VarChar(255)
   yearsOfService YearsOfService @map("years_of_service")
   jobRole        JobRole        @map("job_role")
