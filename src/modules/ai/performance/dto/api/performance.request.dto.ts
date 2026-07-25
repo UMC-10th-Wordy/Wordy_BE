@@ -1,11 +1,14 @@
 import { Example } from "tsoa";
-import { TaskPriority } from "../../../../tasks/task.dto";
-import { JobRole } from "../../../../users/users.dto";
+import { TaskPriority, TaskStatus } from "../../../../tasks/task.dto";
+import { JobRole, YearsOfService } from "../../../../users/users.dto";
 export class PerformanceRequestDto {
-  
-  @Example("daily-entry-550e8400")
-  dailyEntryId!: string;
 
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  userId!: string;
+
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  dailyEntryId!: string;
+  
   tasks!: TaskDto[];
 
   @Example("오늘 Swagger 문서를 작성하고 API 예시를 추가했다.")
@@ -15,21 +18,24 @@ export class PerformanceRequestDto {
 
   @Example("DEVELOPMENT")
   userJob!: JobRole;
+
+  @Example("ONE_TO_THREE_YEARS")
+  yearsOfService!: YearsOfService;
 }
 
 export class TaskDto {
 
-  @Example("task-550e8400")
+  @Example("uuid")
   taskId!: string;
-
-  @Example("task-result-550e8400")
-  taskResultId?: string;
 
   @Example("SHOULD_DO")
   priority!: TaskPriority;
 
-  @Example(true)
-  completed!: boolean;
+  @Example("COMPLETED")
+  status!: TaskStatus;
+
+  @Example("2026-07-25T10:00:00Z")
+  completedAt?: string;
 
   @Example("Swagger 문서 작성")
   title!: string;
@@ -37,23 +43,31 @@ export class TaskDto {
   @Example("Request/Response 예시 추가")
   memo?: string;
 
+  taskResult!: TaskResultDto;
+}
+
+export class TaskResultDto {
+
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  taskResultId?: string;
+
   @Example("Swagger 문서를 모두 작성했다.")
-  result?: string;
+  content!: string;
 }
 
 export class ProjectTagDto {
 
-  @Example("project-tag-01")
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   projectTagId!: string;
 
   @Example("AI 기능")
-  title!: string;
+  tagName!: string;
 
   description?: string;
 
   kpis?: string[];
 
-  purpose?: string;
+  projectPurpose?: string;
 
   expectedOutcome?: string;
 

@@ -1,3 +1,5 @@
+import { Prisma } from "../../../generated/prisma/client";
+
 import { PromptManager } from "../common/prompt.manager";
 import { LlmClient } from "../common/llm.client";
 import { ResponseParser } from "../common/response.parser";
@@ -14,6 +16,19 @@ import { PromptCOutputDto }from "./dto/prompt/prompt.c.output.dto";
 import { PromptDOutputDto } from "./dto/prompt/prompt.d.output.dto";
 import { PromptDInputDto } from "./dto/prompt/prompt.d.input.dto";
 
+type PerformanceItem = {
+  output: unknown;
+  impact: unknown;
+  task: {
+    tag: {
+      tagName: string;
+      projectName: string | null;
+      projectPurpose: string | null;
+      expectedOutcome: string | null;
+      kpis: unknown;
+    } | null;
+  };
+};
 export class DashboardService {
   constructor(
     private readonly llmClient: LlmClient,
@@ -30,28 +45,27 @@ export class DashboardService {
   ): Promise<DashboardResponseDto> {
 
     // 1. 주간 성과 조회
-    const performances: DailyPerformance[] =
+    const performances =
       await this.prisma.dailyPerformance.findMany({
         where: {
-          reflectionSnapshot: {
-            dailyEntry: {
-              userId: request.userId,
-            },
-          },
+          userId: request.userId,
           createdAt: {
             gte: new Date(request.startDate),
             lte: new Date(request.endDate),
           },
         },
+        include: {
+          performanceItems: {
+            include: {
+              task: {
+                include: {
+                  tag: true,
+                },
+              },
+            },
+          },
+        },
       });
-
-    if (performances.length < 3) {
-      throw new ApiError(
-        ErrorCode.BAD_REQUEST.status,
-        ErrorCode.BAD_REQUEST.code,
-        "일주일간 성과 변환 3회 이상부터 대시보드를 생성할 수 있습니다.",
-      );
-    }
 
     // 2. Prompt C Input 생성
     const promptCInput: PromptCInputDto = {
@@ -117,7 +131,7 @@ export class DashboardService {
       startDate: request.startDate,
       endDate: request.endDate,
       summary: dashboardResult.summary,
-      journalDays: 0,
+      journalDays: performances.length,
       performanceCount: performances.length,
       tagCount: dashboardResult.tagAnalyses.length,
       kpis:
@@ -145,23 +159,17 @@ export class DashboardService {
     performances: DailyPerformance[],
   ): WeeklySummaryCandidateDto[] {
 
-    const highlighted =
-      performances.filter(
-        (performance) => performance.highlight,
-      );
-
-    const candidates =
-      highlighted.length > 0
-        ? highlighted
-        : performances;
-
-    return candidates.map(
+    return performances.map(
       (performance) => ({
         performanceId: performance.dailyPerformanceId,
-        projectTag: performance.projectTag ?? "",
-        output: performance.output ?? "",
-        impact: performance.impact ?? "",
-        highlight: performance.highlight ?? false,
+        summary: performance.summary,
+        items: performance.performanceItems.map(
+          (item: PerformanceItem) => ({
+            output: String(item.output),
+            impact: String(item.impact),
+          }),
+        ),
+        achievementRate: performance.achievementRate,
       }),
     );
   }
@@ -172,73 +180,92 @@ export class DashboardService {
   ): DashboardTagInputDto[] {
     const tagMap =
       new Map<string, DashboardTagInputDto>();
-    performances.forEach((performance) => {
-      const tagName =
-        performance.projectTag ?? "기타";
 
-      if (!tagMap.has(tagName)) {
-        tagMap.set(
-          tagName,
-          {
-            tagName,
-            objective: "",
-            expectedOutcome: "",
-            performances: [],
-            kpis: [],
+    performances.forEach(
+      (performance) => {
+        performance.performanceItems.forEach(
+          (item: PerformanceItem) => {
+            const tag = item.task.tag;
+            const tagName = tag?.tagName ?? "기타";
+
+            if (!tagMap.has(tagName)) {
+              tagMap.set(
+                tagName,
+                {
+                  tagName,
+                  projectName: tag?.projectName ?? "",
+                  projectPurpose: tag?.projectPurpose ?? "",
+                  expectedOutcome: tag?.expectedOutcome ?? "",
+                  performances: [],
+                  kpis:
+                    Array.isArray(tag?.kpis)
+                      ? tag.kpis as string[]
+                      : [],
+                },
+              );
+            }
+            tagMap
+              .get(tagName)!
+              .performances.push({
+                output: String(item.output),
+                impact: String(item.impact),
+              });
           },
         );
-      }
-
-      const tag =
-        tagMap.get(tagName)!;
-        tag.performances.push({
-          output: performance.output ?? "",
-          impact: performance.impact ?? "",
-        });
       },
     );
-
-    return Array.from(
-      tagMap.values(),
-    );
+    return Array.from(tagMap.values());
   }
 
   // KPI Prompt C Input 생성
   private createKpiInput(
     performances: DailyPerformance[],
   ): DashboardKpiInputDto[] {
+
     const kpiMap =
       new Map<string, DashboardKpiInputDto>();
 
     performances.forEach(
       (performance) => {
-        const kpiName = performance.kpiName;
+        performance.performanceItems.forEach(
+          (item: PerformanceItem) => {
+            const tag = item.task.tag;
 
-        if (!kpiName) {
-          return;
-        }
+            const kpis =
+              Array.isArray(tag?.kpis)
+                ? tag.kpis as {
+                    name:string;
+                    target:string;
+                  }[]
+                : [];
 
-        if (!kpiMap.has(kpiName)) {
-          kpiMap.set(
-            kpiName,
-            {
-              kpiName,
-              target: performance.kpiTarget ?? "",
-              relatedPerformances: [],
-            },
-          );
-        }
-
-        kpiMap
-          .get(kpiName)!
-          .relatedPerformances
-          .push(performance.output ?? "");
+            kpis.forEach(
+              (kpi) => {
+                if (!kpiMap.has(kpi.name)) {
+                  kpiMap.set(
+                    kpi.name,
+                    {
+                      kpiName: kpi.name,
+                      target: kpi.target,
+                      relatedPerformances: [],
+                    },
+                  );
+                }
+                kpiMap
+                  .get(kpi.name)!
+                  .relatedPerformances
+                  .push({
+                    output: String(item.output),
+                    impact: String(item.impact),
+                  });
+              },
+            );
+          },
+        );
       },
     );
 
-    return Array.from(
-      kpiMap.values(),
-    );
+    return Array.from(kpiMap.values());
   }
 
   // 월간 대시보드 AI 생성

@@ -8,16 +8,19 @@ export interface PromptCInputDto {
 
 export interface WeeklySummaryCandidateDto {
   performanceId: string;
-  projectTag: string;
-  output: string;
-  impact: string;
-  highlight: boolean;
+  summary: string;
+  items: {
+    output: string;
+    impact: string;
+  }[];
+  achievementRate: number;
 }
 
 export interface DashboardTagInputDto {
-  tagName: string;
-  objective: string;
-  expectedOutcome: string;
+  tagName:string;
+  projectName?: string;
+  projectPurpose?: string;
+  expectedOutcome?: string;
   performances:{
     output:string;
     impact:string;
@@ -28,5 +31,8 @@ export interface DashboardTagInputDto {
 export interface DashboardKpiInputDto {
   kpiName:string;
   target:string;
-  relatedPerformances:string[];
+  relatedPerformances:{
+    output:string;
+    impact:string;
+  }[];
 }

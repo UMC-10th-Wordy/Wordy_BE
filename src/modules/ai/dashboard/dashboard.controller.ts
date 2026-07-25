@@ -32,11 +32,6 @@ export class DashboardAiController extends Controller {
    * @summary 주간 대시보드 생성
    */
   @Post("dashboard/weekly")
-  @Example<DashboardRequestDto>({
-    userId: "550e8400-e29b-41d4-a716-446655440000",
-    startDate: "2026-07-07",
-    endDate: "2026-07-13"
-  })
   @Example<DashboardResponseDto>({
     dashboardId:"dashboard-weekly-001",
     startDate:"2026-07-07",
@@ -81,11 +76,6 @@ export class DashboardAiController extends Controller {
    * @summary 월간 대시보드 생성
    */
   @Post("dashboard/monthly")
-  @Example<DashboardRequestDto>({
-    userId:"550e8400-e29b-41d4-a716-446655440000",
-    startDate:"2026-07-01",
-    endDate:"2026-07-31"
-  })
   @Example<DashboardResponseDto>({
     dashboardId:"dashboard-monthly-001",
     startDate:"2026-07-01",
@@ -116,7 +106,7 @@ export class DashboardAiController extends Controller {
         tagName:"백엔드 개발",
         objective:"안정적인 API 구조 설계",
         expectedOutcome:"서비스의 원활한 API 연동",
-        achievementStatus:"진행중",
+        achievementStatus:"IN_PROGRESS",
         insight:"API 구조 개선과 코드 안정화 작업을 진행했습니다.",
       }
     ]
