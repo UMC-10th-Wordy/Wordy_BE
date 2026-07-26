@@ -4,9 +4,6 @@ import { JobRole, YearsOfService } from "../../../../users/users.dto";
 export class PerformanceRequestDto {
 
   @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
-  userId!: string;
-
-  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   dailyEntryId!: string;
   
   tasks!: TaskDto[];

@@ -10,6 +10,7 @@ import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
 import { PrismaClient, TaskStatus, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client";
+import { verifyAccessToken } from "../../../auth.config";
 import { ApiError } from "../../../common/errors/api.error";
 import { ErrorCode } from "../../../common/errors/error.code";
 
@@ -22,17 +23,44 @@ export class PerformanceService {
     private readonly prisma: PrismaClient,
   ) {}
 
-  
+  private extractUserId(
+    authorization: string | undefined,
+  ): string {
+    const token = authorization?.startsWith("Bearer ")
+      ? authorization.slice(7)
+      : null;
+
+    if (!token) {
+      throw new ApiError(
+        ErrorCode.UNAUTHORIZED.status,
+        ErrorCode.UNAUTHORIZED.code,
+        "인증이 필요합니다.",
+      );
+    }
+
+    try {
+      return verifyAccessToken(token).userId;
+    } catch {
+      throw new ApiError(
+        ErrorCode.UNAUTHORIZED.status,
+        ErrorCode.UNAUTHORIZED.code,
+        "인증이 필요합니다.",
+      );
+    }
+  }
 
   // 첫 번째 호출
   async generatePerformancePreview(
+    authorization: string | undefined,
     request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
+
+    const userId = this.extractUserId(authorization);
 
     const dailyEntry = await this.prisma.dailyEntry.findFirst({
       where: {
         dailyEntryId: request.dailyEntryId,
-        userId: request.userId,
+        userId,
       },
     });
 
@@ -105,6 +133,7 @@ export class PerformanceService {
     promptAResult,
     request,
     dailyEntry,
+    userId,
   );
 }
   
@@ -143,8 +172,11 @@ export class PerformanceService {
 
   // 질문 답변 후 최종 생성
   async completePerformancePreview(
+    authorization: string | undefined,
     request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {
+
+    const userId = this.extractUserId(authorization);
 
     // AIQuestion 상태 업데이트
     const questionStatus =
@@ -213,7 +245,7 @@ export class PerformanceService {
     const dailyEntry = await this.prisma.dailyEntry.findFirst({
       where: {
         dailyEntryId: request.originalRequest.dailyEntryId,
-        userId: request.originalRequest.userId,
+        userId,
       },
     });
 
@@ -229,6 +261,7 @@ export class PerformanceService {
       promptAResult,
       request.originalRequest,
       dailyEntry,
+      userId,
       request.reflectionSnapshotId,
     );
   }
@@ -238,6 +271,7 @@ export class PerformanceService {
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
     dailyEntry: DailyEntry,
+    userId: string,
     reflectionSnapshotId?: string,
   ): Promise<PerformanceResponseDto> {
 
@@ -307,7 +341,7 @@ export class PerformanceService {
 
   const tasks = await this.prisma.task.findMany({
     where: {
-      userId: request.userId,
+      userId,
       dailyEntryId: request.dailyEntryId,
     },
     include: {
@@ -358,7 +392,7 @@ export class PerformanceService {
     const performance =
       await this.prisma.dailyPerformance.create({
         data: {
-          userId: request.userId,
+          userId,
           dailyEntryId: request.dailyEntryId,
           achievementRate: completionRate,
           summary: promptBResult.summary,

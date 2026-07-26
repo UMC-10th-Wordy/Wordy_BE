@@ -8,6 +8,7 @@ import { RuleEngine } from "../common/rule.engine";
 import { PrismaClient, DailyPerformance, PromptType, AiRunStatus } from "../../../generated/prisma/client";
 import { ApiError } from "../../../common/errors/api.error";
 import { ErrorCode } from "../../../common/errors/error.code";
+import { verifyAccessToken } from "../../../auth.config";
 
 import { DashboardRequestDto }from "./dto/api/dashboard.request.dto";
 import { DashboardResponseDto }from "./dto/api/dashboard.response.dto";
@@ -38,17 +39,45 @@ export class DashboardService {
     private readonly prisma: PrismaClient,
   ) {}
 
+  private extractUserId(
+    authorization: string | undefined,
+  ): string {
+    const token = authorization?.startsWith("Bearer ")
+      ? authorization.slice(7)
+      : null;
+
+    if (!token) {
+      throw new ApiError(
+        ErrorCode.UNAUTHORIZED.status,
+        ErrorCode.UNAUTHORIZED.code,
+        "인증이 필요합니다.",
+      );
+    }
+
+    try {
+      return verifyAccessToken(token).userId;
+    } catch {
+      throw new ApiError(
+        ErrorCode.UNAUTHORIZED.status,
+        ErrorCode.UNAUTHORIZED.code,
+        "인증이 필요합니다.",
+      );
+    }
+  }
 
   // 주간 대시보드 AI 생성
   async generateWeeklyDashboard(
+    authorization: string | undefined,
     request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
+
+    const userId = this.extractUserId(authorization);
 
     // 1. 주간 성과 조회
     const performances =
       await this.prisma.dailyPerformance.findMany({
         where: {
-          userId: request.userId,
+          userId,
           createdAt: {
             gte: new Date(request.startDate),
             lte: new Date(request.endDate),
@@ -270,14 +299,17 @@ export class DashboardService {
 
   // 월간 대시보드 AI 생성
   async generateMonthlyDashboard(
+    authorization: string | undefined,
     request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
+
+    const userId = this.extractUserId(authorization);
 
     // 1. 주간 대시보드 조회
     const weeklyDashboards =
       await this.prisma.dashboard.findMany({
         where:{
-          userId:request.userId,
+          userId,
           startDate:{
             gte:new Date(request.startDate),
           },

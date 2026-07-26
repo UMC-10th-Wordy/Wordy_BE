@@ -1,4 +1,4 @@
-import { Body, Controller, Example, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
 import { LlmClient } from "../common/llm.client";
 import { PromptManager } from "../common/prompt.manager";
@@ -79,9 +79,11 @@ export class PerformanceController extends Controller {
       "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
   })
   public async createPerformancePreview(
+    @Header("Authorization") authorization: string | undefined,
     @Body() request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
     return this.performanceService.generatePerformancePreview(
+      authorization,
       request,
     );
   }
@@ -126,9 +128,11 @@ export class PerformanceController extends Controller {
       "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
   })
   public async completePerformancePreview(
+    @Header("Authorization") authorization: string | undefined,
     @Body() request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {
     return this.performanceService.completePerformancePreview(
+      authorization,
       request,
     );
   }

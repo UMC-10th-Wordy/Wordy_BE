@@ -1236,7 +1236,6 @@ const models: TsoaRoute.Models = {
     "PerformanceRequestDto": {
         "dataType": "refObject",
         "properties": {
-            "userId": {"dataType":"string","required":true},
             "dailyEntryId": {"dataType":"string","required":true},
             "tasks": {"dataType":"array","array":{"dataType":"refObject","ref":"TaskDto"},"required":true},
             "reflectionContent": {"dataType":"string","required":true},
@@ -1328,7 +1327,6 @@ const models: TsoaRoute.Models = {
     "DashboardRequestDto": {
         "dataType": "refObject",
         "properties": {
-            "userId": {"dataType":"string","required":true},
             "startDate": {"dataType":"string","required":true},
             "endDate": {"dataType":"string","required":true},
         },
@@ -2730,6 +2728,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsPerformanceController_createPerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"PerformanceRequestDto"},
         };
         app.post('/ai/performance-preview',
@@ -2760,6 +2759,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsPerformanceController_completePerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"PerformanceQuestionRequestDto"},
         };
         app.post('/ai/performance-preview/complete',
@@ -2790,6 +2790,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsKpiController_createKpiRecommendation: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"KpiRequestDto"},
         };
         app.post('/ai/project-tags/kpi-recommendation',
@@ -2820,6 +2821,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardAiController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
         };
         app.post('/ai/dashboard/weekly',
@@ -2850,6 +2852,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardAiController_createMonthlyDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
         };
         app.post('/ai/dashboard/monthly',

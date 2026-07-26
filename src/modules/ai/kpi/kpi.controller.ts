@@ -1,4 +1,4 @@
-import { Body, Controller, Example, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
 import { LlmClient } from "../common/llm.client";
 import { PromptManager } from "../common/prompt.manager";
@@ -38,9 +38,11 @@ export class KpiController extends Controller {
     ]
   })
   public async createKpiRecommendation(
+    @Header("Authorization") authorization: string | undefined,
     @Body() request: KpiRequestDto,
   ): Promise<KpiResponseDto> {
     return this.kpiService.generateKpiRecommendation(
+      authorization,
       request,
     );
   }

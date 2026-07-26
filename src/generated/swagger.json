@@ -3550,10 +3550,6 @@
 			},
 			"PerformanceRequestDto": {
 				"properties": {
-					"userId": {
-						"type": "string",
-						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
-					},
 					"dailyEntryId": {
 						"type": "string",
 						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
@@ -3577,11 +3573,10 @@
 					},
 					"yearsOfService": {
 						"$ref": "#/components/schemas/YearsOfService",
-						"example": "ONE_TO_THREE_YEARS"
+						"example": "ONE_TO_3"
 					}
 				},
 				"required": [
-					"userId",
 					"dailyEntryId",
 					"tasks",
 					"reflectionContent",
@@ -3826,10 +3821,6 @@
 			},
 			"DashboardRequestDto": {
 				"properties": {
-					"userId": {
-						"type": "string",
-						"example": "550e8400-e29b-41d4-a716-446655440000"
-					},
 					"startDate": {
 						"type": "string",
 						"example": "2026-07-07"
@@ -3840,7 +3831,6 @@
 					}
 				},
 				"required": [
-					"userId",
 					"startDate",
 					"endDate"
 				],
@@ -7040,7 +7030,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -7103,7 +7102,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -7147,7 +7155,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -7212,7 +7229,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -7284,7 +7310,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {

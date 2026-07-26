@@ -1,6 +1,6 @@
 console.log("dashboard.controller.ts loaded");
 
-import { Body, Controller, Example, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
 import { prisma } from "../../../common/prisma/prisma.client";
 import { LlmClient } from "../common/llm.client";
@@ -64,10 +64,11 @@ export class DashboardAiController extends Controller {
     ],
   })
   public async createDashboard(
+    @Header("Authorization") authorization: string | undefined,
     @Body() request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
-    console.log("컨트롤러 진입");
     return this.dashboardService.generateWeeklyDashboard(
+      authorization,
       request,
     );
   }
@@ -112,9 +113,11 @@ export class DashboardAiController extends Controller {
     ]
   })
   public async createMonthlyDashboard(
-    @Body() request:DashboardRequestDto,
-  ):Promise<DashboardResponseDto>{
+    @Header("Authorization") authorization: string | undefined,
+    @Body() request: DashboardRequestDto,
+  ): Promise<DashboardResponseDto> {
     return this.dashboardService.generateMonthlyDashboard(
+      authorization,
       request,
     );
   }
