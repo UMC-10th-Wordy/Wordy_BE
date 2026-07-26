@@ -19,7 +19,7 @@ export class PerformanceRequestDto {
   @Example("DEVELOPMENT")
   userJob!: JobRole;
 
-  @Example("ONE_TO_THREE_YEARS")
+  @Example("ONE_TO_3")
   yearsOfService!: YearsOfService;
 }
 

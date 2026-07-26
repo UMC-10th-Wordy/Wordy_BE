@@ -9,7 +9,9 @@ import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
-import { PrismaClient, TaskStatus, PromptType, AiRunStatus, AIQuestionStatus } from "../../../generated/prisma/client";
+import { PrismaClient, TaskStatus, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client";
+import { ApiError } from "../../../common/errors/api.error";
+import { ErrorCode } from "../../../common/errors/error.code";
 
 export class PerformanceService {
   constructor(
@@ -26,6 +28,21 @@ export class PerformanceService {
   async generatePerformancePreview(
     request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
+
+    const dailyEntry = await this.prisma.dailyEntry.findFirst({
+      where: {
+        dailyEntryId: request.dailyEntryId,
+        userId: request.userId,
+      },
+    });
+
+    if (!dailyEntry) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "업무일지를 찾을 수 없습니다.",
+      );
+    }
 
     // Prompt A 생성
     const promptARequest =
@@ -71,6 +88,7 @@ export class PerformanceService {
     ) {
       const reflectionSnapshotId =
       await this.saveQuestionSnapshot(
+        request.dailyEntryId,
         promptAResult,
       );
 
@@ -86,16 +104,19 @@ export class PerformanceService {
   return this.createPerformanceResult(
     promptAResult,
     request,
+    dailyEntry,
   );
 }
   
   // 질문 단계 snapshot 생성
   private async saveQuestionSnapshot(
+    dailyEntryId: string,
     promptAResult: PromptAOutputDto,
   ) {
     const snapshot =
       await this.prisma.reflectionSnapshot.create({
         data: {
+          dailyEntryId,
           promptAResult,
         },
       });
@@ -189,9 +210,25 @@ export class PerformanceService {
       promptAResult,
     );
 
+    const dailyEntry = await this.prisma.dailyEntry.findFirst({
+      where: {
+        dailyEntryId: request.originalRequest.dailyEntryId,
+        userId: request.originalRequest.userId,
+      },
+    });
+
+    if (!dailyEntry) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "업무일지를 찾을 수 없습니다.",
+      );
+    }
+
     return this.createPerformanceResult(
       promptAResult,
       request.originalRequest,
+      dailyEntry,
       request.reflectionSnapshotId,
     );
   }
@@ -200,6 +237,7 @@ export class PerformanceService {
   private async createPerformanceResult(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
+    dailyEntry: DailyEntry,
     reflectionSnapshotId?: string,
   ): Promise<PerformanceResponseDto> {
 
@@ -248,6 +286,7 @@ export class PerformanceService {
       snapshot =
         await this.prisma.reflectionSnapshot.create({
           data: {
+            dailyEntryId: request.dailyEntryId,
             promptAResult,
             promptBResult,
           },
@@ -266,8 +305,18 @@ export class PerformanceService {
     },
   });
 
+  const tasks = await this.prisma.task.findMany({
+    where: {
+      userId: request.userId,
+      dailyEntryId: request.dailyEntryId,
+    },
+    include: {
+      taskResult: true,
+    },
+  });
+
     // Task Snapshot 저장
-    for (const task of request.tasks) {
+    for (const task of tasks) {
       const taskSnapshot =
         await this.prisma.reflectionTaskSnapshot.create({
           data: {
@@ -277,10 +326,7 @@ export class PerformanceService {
             priority: task.priority,
             memo: task.memo,
             status: task.status,
-            completedAt:
-              task.completedAt
-                ? new Date()
-                : null,
+            completedAt: task.completedAt,
           },
         });
 
