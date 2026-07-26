@@ -9,10 +9,16 @@ import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
-import { PrismaClient, TaskStatus, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client";
+import { PrismaClient, Prisma, TaskStatus, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client";
 import { verifyAccessToken } from "../../../auth.config";
 import { ApiError } from "../../../common/errors/api.error";
 import { ErrorCode } from "../../../common/errors/error.code";
+
+type TaskWithResult = Prisma.TaskGetPayload<{
+  include: {
+    taskResult: true;
+  };
+}>;
 
 export class PerformanceService {
   constructor(
@@ -61,6 +67,7 @@ export class PerformanceService {
       where: {
         dailyEntryId: request.dailyEntryId,
         userId,
+        deletedAt: null,
       },
     });
 
@@ -339,15 +346,20 @@ export class PerformanceService {
     },
   });
 
-  const tasks = await this.prisma.task.findMany({
-    where: {
-      userId,
-      dailyEntryId: request.dailyEntryId,
-    },
-    include: {
-      taskResult: true,
-    },
-  });
+  const tasks: TaskWithResult[] =
+    await this.prisma.task.findMany({
+      where: {
+        userId,
+        reflectionTasks: {
+          some: {
+            dailyEntryId: request.dailyEntryId,
+          },
+        },
+      },
+      include: {
+        taskResult: true,
+      },
+    });
 
     // Task Snapshot 저장
     for (const task of tasks) {
@@ -364,7 +376,6 @@ export class PerformanceService {
           },
         });
 
-      // TaskResult Snapshot 저장
       if (task.taskResult) {
         await this.prisma.reflectionTaskResultSnapshot.create({
           data: {
@@ -379,14 +390,14 @@ export class PerformanceService {
 
     // 완료율 계산
     const completedCount =
-      request.tasks.filter(
+      tasks.filter(
         (task) => task.status === TaskStatus.COMPLETED,
       ).length;
 
     const completionRate =
-      request.tasks.length === 0
+      tasks.length === 0
         ? 0
-        : Math.round((completedCount / request.tasks.length) * 100 );
+        : Math.round((completedCount / tasks.length) * 100);
 
     // DailyPerformance 저장
     const performance =
