@@ -1,6 +1,6 @@
 console.log("dashboard.controller.ts loaded");
 
-import { Body, Controller, Example, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
 import { prisma } from "../../../common/prisma/prisma.client";
 import { LlmClient } from "../common/llm.client";
@@ -32,13 +32,8 @@ export class DashboardAiController extends Controller {
    * @summary 주간 대시보드 생성
    */
   @Post("dashboard/weekly")
-  @Example<DashboardRequestDto>({
-    userId: "550e8400-e29b-41d4-a716-446655440000",
-    startDate: "2026-07-07",
-    endDate: "2026-07-13"
-  })
   @Example<DashboardResponseDto>({
-    dashboardId:"dashboard-weekly-001",
+    dashboardId:"550e8400-e29b-41d4-a716-446655440000",
     startDate:"2026-07-07",
     endDate:"2026-07-13",
 
@@ -69,10 +64,11 @@ export class DashboardAiController extends Controller {
     ],
   })
   public async createDashboard(
+    @Header("Authorization") authorization: string | undefined,
     @Body() request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
-    console.log("컨트롤러 진입");
     return this.dashboardService.generateWeeklyDashboard(
+      authorization,
       request,
     );
   }
@@ -81,13 +77,8 @@ export class DashboardAiController extends Controller {
    * @summary 월간 대시보드 생성
    */
   @Post("dashboard/monthly")
-  @Example<DashboardRequestDto>({
-    userId:"550e8400-e29b-41d4-a716-446655440000",
-    startDate:"2026-07-01",
-    endDate:"2026-07-31"
-  })
   @Example<DashboardResponseDto>({
-    dashboardId:"dashboard-monthly-001",
+    dashboardId:"550e8400-e29b-41d4-a716-446655440000",
     startDate:"2026-07-01",
     endDate:"2026-07-31",
     summary:"이번 달에는 AI 기능 개발과 업무 관리 시스템 개선을 중심으로 성장했습니다.",
@@ -116,15 +107,17 @@ export class DashboardAiController extends Controller {
         tagName:"백엔드 개발",
         objective:"안정적인 API 구조 설계",
         expectedOutcome:"서비스의 원활한 API 연동",
-        achievementStatus:"진행중",
+        achievementStatus:"IN_PROGRESS",
         insight:"API 구조 개선과 코드 안정화 작업을 진행했습니다.",
       }
     ]
   })
   public async createMonthlyDashboard(
-    @Body() request:DashboardRequestDto,
-  ):Promise<DashboardResponseDto>{
+    @Header("Authorization") authorization: string | undefined,
+    @Body() request: DashboardRequestDto,
+  ): Promise<DashboardResponseDto> {
     return this.dashboardService.generateMonthlyDashboard(
+      authorization,
       request,
     );
   }

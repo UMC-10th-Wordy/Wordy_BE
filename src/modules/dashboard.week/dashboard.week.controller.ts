@@ -12,6 +12,7 @@ import {
   DashboardListItem,
   DashboardDetail,
   CreateWeeklyReflectionRequest,
+  WeeklyReflection,
 } from "./dashboard.week.dto.js";
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
@@ -36,8 +37,8 @@ export class DashboardController extends Controller {
       weekStart: "2026-06-15",
       weekEnd: "2026-06-21",
       entries: [
-        { dailyEntryId: "uuid-1", entryDate: "2026-06-15" },
-        { dailyEntryId: "uuid-2", entryDate: "2026-06-16" },
+        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-15" },
+        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-16" },
       ],
     },
   })
@@ -59,7 +60,7 @@ export class DashboardController extends Controller {
     message: "조회에 성공했습니다.",
     result: [
       {
-        dashboardId: "uuid-dashboard-1",
+        dashboardId: "550e8400-e29b-41d4-a716-446655440000",
         startDate: "2026-06-15",
         endDate: "2026-06-21",
         summary: "이번 주는 온보딩 리뉴얼에 집중했습니다.",
@@ -77,6 +78,72 @@ export class DashboardController extends Controller {
    * @summary 주간 대시보드 상세 조회
    */
   @Get("{dashboardId}")
+  @Example<ApiResponse<DashboardDetail>>({
+    success: true,
+    code: "S200",
+    message: "조회에 성공했습니다.",
+    result: {
+      dashboardId: "550e8400-e29b-41d4-a716-446655440000",
+      startDate: "2026-06-15",
+      endDate: "2026-06-21",
+      summary: "이번 주 업무 성과 및 회고 요약",
+      journalDays: 5,
+      performanceCount: 8,
+      tagCount: 3,
+      insights: [
+        {
+          journalDays: 5,
+          performanceCount: 8,
+          tagCount: 3,
+        },
+      ],
+      kpis: [
+        {
+          kpiName: "API 성능 개선",
+          progress: "80%",
+        },
+      ],
+      tagAnalyses: [
+        {
+          goal: "백엔드 성능 개선",
+          expectedOutcome: "응답 속도 개선",
+          taskCount: 5,
+          periodStart: "2026-06-15",
+          periodEnd: "2026-06-21",
+          achievementStatus: "COMPLETED",
+        },
+      ],
+      weeklyReflections: [
+        {
+          workSummary: "주요 기능 개발 완료",
+          resourcesUsed: "개발 시간 30시간",
+          learning: "Prisma relation 설계 경험",
+        },
+      ],
+      performances: [
+        {
+          achievementRate: 95,
+          summary: "JWT 인증 기능 개발 완료",
+          growthInsight: {
+            insight: "인증 구조 이해도 향상",
+          },
+          nextAction: {
+            action: "Refresh Token 개선 필요",
+          },
+          items: [
+            {
+              output: {
+                title: "JWT 인증 구현",
+              },
+              impact: {
+                description: "보안성 향상",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  })
   public async getDetail(
     @Path() dashboardId: string
   ): Promise<ApiResponse<DashboardDetail>> {
@@ -105,6 +172,16 @@ export class DashboardController extends Controller {
    * @example body {"workSummary": "수정된 업무 정리", "learning": "수정된 배운 점"}
    */
   @Patch("{dashboardId}/reflection/{reflectionId}")
+  @Example<ApiResponse<WeeklyReflection>>({
+    success: true,
+    code: "S200",
+    message: "수정에 성공했습니다.",
+    result: {
+      workSummary: "수정된 업무 정리",
+      resourcesUsed: "인터뷰 데이터 분석 및 개발 시간 20시간",
+      learning: "사용자 관점의 중요성 학습",
+    },
+  })
   public async updateReflection(
     @Path() dashboardId: string,
     @Path() reflectionId: string,
@@ -120,6 +197,72 @@ export class DashboardController extends Controller {
    * @example body {"startDate": "2026-06-15", "endDate": "2026-06-21"}
    */
   @Post()
+  @Example<ApiResponse<DashboardDetail>>({
+    success: true,
+    code: "S201",
+    message: "생성에 성공했습니다.",
+    result: {
+      dashboardId: "550e8400-e29b-41d4-a716-446655440000",
+      startDate: "2026-06-15",
+      endDate: "2026-06-21",
+      summary: "AI가 생성한 이번 주 업무 성과 요약",
+
+      journalDays: 5,
+      performanceCount: 8,
+      tagCount: 3,
+
+      insights: [
+        {
+          journalDays: 5,
+          performanceCount: 8,
+          tagCount: 3,
+        },
+      ],
+
+      kpis: [
+        {
+          kpiName: "API 성능 개선",
+          progress: "80%",
+        },
+      ],
+
+      tagAnalyses: [
+        {
+          goal: "백엔드 성능 개선",
+          expectedOutcome: "응답 속도 개선",
+          taskCount: 5,
+          periodStart: "2026-06-15",
+          periodEnd: "2026-06-21",
+          achievementStatus: "COMPLETED",
+        },
+      ],
+
+      weeklyReflections: [],
+
+      performances: [
+        {
+          achievementRate: 95,
+          summary: "JWT 인증 기능 개발 완료",
+          growthInsight: {
+            insight: "인증 구조 이해도 향상",
+          },
+          nextAction: {
+            action: "Refresh Token 개선 필요",
+          },
+          items: [
+            {
+              output: {
+                title: "JWT 인증 구현",
+              },
+              impact: {
+                description: "보안성 향상",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  })
   public async createDashboard(
     @Body() body: { startDate: string; endDate: string }
   ): Promise<ApiResponse<any>> {

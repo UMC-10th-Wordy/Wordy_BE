@@ -18,9 +18,9 @@ import { DashboardController } from './../modules/dashboard.week/dashboard.week.
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MonthlyDashboardController } from './../modules/dashboard.month/dashboard.month.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DailyEntriesWriteController } from './../modules/dailyentries/dailyentries.write.controller.js';
+import { DailyEntriesWriteController } from './../modules/dailyEntries/dailyentries.write.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DailyEntriesController } from './../modules/dailyentries/dailyentries.controller.js';
+import { DailyEntriesController } from './../modules/dailyEntries/dailyentries.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1196,16 +1196,25 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskResultDto": {
+        "dataType": "refObject",
+        "properties": {
+            "taskResultId": {"dataType":"string"},
+            "content": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TaskDto": {
         "dataType": "refObject",
         "properties": {
             "taskId": {"dataType":"string","required":true},
-            "taskResultId": {"dataType":"string"},
             "priority": {"ref":"TaskPriority","required":true},
-            "completed": {"dataType":"boolean","required":true},
+            "status": {"ref":"TaskStatus","required":true},
+            "completedAt": {"dataType":"string"},
             "title": {"dataType":"string","required":true},
             "memo": {"dataType":"string"},
-            "result": {"dataType":"string"},
+            "taskResult": {"ref":"TaskResultDto","required":true},
         },
         "additionalProperties": false,
     },
@@ -1214,10 +1223,10 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "projectTagId": {"dataType":"string","required":true},
-            "title": {"dataType":"string","required":true},
+            "tagName": {"dataType":"string","required":true},
             "description": {"dataType":"string"},
             "kpis": {"dataType":"array","array":{"dataType":"string"}},
-            "purpose": {"dataType":"string"},
+            "projectPurpose": {"dataType":"string"},
             "expectedOutcome": {"dataType":"string"},
             "period": {"dataType":"string"},
         },
@@ -1232,6 +1241,7 @@ const models: TsoaRoute.Models = {
             "reflectionContent": {"dataType":"string","required":true},
             "projectTag": {"ref":"ProjectTagDto"},
             "userJob": {"ref":"JobRole","required":true},
+            "yearsOfService": {"ref":"YearsOfService","required":true},
         },
         "additionalProperties": false,
     },
@@ -1239,6 +1249,7 @@ const models: TsoaRoute.Models = {
     "QuestionAnswerDto": {
         "dataType": "refObject",
         "properties": {
+            "aiQuestionId": {"dataType":"string","required":true},
             "question": {"dataType":"string","required":true},
             "answer": {"dataType":"string","required":true},
         },
@@ -1271,7 +1282,7 @@ const models: TsoaRoute.Models = {
             "goal": {"dataType":"string","required":true},
             "expectedOutcome": {"dataType":"string","required":true},
             "period": {"dataType":"string"},
-            "userJob": {"dataType":"string","required":true},
+            "userJob": {"ref":"JobRole","required":true},
         },
         "additionalProperties": false,
     },
@@ -1316,7 +1327,6 @@ const models: TsoaRoute.Models = {
     "DashboardRequestDto": {
         "dataType": "refObject",
         "properties": {
-            "userId": {"dataType":"string","required":true},
             "startDate": {"dataType":"string","required":true},
             "endDate": {"dataType":"string","required":true},
         },
@@ -2718,6 +2728,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsPerformanceController_createPerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"PerformanceRequestDto"},
         };
         app.post('/ai/performance-preview',
@@ -2748,6 +2759,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsPerformanceController_completePerformancePreview: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"PerformanceQuestionRequestDto"},
         };
         app.post('/ai/performance-preview/complete',
@@ -2778,6 +2790,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsKpiController_createKpiRecommendation: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"KpiRequestDto"},
         };
         app.post('/ai/project-tags/kpi-recommendation',
@@ -2808,6 +2821,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardAiController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
         };
         app.post('/ai/dashboard/weekly',
@@ -2838,6 +2852,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardAiController_createMonthlyDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 request: {"in":"body","name":"request","required":true,"ref":"DashboardRequestDto"},
         };
         app.post('/ai/dashboard/monthly',

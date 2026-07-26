@@ -1,4 +1,4 @@
-import { Body, Controller, Example, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
 import { LlmClient } from "../common/llm.client";
 import { PromptManager } from "../common/prompt.manager";
@@ -30,14 +30,6 @@ export class KpiController extends Controller {
    * @summary 프로젝트 KPI 추천
    */
   @Post("project-tags/kpi-recommendation")
-  @Example<KpiRequestDto>({
-    tagName: "AI 업무 관리",
-    projectName: "Wordy",
-    goal: "업무 생산성 향상",
-    expectedOutcome: "사용자가 매일 업무를 기록하고 성과를 확인할 수 있다.",
-    period: "4주",
-    userJob: "백엔드 개발자"
-  })
   @Example<KpiResponseDto>({
     kpiRecommendations: [
       "업무 완료율 90% 이상",
@@ -46,9 +38,11 @@ export class KpiController extends Controller {
     ]
   })
   public async createKpiRecommendation(
+    @Header("Authorization") authorization: string | undefined,
     @Body() request: KpiRequestDto,
   ): Promise<KpiResponseDto> {
     return this.kpiService.generateKpiRecommendation(
+      authorization,
       request,
     );
   }

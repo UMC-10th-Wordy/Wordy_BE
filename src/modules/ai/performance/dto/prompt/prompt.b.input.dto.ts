@@ -1,13 +1,16 @@
-import { StructuredTaskDto } from "./prompt.a.output.dto";
+import { PromptAOutputDto } from "./prompt.a.output.dto";
 
 export interface PromptBInputDto {
-  tasks: StructuredTaskDto[];
+  structuredData: PromptAOutputDto;
   userJob: string;
+  yearsOfService: string;
   projectTag?: PromptProjectDto;
 }
 
 export interface PromptProjectDto {
-  title: string;
-  description?: string;
+  tagName: string;
+  projectName?: string;
+  projectPurpose?: string;
+  expectedOutcome?: string;
   kpis?: string[];
 }

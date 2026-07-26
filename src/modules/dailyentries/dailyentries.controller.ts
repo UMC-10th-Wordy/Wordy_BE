@@ -81,7 +81,7 @@ export class DailyEntriesController extends Controller {
     message: "조회에 성공했습니다.",
     result: [
       {
-        dailyEntryId: "uuid-entry-1",
+        dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
         entryDate: "2026-08-21",
         day: 21,
         tags: [{ tagName: "회의", color: "#3B82F6" }],
@@ -115,7 +115,7 @@ export class DailyEntriesController extends Controller {
       tagCount: 3,
       results: [
         {
-          dailyEntryId: "uuid-entry-1",
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
           entryDate: "2026-06-21",
           tags: [{ tagName: "온보딩 리뉴얼", color: "#10B981" }],
           title: "Product Strategy Alignment 회의 준비",
@@ -136,6 +136,44 @@ export class DailyEntriesController extends Controller {
    * @summary 일자 상세 조회
    */
   @Get("{dailyEntryId}")
+  @Example<ApiResponse<DailyEntriesDetailResponse>>({
+    success: true,
+    code: "S200",
+    message: "조회에 성공했습니다.",
+    result: {
+      dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+      entryDate: "2026-08-21",
+      reflectionContent: "오늘은 JWT 인증 기능 구현을 완료했다.",
+
+      completedCount: 2,
+      incompleteCount: 1,
+
+      tasks: [
+        {
+          taskId: "550e8400-e29b-41d4-a716-446655440001",
+          tag: {
+            tagName: "백엔드",
+            color: "#4A90E2",
+          },
+          title: "JWT 인증 구현",
+          memo: "Refresh Token 추가 필요",
+          priority: "MUST_DO",
+          status: "COMPLETED",
+          result: {
+            taskResultId: "result-001",
+            content: "JWT 인증 API 구현 완료",
+            attachments: [
+              {
+                fileType: "img",
+                fileUrl: "https://example.com/result.png",
+                fileName: "result.png",
+              },
+            ],
+          },
+        },
+      ],
+    },
+  })
   public async getDetail(
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<DailyEntriesDetailResponse>> {
@@ -148,6 +186,14 @@ export class DailyEntriesController extends Controller {
    * @summary 일지 삭제 (소프트 삭제)
    */
   @Delete("{dailyEntryId}")
+  @Example<ApiResponse<{ dailyEntryId: string }>>({
+    success: true,
+    code: "S204",
+    message: "삭제에 성공했습니다.",
+    result: {
+      dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+    },
+  })
   public async deleteDailyEntry(
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<{ dailyEntryId: string }>> {

@@ -3,6 +3,7 @@ export interface PromptAInputDto {
   reflection: string;
   projectTag?: PromptProjectDto;
   userJob: string;
+  yearsOfService: string;
   supplementAnswers?: SupplementAnswerDto[];
 }
 
@@ -10,15 +11,16 @@ export interface PromptTaskDto {
   taskId: string;
   title: string;
   priority: string;
-  completed: boolean;
+  status: string;
   memo?: string;
   result?: string;
 }
 
 export interface PromptProjectDto {
-  title: string;
-  goal?: string;
-  description?: string;
+  tagName: string;
+  projectName?: string;
+  projectPurpose?: string;
+  expectedOutcome?: string;
   kpis?: string[];
 }
 

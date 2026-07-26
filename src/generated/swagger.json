@@ -1214,10 +1214,12 @@
 			"DailyEntryItem": {
 				"properties": {
 					"dailyEntryId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"entryDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-20"
 					}
 				},
 				"required": [
@@ -1230,27 +1232,38 @@
 			"EligibilityResponse": {
 				"properties": {
 					"eligible": {
-						"type": "boolean"
+						"type": "boolean",
+						"example": true
 					},
 					"journalDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 5
 					},
 					"requiredDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 3
 					},
 					"weekStart": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-20"
 					},
 					"weekEnd": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-26"
 					},
 					"entries": {
 						"items": {
 							"$ref": "#/components/schemas/DailyEntryItem"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
+								"entryDate": "2026-07-20"
+							}
+						]
 					}
 				},
 				"required": [
@@ -1296,19 +1309,24 @@
 			"DashboardListItem": {
 				"properties": {
 					"dashboardId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"startDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-20"
 					},
 					"endDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-26"
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "이번 주 업무 성과 및 회고 요약"
 					},
 					"createdAt": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-26T12:00:00Z"
 					}
 				},
 				"required": [
@@ -1353,15 +1371,18 @@
 				"properties": {
 					"journalDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 5
 					},
 					"performanceCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 8
 					},
 					"tagCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 3
 					}
 				},
 				"required": [
@@ -1376,11 +1397,13 @@
 				"properties": {
 					"kpiName": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "API 성능 개선"
 					},
 					"progress": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "80%"
 					}
 				},
 				"required": [
@@ -1394,28 +1417,34 @@
 				"properties": {
 					"goal": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "백엔드 성능 개선"
 					},
 					"expectedOutcome": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "API 응답 시간 감소"
 					},
 					"taskCount": {
 						"type": "number",
 						"format": "double",
-						"nullable": true
+						"nullable": true,
+						"example": 5
 					},
 					"periodStart": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "2026-07-20"
 					},
 					"periodEnd": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "2026-07-26"
 					},
 					"achievementStatus": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "COMPLETED"
 					}
 				},
 				"required": [
@@ -1433,15 +1462,18 @@
 				"properties": {
 					"workSummary": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "이번 주 주요 업무 진행 내용 정리"
 					},
 					"resourcesUsed": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "개발 시간 30시간 사용"
 					},
 					"learning": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "새로운 기술과 설계 방식 학습"
 					}
 				},
 				"required": [
@@ -1454,8 +1486,17 @@
 			},
 			"PerformanceItemDto": {
 				"properties": {
-					"output": {},
-					"impact": {}
+					"output": {
+						"example": {
+							"title": "로그인 API 구현",
+							"detail": "JWT 인증 로직 추가"
+						}
+					},
+					"impact": {
+						"example": {
+							"description": "사용자 인증 안정성 향상"
+						}
+					}
 				},
 				"required": [
 					"output",
@@ -1468,18 +1509,38 @@
 				"properties": {
 					"achievementRate": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 95
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "회원 인증 기능 개발 완료"
 					},
-					"growthInsight": {},
-					"nextAction": {},
+					"growthInsight": {
+						"example": {
+							"insight": "인증 구조 이해도 향상"
+						}
+					},
+					"nextAction": {
+						"example": {
+							"action": "Refresh Token 개선 필요"
+						}
+					},
 					"items": {
 						"items": {
 							"$ref": "#/components/schemas/PerformanceItemDto"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"output": {
+									"title": "JWT 인증 구현"
+								},
+								"impact": {
+									"description": "보안성 향상"
+								}
+							}
+						]
 					}
 				},
 				"required": [
@@ -1495,58 +1556,108 @@
 			"DashboardDetail": {
 				"properties": {
 					"dashboardId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"startDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-20"
 					},
 					"endDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-07-26"
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "이번 주 업무 성과 및 회고 요약"
 					},
 					"journalDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 5
 					},
 					"performanceCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 8
 					},
 					"tagCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 3
 					},
 					"insights": {
 						"items": {
 							"$ref": "#/components/schemas/Insight"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"journalDays": 5,
+								"performanceCount": 8,
+								"tagCount": 3
+							}
+						]
 					},
 					"kpis": {
 						"items": {
 							"$ref": "#/components/schemas/Kpi"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"kpiName": "API 성능 개선",
+								"progress": "80%"
+							}
+						]
 					},
 					"tagAnalyses": {
 						"items": {
 							"$ref": "#/components/schemas/TagAnalysis"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"goal": "백엔드 성능 개선",
+								"expectedOutcome": "응답 속도 개선",
+								"taskCount": 5,
+								"periodStart": "2026-07-20",
+								"periodEnd": "2026-07-26",
+								"achievementStatus": "완료"
+							}
+						]
 					},
 					"weeklyReflections": {
 						"items": {
 							"$ref": "#/components/schemas/WeeklyReflection"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"workSummary": "주요 기능 개발 완료",
+								"resourcesUsed": "개발 시간 30시간",
+								"learning": "Prisma relation 설계 경험"
+							}
+						]
 					},
 					"performances": {
 						"items": {
 							"$ref": "#/components/schemas/PerformanceDto"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"achievementRate": 95,
+								"summary": "JWT 인증 기능 개발 완료",
+								"growthInsight": {
+									"insight": "인증 구조 이해도 향상"
+								},
+								"nextAction": {
+									"action": "Refresh Token 개선"
+								},
+								"items": []
+							}
+						]
 					}
 				},
 				"required": [
@@ -1622,13 +1733,16 @@
 			"CreateWeeklyReflectionRequest": {
 				"properties": {
 					"workSummary": {
-						"type": "string"
+						"type": "string",
+						"example": "이번 주 업무 정리"
 					},
 					"resourcesUsed": {
-						"type": "string"
+						"type": "string",
+						"example": "개발 시간 및 사용 리소스"
 					},
 					"learning": {
-						"type": "string"
+						"type": "string",
+						"example": "배우고 느낀 점"
 					}
 				},
 				"type": "object",
@@ -1637,16 +1751,20 @@
 			"WeeklyDashboardItem": {
 				"properties": {
 					"dashboardId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"startDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-01"
 					},
 					"endDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-07"
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "첫째 주 업무 성과 요약"
 					}
 				},
 				"required": [
@@ -1661,27 +1779,40 @@
 			"MonthlyEligibilityResponse": {
 				"properties": {
 					"eligible": {
-						"type": "boolean"
+						"type": "boolean",
+						"example": true
 					},
 					"weeklyDashboardCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 4
 					},
 					"requiredCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 3
 					},
 					"monthStart": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-01"
 					},
 					"monthEnd": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-30"
 					},
 					"weeklyDashboards": {
 						"items": {
 							"$ref": "#/components/schemas/WeeklyDashboardItem"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
+								"startDate": "2026-06-01",
+								"endDate": "2026-06-07",
+								"summary": "첫째 주 업무 성과 요약"
+							}
+						]
 					}
 				},
 				"required": [
@@ -1727,19 +1858,24 @@
 			"MonthlyDashboardListItem": {
 				"properties": {
 					"dashboardId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"startDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-01"
 					},
 					"endDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-30"
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "이번 달 업무 성과 및 회고 요약"
 					},
 					"createdAt": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-30T10:00:00.000Z"
 					}
 				},
 				"required": [
@@ -1784,15 +1920,18 @@
 				"properties": {
 					"journalDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 20
 					},
 					"performanceCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 30
 					},
 					"tagCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 5
 					}
 				},
 				"required": [
@@ -1807,11 +1946,13 @@
 				"properties": {
 					"kpiName": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "서비스 안정성 개선"
 					},
 					"progress": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "90%"
 					}
 				},
 				"required": [
@@ -1825,28 +1966,34 @@
 				"properties": {
 					"goal": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "백엔드 품질 개선"
 					},
 					"expectedOutcome": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "장애 발생률 감소"
 					},
 					"taskCount": {
 						"type": "number",
 						"format": "double",
-						"nullable": true
+						"nullable": true,
+						"example": 15
 					},
 					"periodStart": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "2026-06-01"
 					},
 					"periodEnd": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "2026-06-30"
 					},
 					"achievementStatus": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "COMPLETED"
 					}
 				},
 				"required": [
@@ -1864,15 +2011,18 @@
 				"properties": {
 					"workSummary": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "이번 달 주요 개발 업무 정리"
 					},
 					"resourcesUsed": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "개발 시간 120시간 사용"
 					},
 					"learning": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "대규모 데이터 처리 경험"
 					}
 				},
 				"required": [
@@ -1885,8 +2035,17 @@
 			},
 			"MonthlyPerformanceItemDto": {
 				"properties": {
-					"output": {},
-					"impact": {}
+					"output": {
+						"example": {
+							"title": "대시보드 API 개선",
+							"detail": "월간 데이터 집계 로직 구현"
+						}
+					},
+					"impact": {
+						"example": {
+							"description": "데이터 분석 효율 향상"
+						}
+					}
 				},
 				"required": [
 					"output",
@@ -1899,18 +2058,38 @@
 				"properties": {
 					"achievementRate": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 90
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "월간 주요 성과 요약"
 					},
-					"growthInsight": {},
-					"nextAction": {},
+					"growthInsight": {
+						"example": {
+							"insight": "프로젝트 구조 이해도 향상"
+						}
+					},
+					"nextAction": {
+						"example": {
+							"action": "성능 최적화 진행"
+						}
+					},
 					"items": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyPerformanceItemDto"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"output": {
+									"title": "대시보드 API 개선"
+								},
+								"impact": {
+									"description": "응답 속도 개선"
+								}
+							}
+						]
 					}
 				},
 				"required": [
@@ -1926,58 +2105,108 @@
 			"MonthlyDashboardDetail": {
 				"properties": {
 					"dashboardId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"startDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-01"
 					},
 					"endDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-06-30"
 					},
 					"summary": {
-						"type": "string"
+						"type": "string",
+						"example": "이번 달 업무 성과 및 회고 요약"
 					},
 					"journalDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 20
 					},
 					"performanceCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 30
 					},
 					"tagCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 5
 					},
 					"insights": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyInsight"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"journalDays": 20,
+								"performanceCount": 30,
+								"tagCount": 5
+							}
+						]
 					},
 					"kpis": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyKpi"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"kpiName": "서비스 안정성 개선",
+								"progress": "90%"
+							}
+						]
 					},
 					"tagAnalyses": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyTagAnalysis"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"goal": "백엔드 품질 개선",
+								"expectedOutcome": "장애 발생률 감소",
+								"taskCount": 15,
+								"periodStart": "2026-06-01",
+								"periodEnd": "2026-06-30",
+								"achievementStatus": "COMPLETED"
+							}
+						]
 					},
 					"weeklyReflections": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyReflectionItem"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"workSummary": "이번 달 주요 개발 업무 정리",
+								"resourcesUsed": "개발 시간 120시간",
+								"learning": "대규모 데이터 처리 경험"
+							}
+						]
 					},
 					"performances": {
 						"items": {
 							"$ref": "#/components/schemas/MonthlyPerformanceDto"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"achievementRate": 90,
+								"summary": "월간 주요 성과 요약",
+								"growthInsight": {
+									"insight": "프로젝트 구조 이해도 향상"
+								},
+								"nextAction": {
+									"action": "성능 최적화 진행"
+								},
+								"items": []
+							}
+						]
 					}
 				},
 				"required": [
@@ -2029,13 +2258,16 @@
 			"CreateMonthlyReflectionRequest": {
 				"properties": {
 					"workSummary": {
-						"type": "string"
+						"type": "string",
+						"example": "이번 달 업무 정리"
 					},
 					"resourcesUsed": {
-						"type": "string"
+						"type": "string",
+						"example": "개발 시간 및 사용 리소스"
 					},
 					"learning": {
-						"type": "string"
+						"type": "string",
+						"example": "배우고 느낀 점"
 					}
 				},
 				"type": "object",
@@ -2126,11 +2358,13 @@
 				"properties": {
 					"count": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 15
 					},
 					"diffFromLastMonth": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 3
 					}
 				},
 				"required": [
@@ -2144,11 +2378,13 @@
 				"properties": {
 					"currentStreak": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 12
 					},
 					"maxStreak": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 21
 					}
 				},
 				"required": [
@@ -2162,15 +2398,18 @@
 				"properties": {
 					"tagName": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "백엔드 개발"
 					},
 					"color": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "#4A90E2"
 					},
 					"percentage": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 38
 					}
 				},
 				"required": [
@@ -2184,13 +2423,26 @@
 			"DailyEntriesSummaryResponse": {
 				"properties": {
 					"monthlyCount": {
-						"$ref": "#/components/schemas/MonthlyCountCard"
+						"$ref": "#/components/schemas/MonthlyCountCard",
+						"example": {
+							"count": 15,
+							"diffFromLastMonth": 3
+						}
 					},
 					"streak": {
-						"$ref": "#/components/schemas/StreakCard"
+						"$ref": "#/components/schemas/StreakCard",
+						"example": {
+							"currentStreak": 12,
+							"maxStreak": 21
+						}
 					},
 					"topCategory": {
-						"$ref": "#/components/schemas/TopCategoryCard"
+						"$ref": "#/components/schemas/TopCategoryCard",
+						"example": {
+							"tagName": "백엔드 개발",
+							"color": "#4A90E2",
+							"percentage": 38
+						}
 					}
 				},
 				"required": [
@@ -2233,11 +2485,13 @@
 			"TagChip": {
 				"properties": {
 					"tagName": {
-						"type": "string"
+						"type": "string",
+						"example": "백엔드"
 					},
 					"color": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "#4A90E2"
 					}
 				},
 				"required": [
@@ -2250,29 +2504,40 @@
 			"MonthlyRecordItem": {
 				"properties": {
 					"yearMonth": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-08"
 					},
 					"year": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 2026
 					},
 					"month": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 8
 					},
 					"totalDays": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 15
 					},
 					"tags": {
 						"items": {
 							"$ref": "#/components/schemas/TagChip"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"tagName": "백엔드",
+								"color": "#4A90E2"
+							}
+						]
 					},
 					"summary": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "백엔드 관련 업무를 중심으로 15일 기록했습니다."
 					}
 				},
 				"required": [
@@ -2317,32 +2582,44 @@
 			"DailyRecordItem": {
 				"properties": {
 					"dailyEntryId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"entryDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-08-21"
 					},
 					"day": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 21
 					},
 					"tags": {
 						"items": {
 							"$ref": "#/components/schemas/TagChip"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"tagName": "백엔드",
+								"color": "#4A90E2"
+							}
+						]
 					},
 					"mainTaskTitle": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "JWT 인증 기능 구현"
 					},
 					"extraTaskCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 2
 					},
 					"summary": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "인증 API 개발 및 테스트 진행"
 					}
 				},
 				"required": [
@@ -2388,20 +2665,29 @@
 			"SearchResultItem": {
 				"properties": {
 					"dailyEntryId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"entryDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-08-21"
 					},
 					"tags": {
 						"items": {
 							"$ref": "#/components/schemas/TagChip"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"tagName": "백엔드",
+								"color": "#4A90E2"
+							}
+						]
 					},
 					"title": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "JWT 인증 구현"
 					}
 				},
 				"required": [
@@ -2416,21 +2702,37 @@
 			"DailyEntriesSearchResponse": {
 				"properties": {
 					"keyword": {
-						"type": "string"
+						"type": "string",
+						"example": "JWT"
 					},
 					"entryCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 5
 					},
 					"tagCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 2
 					},
 					"results": {
 						"items": {
 							"$ref": "#/components/schemas/SearchResultItem"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
+								"entryDate": "2026-08-21",
+								"tags": [
+									{
+										"tagName": "백엔드",
+										"color": "#4A90E2"
+									}
+								],
+								"title": "JWT 인증 구현"
+							}
+						]
 					}
 				},
 				"required": [
@@ -2474,13 +2776,16 @@
 			"AttachmentItem": {
 				"properties": {
 					"fileType": {
-						"type": "string"
+						"type": "string",
+						"example": "img"
 					},
 					"fileUrl": {
-						"type": "string"
+						"type": "string",
+						"example": "https://example.com/image.png"
 					},
 					"fileName": {
-						"type": "string"
+						"type": "string",
+						"example": "result.png"
 					}
 				},
 				"required": [
@@ -2494,16 +2799,25 @@
 			"TaskResultItem": {
 				"properties": {
 					"taskResultId": {
-						"type": "string"
+						"type": "string",
+						"example": "result-001"
 					},
 					"content": {
-						"type": "string"
+						"type": "string",
+						"example": "JWT 인증 API 구현 완료"
 					},
 					"attachments": {
 						"items": {
 							"$ref": "#/components/schemas/AttachmentItem"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"fileType": "img",
+								"fileUrl": "https://example.com/image.png",
+								"fileName": "result.png"
+							}
+						]
 					}
 				},
 				"required": [
@@ -2517,7 +2831,8 @@
 			"DailyEntriesTaskItem": {
 				"properties": {
 					"taskId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440001"
 					},
 					"tag": {
 						"allOf": [
@@ -2525,20 +2840,28 @@
 								"$ref": "#/components/schemas/TagChip"
 							}
 						],
-						"nullable": true
+						"nullable": true,
+						"example": {
+							"tagName": "백엔드",
+							"color": "#4A90E2"
+						}
 					},
 					"title": {
-						"type": "string"
+						"type": "string",
+						"example": "JWT 인증 구현"
 					},
 					"memo": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"example": "Refresh Token 추가 필요"
 					},
 					"priority": {
-						"type": "string"
+						"type": "string",
+						"example": "MUST_DO"
 					},
 					"status": {
-						"type": "string"
+						"type": "string",
+						"example": "COMPLETED"
 					},
 					"result": {
 						"allOf": [
@@ -2546,7 +2869,12 @@
 								"$ref": "#/components/schemas/TaskResultItem"
 							}
 						],
-						"nullable": true
+						"nullable": true,
+						"example": {
+							"taskResultId": "result-001",
+							"content": "JWT 인증 API 구현 완료",
+							"attachments": []
+						}
 					}
 				},
 				"required": [
@@ -2564,27 +2892,50 @@
 			"DailyEntriesDetailResponse": {
 				"properties": {
 					"dailyEntryId": {
-						"type": "string"
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"entryDate": {
-						"type": "string"
+						"type": "string",
+						"example": "2026-08-21"
 					},
 					"reflectionContent": {
-						"type": "string"
+						"type": "string",
+						"example": "오늘은 JWT 인증 기능 구현을 완료했다."
 					},
 					"completedCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 2
 					},
 					"incompleteCount": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"example": 1
 					},
 					"tasks": {
 						"items": {
 							"$ref": "#/components/schemas/DailyEntriesTaskItem"
 						},
-						"type": "array"
+						"type": "array",
+						"example": [
+							{
+								"taskId": "550e8400-e29b-41d4-a716-446655440001",
+								"tag": {
+									"tagName": "백엔드",
+									"color": "#4A90E2"
+								},
+								"title": "JWT 인증 구현",
+								"memo": "Refresh Token 추가 필요",
+								"priority": "MUST_DO",
+								"status": "COMPLETED",
+								"result": {
+									"taskResultId": "result-001",
+									"content": "JWT 인증 API 구현 완료",
+									"attachments": []
+								}
+							}
+						]
 					}
 				},
 				"required": [
@@ -3016,7 +3367,7 @@
 				"properties": {
 					"taskId": {
 						"type": "string",
-						"example": "task-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
 					"output": {
 						"items": {
@@ -3095,7 +3446,7 @@
 					},
 					"reflectionSnapshotId": {
 						"type": "string",
-						"example": "reflection-snapshot-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					}
 				},
 				"required": [
@@ -3104,23 +3455,40 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TaskResultDto": {
+				"properties": {
+					"taskResultId": {
+						"type": "string",
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
+					},
+					"content": {
+						"type": "string",
+						"example": "Swagger 문서를 모두 작성했다."
+					}
+				},
+				"required": [
+					"content"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"TaskDto": {
 				"properties": {
 					"taskId": {
 						"type": "string",
-						"example": "task-550e8400"
-					},
-					"taskResultId": {
-						"type": "string",
-						"example": "task-result-550e8400"
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"priority": {
 						"$ref": "#/components/schemas/TaskPriority",
 						"example": "SHOULD_DO"
 					},
-					"completed": {
-						"type": "boolean",
-						"example": true
+					"status": {
+						"$ref": "#/components/schemas/TaskStatus",
+						"example": "COMPLETED"
+					},
+					"completedAt": {
+						"type": "string",
+						"example": "2026-07-25T10:00:00Z"
 					},
 					"title": {
 						"type": "string",
@@ -3130,16 +3498,16 @@
 						"type": "string",
 						"example": "Request/Response 예시 추가"
 					},
-					"result": {
-						"type": "string",
-						"example": "Swagger 문서를 모두 작성했다."
+					"taskResult": {
+						"$ref": "#/components/schemas/TaskResultDto"
 					}
 				},
 				"required": [
 					"taskId",
 					"priority",
-					"completed",
-					"title"
+					"status",
+					"title",
+					"taskResult"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -3148,9 +3516,9 @@
 				"properties": {
 					"projectTagId": {
 						"type": "string",
-						"example": "project-tag-01"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
-					"title": {
+					"tagName": {
 						"type": "string",
 						"example": "AI 기능"
 					},
@@ -3163,7 +3531,7 @@
 						},
 						"type": "array"
 					},
-					"purpose": {
+					"projectPurpose": {
 						"type": "string"
 					},
 					"expectedOutcome": {
@@ -3175,7 +3543,7 @@
 				},
 				"required": [
 					"projectTagId",
-					"title"
+					"tagName"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -3184,7 +3552,7 @@
 				"properties": {
 					"dailyEntryId": {
 						"type": "string",
-						"example": "daily-entry-550e8400"
+						"example": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 					},
 					"tasks": {
 						"items": {
@@ -3202,19 +3570,28 @@
 					"userJob": {
 						"$ref": "#/components/schemas/JobRole",
 						"example": "DEVELOPMENT"
+					},
+					"yearsOfService": {
+						"$ref": "#/components/schemas/YearsOfService",
+						"example": "ONE_TO_3"
 					}
 				},
 				"required": [
 					"dailyEntryId",
 					"tasks",
 					"reflectionContent",
-					"userJob"
+					"userJob",
+					"yearsOfService"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"QuestionAnswerDto": {
 				"properties": {
+					"aiQuestionId": {
+						"type": "string",
+						"example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+					},
 					"question": {
 						"type": "string",
 						"example": "이번 작업에서 가장 어려웠던 점은 무엇인가요?"
@@ -3225,6 +3602,7 @@
 					}
 				},
 				"required": [
+					"aiQuestionId",
 					"question",
 					"answer"
 				],
@@ -3297,8 +3675,8 @@
 						"example": "4주"
 					},
 					"userJob": {
-						"type": "string",
-						"example": "백엔드 개발자"
+						"$ref": "#/components/schemas/JobRole",
+						"example": "DEVELOPER"
 					}
 				},
 				"required": [
@@ -3366,7 +3744,7 @@
 				"properties": {
 					"dashboardId": {
 						"type": "string",
-						"example": "dashboard-550e8400"
+						"example": "550e8400-e29b-41d4-a716-446655440000"
 					},
 					"startDate": {
 						"type": "string",
@@ -3443,10 +3821,6 @@
 			},
 			"DashboardRequestDto": {
 				"properties": {
-					"userId": {
-						"type": "string",
-						"example": "550e8400-e29b-41d4-a716-446655440000"
-					},
 					"startDate": {
 						"type": "string",
 						"example": "2026-07-07"
@@ -3457,7 +3831,6 @@
 					}
 				},
 				"required": [
-					"userId",
 					"startDate",
 					"endDate"
 				],
@@ -4882,11 +5255,11 @@
 												"weekEnd": "2026-06-21",
 												"entries": [
 													{
-														"dailyEntryId": "uuid-1",
+														"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
 														"entryDate": "2026-06-15"
 													},
 													{
-														"dailyEntryId": "uuid-2",
+														"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
 														"entryDate": "2026-06-16"
 													}
 												]
@@ -4935,7 +5308,7 @@
 											"message": "조회에 성공했습니다.",
 											"result": [
 												{
-													"dashboardId": "uuid-dashboard-1",
+													"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
 													"startDate": "2026-06-15",
 													"endDate": "2026-06-21",
 													"summary": "이번 주는 온보딩 리뉴얼에 집중했습니다.",
@@ -4965,6 +5338,70 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ApiResponse_any_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S201",
+											"message": "생성에 성공했습니다.",
+											"result": {
+												"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
+												"startDate": "2026-06-15",
+												"endDate": "2026-06-21",
+												"summary": "AI가 생성한 이번 주 업무 성과 요약",
+												"journalDays": 5,
+												"performanceCount": 8,
+												"tagCount": 3,
+												"insights": [
+													{
+														"journalDays": 5,
+														"performanceCount": 8,
+														"tagCount": 3
+													}
+												],
+												"kpis": [
+													{
+														"kpiName": "API 성능 개선",
+														"progress": "80%"
+													}
+												],
+												"tagAnalyses": [
+													{
+														"goal": "백엔드 성능 개선",
+														"expectedOutcome": "응답 속도 개선",
+														"taskCount": 5,
+														"periodStart": "2026-06-15",
+														"periodEnd": "2026-06-21",
+														"achievementStatus": "COMPLETED"
+													}
+												],
+												"weeklyReflections": [],
+												"performances": [
+													{
+														"achievementRate": 95,
+														"summary": "JWT 인증 기능 개발 완료",
+														"growthInsight": {
+															"insight": "인증 구조 이해도 향상"
+														},
+														"nextAction": {
+															"action": "Refresh Token 개선 필요"
+														},
+														"items": [
+															{
+																"output": {
+																	"title": "JWT 인증 구현"
+																},
+																"impact": {
+																	"description": "보안성 향상"
+																}
+															}
+														]
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
@@ -5014,6 +5451,76 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ApiResponse_DashboardDetail_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
+												"startDate": "2026-06-15",
+												"endDate": "2026-06-21",
+												"summary": "이번 주 업무 성과 및 회고 요약",
+												"journalDays": 5,
+												"performanceCount": 8,
+												"tagCount": 3,
+												"insights": [
+													{
+														"journalDays": 5,
+														"performanceCount": 8,
+														"tagCount": 3
+													}
+												],
+												"kpis": [
+													{
+														"kpiName": "API 성능 개선",
+														"progress": "80%"
+													}
+												],
+												"tagAnalyses": [
+													{
+														"goal": "백엔드 성능 개선",
+														"expectedOutcome": "응답 속도 개선",
+														"taskCount": 5,
+														"periodStart": "2026-06-15",
+														"periodEnd": "2026-06-21",
+														"achievementStatus": "COMPLETED"
+													}
+												],
+												"weeklyReflections": [
+													{
+														"workSummary": "주요 기능 개발 완료",
+														"resourcesUsed": "개발 시간 30시간",
+														"learning": "Prisma relation 설계 경험"
+													}
+												],
+												"performances": [
+													{
+														"achievementRate": 95,
+														"summary": "JWT 인증 기능 개발 완료",
+														"growthInsight": {
+															"insight": "인증 구조 이해도 향상"
+														},
+														"nextAction": {
+															"action": "Refresh Token 개선 필요"
+														},
+														"items": [
+															{
+																"output": {
+																	"title": "JWT 인증 구현"
+																},
+																"impact": {
+																	"description": "보안성 향상"
+																}
+															}
+														]
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
@@ -5093,6 +5600,20 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ApiResponse_any_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "수정에 성공했습니다.",
+											"result": {
+												"workSummary": "수정된 업무 정리",
+												"resourcesUsed": "인터뷰 데이터 분석 및 개발 시간 20시간",
+												"learning": "사용자 관점의 중요성 학습"
+											}
+										}
+									}
 								}
 							}
 						}
@@ -5249,6 +5770,76 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ApiResponse_any_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S201",
+											"message": "생성에 성공했습니다.",
+											"result": {
+												"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
+												"startDate": "2026-06-01",
+												"endDate": "2026-06-30",
+												"summary": "AI가 생성한 6월 월간 업무 성과 요약",
+												"journalDays": 20,
+												"performanceCount": 30,
+												"tagCount": 5,
+												"insights": [
+													{
+														"journalDays": 20,
+														"performanceCount": 30,
+														"tagCount": 5
+													}
+												],
+												"kpis": [
+													{
+														"kpiName": "월간 핵심 목표 달성률",
+														"progress": "85%"
+													}
+												],
+												"tagAnalyses": [
+													{
+														"goal": "온보딩 전면 개선",
+														"expectedOutcome": "사용자 경험 향상",
+														"taskCount": 30,
+														"periodStart": "2026-06-01",
+														"periodEnd": "2026-06-30",
+														"achievementStatus": "COMPLETED"
+													}
+												],
+												"weeklyReflections": [
+													{
+														"workSummary": "6월 주요 업무 정리",
+														"resourcesUsed": "사용자 인터뷰 및 로그 분석",
+														"learning": "데이터 기반 의사결정 경험"
+													}
+												],
+												"performances": [
+													{
+														"achievementRate": 85,
+														"summary": "월간 목표 대부분 달성",
+														"growthInsight": {
+															"insight": "팀 협업 효율 향상"
+														},
+														"nextAction": {
+															"action": "다음 달 확장 작업 준비"
+														},
+														"items": [
+															{
+																"output": {
+																	"title": "온보딩 전면 개편"
+																},
+																"impact": {
+																	"description": "사용자 경험 개선"
+																}
+															}
+														]
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
@@ -5400,11 +5991,9 @@
 											"code": "S201",
 											"message": "생성에 성공했습니다.",
 											"result": {
-												"weeklyReflectionId": "uuid-reflection-1",
 												"workSummary": "6월 한 달간 온보딩 리뉴얼 완료",
 												"resourcesUsed": "사용자 인터뷰와 로그 데이터 분석",
-												"learning": "데이터 기반 의사결정의 중요성을 배웠다",
-												"createdAt": "2026-06-30T10:00:00.000Z"
+												"learning": "데이터 기반 의사결정의 중요성을 배웠다"
 											}
 										}
 									}
@@ -5632,7 +6221,7 @@
 											"message": "조회에 성공했습니다.",
 											"result": [
 												{
-													"dailyEntryId": "uuid-entry-1",
+													"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
 													"entryDate": "2026-08-21",
 													"day": 21,
 													"tags": [
@@ -5694,7 +6283,7 @@
 												"tagCount": 3,
 												"results": [
 													{
-														"dailyEntryId": "uuid-entry-1",
+														"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
 														"entryDate": "2026-06-21",
 														"tags": [
 															{
@@ -5755,6 +6344,46 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ApiResponse_DailyEntriesDetailResponse_"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S200",
+											"message": "조회에 성공했습니다.",
+											"result": {
+												"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000",
+												"entryDate": "2026-08-21",
+												"reflectionContent": "오늘은 JWT 인증 기능 구현을 완료했다.",
+												"completedCount": 2,
+												"incompleteCount": 1,
+												"tasks": [
+													{
+														"taskId": "550e8400-e29b-41d4-a716-446655440001",
+														"tag": {
+															"tagName": "백엔드",
+															"color": "#4A90E2"
+														},
+														"title": "JWT 인증 구현",
+														"memo": "Refresh Token 추가 필요",
+														"priority": "MUST_DO",
+														"status": "COMPLETED",
+														"result": {
+															"taskResultId": "result-001",
+															"content": "JWT 인증 API 구현 완료",
+															"attachments": [
+																{
+																	"fileType": "img",
+																	"fileUrl": "https://example.com/result.png",
+																	"fileName": "result.png"
+																}
+															]
+														}
+													}
+												]
+											}
+										}
+									}
 								}
 							}
 						}
@@ -5785,6 +6414,18 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ApiResponse__dailyEntryId-string__"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"success": true,
+											"code": "S204",
+											"message": "삭제에 성공했습니다.",
+											"result": {
+												"dailyEntryId": "550e8400-e29b-41d4-a716-446655440000"
+											}
+										}
+									}
 								}
 							}
 						}
@@ -6343,54 +6984,40 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"dailyEntryId": "daily-entry-550e8400",
-											"tasks": [
+											"status": "QUESTION_REQUIRED",
+											"supplementQuestions": [
 												{
-													"taskId": "task-550e8400",
-													"priority": "SHOULD_DO",
-													"completed": true,
-													"title": "Swagger 문서 작성",
-													"memo": "Request/Response 예시 추가",
-													"result": "Swagger 문서와 API 예시 데이터를 작성했다."
+													"question": "이번 작업에서 가장 어려웠던 점은 무엇인가요?",
+													"reason": "성과 분석을 위해 업무 과정에 대한 추가 정보가 필요합니다."
+												},
+												{
+													"question": "이 작업이 프로젝트에 어떤 영향을 주었나요?",
+													"reason": "업무 결과의 영향도를 정확히 분석하기 위한 정보입니다."
 												}
 											],
-											"reflectionContent": "오늘 Swagger 문서를 작성하면서 TSOA Example 사용법을 익혔다.",
-											"projectTag": {
-												"projectTagId": "project-tag-01",
-												"title": "AI 기능",
-												"description": "AI 관련 업무",
-												"kpis": [
-													"업무 완료율 90%",
-													"주간 회고 작성률"
-												]
-											},
-											"userJob": "DEVELOPMENT"
-										}
-									},
-									"Example 2": {
-										"value": {
-											"status": "COMPLETED",
-											"summary": "오늘은 Swagger 문서와 AI API를 구현했습니다.",
+											"summary": "Swagger 문서화와 AI 성과 분석 기능 구현을 진행했습니다.",
 											"growthInsights": [
-												"API 설계 능력이 향상되었습니다.",
-												"Swagger 활용 경험을 쌓았습니다."
+												"API 문서 구조 설계 경험을 쌓았습니다.",
+												"AI 기반 업무 분석 흐름을 이해했습니다."
 											],
 											"nextActions": [
-												"Dashboard API 구현",
-												"응답 파서 테스트"
+												"Dashboard API와 성과 데이터를 연동합니다.",
+												"AI 응답 품질 개선 테스트를 진행합니다."
 											],
 											"taskPerformances": [
 												{
-													"taskId": "task-550e8400",
+													"taskId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 													"output": [
-														"협업 문서를 작성했습니다."
+														"Swagger Example을 추가했습니다.",
+														"API 응답 구조를 정리했습니다."
 													],
 													"impact": [
-														"협업자가 API를 쉽게 사용할 수 있습니다."
+														"프론트엔드 협업 효율이 향상되었습니다.",
+														"API 이해도가 개선되었습니다."
 													]
 												}
 											],
-											"reflectionSnapshotId": "reflection-snapshot-550e8400"
+											"reflectionSnapshotId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 										}
 									}
 								}
@@ -6403,7 +7030,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6430,52 +7066,30 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"reflectionSnapshotId": "reflection-snapshot-550e8400",
-											"originalRequest": {
-												"dailyEntryId": "daily-entry-550e8400",
-												"tasks": [
-													{
-														"taskId": "task-550e8400",
-														"priority": "SHOULD_DO",
-														"completed": true,
-														"title": "Swagger 문서 작성",
-														"memo": "API 예시 추가",
-														"result": "API 예시 데이터를 추가했다."
-													}
-												],
-												"reflectionContent": "오늘 API 문서화를 진행했다.",
-												"userJob": "DEVELOPMENT"
-											},
-											"answers": [
-												{
-													"question": "이번 작업에서 가장 어려웠던 점은 무엇인가요?",
-													"answer": "Swagger Example 적용 방법을 찾는 것이었습니다."
-												}
-											]
-										}
-									},
-									"Example 2": {
-										"value": {
 											"status": "COMPLETED",
-											"summary": "보충 답변을 반영해 성과 분석을 완료했습니다.",
+											"summary": "보충 질문 답변을 반영하여 업무 성과 분석을 완료했습니다.",
 											"growthInsights": [
-												"문제 해결 과정에서 기술 이해도가 향상되었습니다."
+												"업무 과정에서 발생한 문제 해결 경험을 정리했습니다.",
+												"성과와 영향도를 구체적으로 표현하는 역량이 향상되었습니다."
 											],
 											"nextActions": [
-												"Dashboard API 구현"
+												"추가 업무 성과 데이터를 기록합니다.",
+												"프로젝트 목표 대비 진행 상황을 점검합니다."
 											],
 											"taskPerformances": [
 												{
-													"taskId": "task-550e8400",
+													"taskId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
 													"output": [
-														"Swagger 예시 구조를 개선했습니다."
+														"Swagger Example 적용 방법을 확인했습니다.",
+														"API 응답 구조를 정리했습니다."
 													],
 													"impact": [
-														"프론트 협업 효율이 향상됩니다."
+														"API 명세 일관성이 개선되었습니다.",
+														"팀원 간 API 이해도가 향상되었습니다."
 													]
 												}
 											],
-											"reflectionSnapshotId": "reflection-snapshot-550e8400"
+											"reflectionSnapshotId": "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01"
 										}
 									}
 								}
@@ -6488,7 +7102,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6515,16 +7138,6 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"tagName": "AI 업무 관리",
-											"projectName": "Wordy",
-											"goal": "업무 생산성 향상",
-											"expectedOutcome": "사용자가 매일 업무를 기록하고 성과를 확인할 수 있다.",
-											"period": "4주",
-											"userJob": "백엔드 개발자"
-										}
-									},
-									"Example 2": {
-										"value": {
 											"kpiRecommendations": [
 												"업무 완료율 90% 이상",
 												"주간 회고 작성률 100%",
@@ -6542,7 +7155,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6569,14 +7191,7 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"userId": "550e8400-e29b-41d4-a716-446655440000",
-											"startDate": "2026-07-07",
-											"endDate": "2026-07-13"
-										}
-									},
-									"Example 2": {
-										"value": {
-											"dashboardId": "dashboard-weekly-001",
+											"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
 											"startDate": "2026-07-07",
 											"endDate": "2026-07-13",
 											"summary": "이번 주에는 AI 성과 분석 기능과 Swagger 문서화를 완료했습니다.",
@@ -6614,7 +7229,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6641,14 +7265,7 @@
 								"examples": {
 									"Example 1": {
 										"value": {
-											"userId": "550e8400-e29b-41d4-a716-446655440000",
-											"startDate": "2026-07-01",
-											"endDate": "2026-07-31"
-										}
-									},
-									"Example 2": {
-										"value": {
-											"dashboardId": "dashboard-monthly-001",
+											"dashboardId": "550e8400-e29b-41d4-a716-446655440000",
 											"startDate": "2026-07-01",
 											"endDate": "2026-07-31",
 											"summary": "이번 달에는 AI 기능 개발과 업무 관리 시스템 개선을 중심으로 성장했습니다.",
@@ -6677,7 +7294,7 @@
 													"tagName": "백엔드 개발",
 													"objective": "안정적인 API 구조 설계",
 													"expectedOutcome": "서비스의 원활한 API 연동",
-													"achievementStatus": "진행중",
+													"achievementStatus": "IN_PROGRESS",
 													"insight": "API 구조 개선과 코드 안정화 작업을 진행했습니다."
 												}
 											]
@@ -6693,7 +7310,16 @@
 					"AI"
 				],
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {

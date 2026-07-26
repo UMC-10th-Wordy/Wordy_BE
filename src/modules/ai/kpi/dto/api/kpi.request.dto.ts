@@ -1,4 +1,5 @@
 import { Example } from "tsoa";
+import { JobRole } from "../../../../users/users.dto";
 
 export class KpiRequestDto {
   @Example("AI 업무 관리")
@@ -16,6 +17,6 @@ export class KpiRequestDto {
   @Example("4주")
   period?: string;
 
-  @Example("백엔드 개발자")
-  userJob!: string;
+  @Example("DEVELOPER")
+  userJob!: JobRole;
 }
