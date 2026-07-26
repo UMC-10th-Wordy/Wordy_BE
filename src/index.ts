@@ -29,6 +29,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(apiLogMiddleware);
 
+app.get("/", (req: Request, res: Response) => {
+  res.send("Wordy Backend Server");
+});
+
 const swaggerDocument = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'generated/swagger.json'), 'utf-8'),
 );
