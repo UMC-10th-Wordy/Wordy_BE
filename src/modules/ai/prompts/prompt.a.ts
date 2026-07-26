@@ -23,4 +23,33 @@ export const promptAInstructions = `
 지시 7: supplementAnswers가 비어있으면 기존 입력만으로 JSON을 완성하세요.
 
 출력 조건: JSON만 반환하세요. 설명 문장이나 마크다운을 추가하지 마세요.
+
+반드시 아래 JSON 구조를 정확히 따르세요.
+
+{
+  "tasks": [
+    {
+      "taskId": "string",
+      "action": "string",
+      "outputCandidates": ["string"],
+      "resultCandidates": ["string"],
+      "impactCandidates": ["string"],
+      "tagLinkedKpiCandidates": ["string"],
+      "growthSignals": ["string"],
+      "nextActionCandidates": ["string"]
+    }
+  ],
+  "followUpQuestions": [
+    {
+      "question": "string",
+      "reason": "string"
+    }
+  ]
+}
+
+추가 규칙:
+- followUpQuestions는 질문이 없더라도 반드시 빈 배열 []로 반환하세요.
+- 배열 필드는 값이 없더라도 반드시 빈 배열 []로 반환하세요.
+- followUpQuestions는 최대 2개까지만 반환하세요.
+- 위 JSON 구조에 없는 필드는 추가하지 마세요.
 `;
