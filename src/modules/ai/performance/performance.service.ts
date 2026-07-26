@@ -184,7 +184,24 @@ export class PerformanceService {
   ): Promise<PerformanceResponseDto> {
 
     const userId = this.extractUserId(authorization);
+    const snapshot =
+      await this.prisma.reflectionSnapshot.findFirst({
+        where: {
+          reflectionSnapshotId: request.reflectionSnapshotId,
+          dailyEntry: {
+            userId,
+            deletedAt: null,
+          },
+        },
+      });
 
+    if (!snapshot) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "성과 데이터를 찾을 수 없습니다.",
+      );
+    }
     // AIQuestion 상태 업데이트
     const questionStatus =
       request.answers.length > 0  // 프론트에서 답변 건너뛰기 시 빈 배열을 보냄
@@ -193,23 +210,40 @@ export class PerformanceService {
 
     if (request.answers.length > 0) {
       for (const answer of request.answers) {
+        const question =
+          await this.prisma.aIQuestion.findFirst({
+            where: {
+              aiQuestionId: answer.aiQuestionId,
+              reflectionSnapshotId:
+                request.reflectionSnapshotId,
+            },
+          });
+
+        if (!question) {
+          throw new ApiError(
+            ErrorCode.NOT_FOUND.status,
+            ErrorCode.NOT_FOUND.code,
+            "질문 데이터를 찾을 수 없습니다.",
+          );
+        }
+
         await this.prisma.aIQuestion.update({
           where: {
-            aiQuestionId: answer.aiQuestionId,
+            aiQuestionId: question.aiQuestionId,
           },
           data: {
             answer: answer.answer,
-            status: AIQuestionStatus.ANSWERED,
+            status: questionStatus,
           },
         });
       }
     } else {
       await this.prisma.aIQuestion.updateMany({
         where: {
-          reflectionSnapshotId: request.reflectionSnapshotId,
+          reflectionSnapshotId: snapshot.reflectionSnapshotId,
         },
         data: {
-          status: AIQuestionStatus.SKIPPED,
+          status: questionStatus,
         },
       });
     }
@@ -253,6 +287,7 @@ export class PerformanceService {
       where: {
         dailyEntryId: request.originalRequest.dailyEntryId,
         userId,
+        deletedAt: null,
       },
     });
 
