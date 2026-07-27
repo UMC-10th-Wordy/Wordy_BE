@@ -1,3 +1,4 @@
+
 import {
   Body,
   Controller,
@@ -81,6 +82,7 @@ export class TaskController extends Controller {
             '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
           content:
             '백엔드 API 구현 및 Swagger 문서화를 완료했습니다.',
+          attachments: [],
           createdAt: new Date(
             '2026-07-21T14:30:00.000Z',
           ),
@@ -285,6 +287,7 @@ export class TaskController extends Controller {
           '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
         content:
           '백엔드 API 구현 및 Swagger 문서화를 완료했습니다.',
+        attachments: [],
         createdAt: new Date(
           '2026-07-21T14:30:00.000Z',
         ),

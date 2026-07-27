@@ -24,7 +24,6 @@ app.set('trust proxy', true);
 // 미들웨어 설정
 app.use(cors());
 app.use(express.static('public'));
-app.use('/uploads', express.static(path.resolve(process.env.UPLOAD_DIR || 'public/uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(apiLogMiddleware);

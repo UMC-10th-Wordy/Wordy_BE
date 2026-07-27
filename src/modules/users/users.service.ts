@@ -1,11 +1,10 @@
 import { randomUUID } from 'crypto';
-import { mkdir, writeFile } from 'fs/promises';
-import path from 'path';
 import { verifyAccessToken } from '../../auth.config';
 import { UsersRepository } from './users.repository';
 import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfService, JobRole } from './users.dto';
 import { ApiError } from '../../common/errors/api.error';
 import { ErrorCode } from '../../common/errors/error.code';
+import { uploadToGcs } from '../../common/storage/gcs.storage';
 
 const PROFILE_IMAGE_EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -80,13 +79,8 @@ export class UsersService {
     const extension = PROFILE_IMAGE_EXTENSIONS[file.mimetype];
     if (!extension) throw new InvalidImageTypeError();
 
-    const uploadDir = path.join(path.resolve(process.env.UPLOAD_DIR || 'public/uploads'), 'profile');
-    await mkdir(uploadDir, { recursive: true });
-
     const fileName = `${randomUUID()}.${extension}`;
-    await writeFile(path.join(uploadDir, fileName), file.buffer);
-
-    const profileImgUrl = `${process.env.SERVER_URL}/uploads/profile/${fileName}`;
+    const profileImgUrl = await uploadToGcs(file.buffer, `profile/${fileName}`, file.mimetype);
 
     const user = await this.usersRepository.findById(userId);
     if (user?.profile) {

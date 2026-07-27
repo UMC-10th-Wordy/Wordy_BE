@@ -96,7 +96,7 @@ export class AuthController extends Controller {
       email: "user@email.com",
       userName: "홍길동",
       plan: PlanType.FREE,
-      profileImgUrl: "http://localhost:3000/uploads/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg",
+      profileImgUrl: "https://storage.googleapis.com/wordy-gsc/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg",
     },
   })
   public async login(
