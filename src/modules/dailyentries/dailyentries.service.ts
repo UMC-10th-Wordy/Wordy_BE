@@ -256,7 +256,7 @@ export const getMonthlyEntries = async (
   });
 };
 
-// 4) 일자 상세
+// 4) 일자 상세 --> 스냅샷 기반
 export const getDailyEntriesDetail = async (
   userId: string,
   dailyEntryId: string
@@ -266,43 +266,57 @@ export const getDailyEntriesDetail = async (
     throw new Error("해당 일지를 찾을 수 없습니다.");
   }
 
-  const tasks = entry.reflectionTasks
-    .map((rt) => rt.task)
-    .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt)
-    .map((t) => {
-      // Task당 결과 0..1개. 결과가 있고 삭제되지 않았을 때만 매핑.
-      const tr = t.taskResult;
-      const result =
-        tr && !tr.deletedAt
-          ? {
-              taskResultId: tr.taskResultId,
-              content: tr.content,
-              attachments: tr.attachments.map((a) => ({
-                fileType: a.fileType,
-                fileUrl: a.fileUrl,
-                fileName: a.fileName,
-              })),
-            }
-          : null;
+  const base = {
+    dailyEntryId: entry.dailyEntryId,
+    entryDate: toDateStr(entry.entryDate),
+    reflectionContent: entry.reflectionContent,
+  };
 
-      return {
-        taskId: t.taskId,
-        tag: t.tag ? { tagName: t.tag.tagName, color: t.tag.color } : null,
-        title: t.title,
-        memo: t.memo ?? null,
-        priority: t.priority,
-        status: t.status,
-        result,
-      };
-    });
+  const snapshot = entry.reflectionSnapshots[0];
+
+  if (!snapshot) {
+    return {
+      ...base,
+      converted: false,
+      completedCount: 0,
+      incompleteCount: 0,
+      tasks: [],
+    };
+  }
+
+  const tasks = snapshot.reflectionTaskSnapshots.map((ts) => {
+    const rs = ts.resultSnapshots[0];
+    const result = rs
+      ? {
+          taskResultId: rs.taskResult.taskResultId,
+          content: rs.content,
+          attachments: rs.taskResult.attachments.map((a) => ({
+            fileType: a.fileType,
+            fileUrl: a.fileUrl,
+            fileName: a.fileName,
+          })),
+        }
+      : null;
+
+    return {
+      taskId: ts.taskId,
+      tag: ts.task?.tag
+        ? { tagName: ts.task.tag.tagName, color: ts.task.tag.color }
+        : null,
+      title: ts.title,
+      memo: ts.memo ?? null,
+      priority: ts.priority,
+      status: ts.status,
+      result,
+    };
+  });
 
   const completedCount = tasks.filter((t) => t.status === "COMPLETED").length;
   const incompleteCount = tasks.length - completedCount;
 
   return {
-    dailyEntryId: entry.dailyEntryId,
-    entryDate: toDateStr(entry.entryDate),
-    reflectionContent: entry.reflectionContent,
+    ...base,
+    converted: true,
     completedCount,
     incompleteCount,
     tasks,

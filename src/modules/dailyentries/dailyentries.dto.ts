@@ -160,6 +160,10 @@ export class DailyEntriesDetailResponse {
       },
     },
   ])
+
+  @Example(true)
+  converted!: boolean; // 성과 변환 여부 (false면 아직 변환 전, tasks 비어있음)
+  
   tasks!: DailyEntriesTaskItem[];
 }
 
