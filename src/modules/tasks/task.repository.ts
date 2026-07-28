@@ -34,6 +34,14 @@ export class TaskRepository {
             content: true,
             createdAt: true,
             updatedAt: true,
+            attachments: {
+              where: {
+                deletedAt: null,
+              },
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
           },
         },
       },
@@ -74,6 +82,14 @@ export class TaskRepository {
             content: true,
             createdAt: true,
             updatedAt: true,
+            attachments: {
+              where: {
+                deletedAt: null,
+              },
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
           },
         },
       },

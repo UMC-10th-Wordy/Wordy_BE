@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto';
 import path from 'path';
-import jwt from 'jsonwebtoken';
 import { TaskRepository } from '../tasks/task.repository';
 import { TaskStatus } from '../tasks/task.dto';
 import { AttachmentInput, TaskResultRepository } from './task-result.repository';
@@ -8,11 +7,7 @@ import { FileType, TaskResultResponse } from './task-result.dto';
 import { ApiError } from '../../common/errors/api.error';
 import { ErrorCode } from '../../common/errors/error.code';
 import { uploadToGcs } from '../../common/storage/gcs.storage';
-
-interface AccessTokenPayload {
-  userId: string;
-  email: string;
-}
+import { verifyAccessToken } from '../../auth.config';
 
 class UnauthorizedError extends ApiError {
   constructor() {
@@ -170,10 +165,7 @@ export class TaskResultService {
     const token = authorization.replace('Bearer ', '');
 
     try {
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_SECRET!,
-      ) as AccessTokenPayload;
+      const payload = verifyAccessToken(token);
 
       return payload.userId;
     } catch {
