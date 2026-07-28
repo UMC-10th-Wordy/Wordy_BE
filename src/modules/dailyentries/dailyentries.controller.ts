@@ -145,6 +145,7 @@ export class DailyEntriesController extends Controller {
       entryDate: "2026-08-21",
       reflectionContent: "오늘은 JWT 인증 기능 구현을 완료했다.",
 
+      converted: true,
       completedCount: 2,
       incompleteCount: 1,
 

@@ -91,22 +91,25 @@ export const findEntriesByMonth = async (
 };
 
 // ============================================================
-// 일자 상세
+// 일자 상세 => 스냅샷 기반으로 변경
 // ============================================================
 export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
   return prisma.dailyEntry.findFirst({
     where: { dailyEntryId, userId, deletedAt: null },
     include: {
-      // 이 일지에 연결된 업무들 (ReflectionTask → Task)
-      reflectionTasks: {
+      reflectionSnapshots: {
+        orderBy: { createdAt: "desc" },
         include: {
-          task: {
+          reflectionTaskSnapshots: {
             include: {
-              tag: true,
-              // Task 1개당 결과 0..1개 (단수) + 첨부파일
-              taskResult: {
+              task: { include: { tag: true } },
+              resultSnapshots: {
                 include: {
-                  attachments: { where: { deletedAt: null } },
+                  taskResult: {
+                    include: {
+                      attachments: { where: { deletedAt: null } },
+                    },
+                  },
                 },
               },
             },
