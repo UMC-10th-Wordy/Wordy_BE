@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import { TaskRepository } from './task.repository';
 import {
   CreateTaskRequest,
@@ -11,11 +10,7 @@ import {
 } from './task.dto';
 import { ApiError } from '../../common/errors/api.error';
 import { ErrorCode } from '../../common/errors/error.code';
-
-interface AccessTokenPayload {
-  userId: string;
-  email: string;
-}
+import { verifyAccessToken } from '../../auth.config';
 
 class UnauthorizedError extends ApiError {
   constructor() {
@@ -289,10 +284,7 @@ export class TaskService {
       authorization.replace('Bearer ', '');
 
     try {
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_SECRET!,
-      ) as AccessTokenPayload;
+      const payload = verifyAccessToken(token);
 
       return payload.userId;
     } catch {

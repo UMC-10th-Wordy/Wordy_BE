@@ -1,13 +1,8 @@
-import jwt from 'jsonwebtoken';
 import { TagRepository } from './tag.repository';
 import { CreateTagRequest, UpdateTagRequest } from './tag.dto';
 import { ApiError } from '../../common/errors/api.error';
 import { ErrorCode } from '../../common/errors/error.code';
-
-interface AccessTokenPayload {
-  userId: string;
-  email: string;
-}
+import { verifyAccessToken } from '../../auth.config';
 
 export class UnauthorizedError extends ApiError {
   constructor() {
@@ -38,7 +33,7 @@ export class TagService {
     const token = authorization.replace('Bearer ', '');
 
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET!) as AccessTokenPayload;
+      const payload = verifyAccessToken(token);
       return payload.userId;
     } catch {
       throw new UnauthorizedError();

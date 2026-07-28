@@ -1,8 +1,29 @@
 import { Example } from 'tsoa';
 
+export enum FileType {
+  FILE = 'FILE',
+  IMG = 'IMG',
+}
+
 export class UpsertTaskResultRequest {
-  @Example('백엔드 API 구현 및 Swagger 문서화를 완료했습니다.')
   content!: string;
+  removedAttachmentIds?: string[];
+}
+
+export class AttachmentResponse {
+  @Example('b4b6b402-6c1a-4b2a-9b0a-2f6b1b9f2b10')
+  attachmentId!: string;
+
+  @Example(FileType.IMG)
+  fileType!: FileType;
+
+  @Example(
+    'https://storage.googleapis.com/wordy-gsc/task-results/b4b6b402-6c1a-4b2a-9b0a-2f6b1b9f2b10.png',
+  )
+  fileUrl!: string;
+
+  @Example('result.png')
+  fileName!: string;
 }
 
 export class TaskResultResponse {
@@ -14,6 +35,17 @@ export class TaskResultResponse {
 
   @Example('백엔드 API 구현 및 Swagger 문서화를 완료했습니다.')
   content!: string;
+
+  @Example([
+    {
+      attachmentId: 'b4b6b402-6c1a-4b2a-9b0a-2f6b1b9f2b10',
+      fileType: FileType.IMG,
+      fileUrl:
+        'https://storage.googleapis.com/wordy-gsc/task-results/b4b6b402-6c1a-4b2a-9b0a-2f6b1b9f2b10.png',
+      fileName: 'result.png',
+    },
+  ])
+  attachments!: AttachmentResponse[];
 
   @Example('2026-07-23T12:00:00.000Z')
   createdAt!: Date;

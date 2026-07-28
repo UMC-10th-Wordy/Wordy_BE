@@ -70,6 +70,8 @@ export class UsersController extends Controller {
 
   /**
    * 프로필이 이미 등록된 경우 즉시 반영되고, 등록 전이면 응답으로 받은 URL을 프로필 등록 API의 profileImgUrl로 함께 보내면 됨 (jpg/png/webp/gif, 최대 5MB)
+   * image는 GCS 버킷에 업로드되며, 파일명 충돌을 피하기 위해 원본 파일명이 아닌 난수(UUID) 파일명으로 저장되고
+   * 그 공개 URL이 profileImgUrl로 반환/저장됨.
    * @summary 프로필 이미지 업로드
    */
   @Post('profile/image')
@@ -78,7 +80,7 @@ export class UsersController extends Controller {
     code: 'S201',
     message: '프로필 이미지가 업로드되었습니다.',
     result: {
-      profileImgUrl: 'http://localhost:3000/uploads/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg',
+      profileImgUrl: 'https://storage.googleapis.com/wordy-gsc/profile/3fa85f64-5717-4562-b3fc-2c963f66afa6.jpg',
     },
   })
   public async uploadProfileImage(

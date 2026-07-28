@@ -1,5 +1,3 @@
-import jwt from 'jsonwebtoken';
-
 import {
   createDailyEntryWithTasks,
   findDailyEntryByUserIdAndDate,
@@ -13,11 +11,7 @@ import {
 
 import { ApiError } from '../../common/errors/api.error.js';
 import { ErrorCode } from '../../common/errors/error.code.js';
-
-interface AccessTokenPayload {
-  userId: string;
-  email: string;
-}
+import { verifyAccessToken } from '../../auth.config.js';
 
 class UnauthorizedError extends ApiError {
   constructor() {
@@ -94,10 +88,7 @@ const getUserIdFromAuthorization = (
   const token = authorization.replace('Bearer ', '');
 
   try {
-    const payload = jwt.verify(
-      token,
-      process.env.JWT_SECRET!,
-    ) as AccessTokenPayload;
+    const payload = verifyAccessToken(token);
 
     return payload.userId;
   } catch {

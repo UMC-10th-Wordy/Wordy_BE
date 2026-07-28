@@ -1,18 +1,13 @@
-import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
+import path from 'path';
 import { TaskRepository } from '../tasks/task.repository';
 import { TaskStatus } from '../tasks/task.dto';
-import { TaskResultRepository } from './task-result.repository';
-import {
-  TaskResultResponse,
-  UpsertTaskResultRequest,
-} from './task-result.dto';
+import { AttachmentInput, TaskResultRepository } from './task-result.repository';
+import { FileType, TaskResultResponse } from './task-result.dto';
 import { ApiError } from '../../common/errors/api.error';
 import { ErrorCode } from '../../common/errors/error.code';
-
-interface AccessTokenPayload {
-  userId: string;
-  email: string;
-}
+import { uploadToGcs } from '../../common/storage/gcs.storage';
+import { verifyAccessToken } from '../../auth.config';
 
 class UnauthorizedError extends ApiError {
   constructor() {
@@ -51,7 +46,9 @@ export class TaskResultService {
   public async upsertTaskResult(
     authorization: string | undefined,
     taskId: string,
-    body: UpsertTaskResultRequest,
+    content: string,
+    removedAttachmentIds: string | undefined,
+    files: Express.Multer.File[],
   ): Promise<TaskResultResponse> {
     const userId = this.getUserIdFromAuthorization(authorization);
 
@@ -70,18 +67,92 @@ export class TaskResultService {
       );
     }
 
-    const content = body.content?.trim();
+    const trimmedContent = content?.trim();
 
-    if (!content) {
+    if (!trimmedContent) {
       throw new BadRequestError('업무 결과 내용은 필수입니다.');
     }
 
     const taskResult = await this.taskResultRepository.upsert(
       taskId,
-      content,
+      trimmedContent,
     );
 
-    return taskResult as TaskResultResponse;
+    await this.taskResultRepository.softDeleteAttachments(
+      taskResult.taskResultId,
+      this.parseRemovedAttachmentIds(removedAttachmentIds),
+    );
+
+    const newAttachments = await this.saveAttachments(files);
+    await this.taskResultRepository.createAttachments(
+      taskResult.taskResultId,
+      newAttachments,
+    );
+
+    const attachments = await this.taskResultRepository.findActiveAttachments(
+      taskResult.taskResultId,
+    );
+
+    return {
+      ...taskResult,
+      attachments,
+    } as TaskResultResponse;
+  }
+
+  /**
+   * removedAttachmentIds로 넘어온 JSON 배열 문자열을 파싱
+   */
+  private parseRemovedAttachmentIds(raw: string | undefined): string[] {
+    if (!raw) return [];
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new BadRequestError(
+        'removedAttachmentIds는 JSON 배열 문자열이어야 합니다.',
+      );
+    }
+
+    if (
+      !Array.isArray(parsed) ||
+      !parsed.every((id) => typeof id === 'string')
+    ) {
+      throw new BadRequestError(
+        'removedAttachmentIds는 문자열 배열이어야 합니다.',
+      );
+    }
+
+    return parsed;
+  }
+
+  /**
+   * 첨부파일들을 디스크에 저장하고, DB에 넣을 형태(fileType/fileUrl/fileName)로 변환
+   */
+  private async saveAttachments(
+    files: Express.Multer.File[],
+  ): Promise<AttachmentInput[]> {
+    if (files.length === 0) return [];
+
+    return Promise.all(
+      files.map(async (file) => {
+        const extension = path.extname(file.originalname);
+        const destination = `task-results/${randomUUID()}${extension}`;
+        const fileUrl = await uploadToGcs(
+          file.buffer,
+          destination,
+          file.mimetype,
+        );
+
+        return {
+          fileType: file.mimetype.startsWith('image/')
+            ? FileType.IMG
+            : FileType.FILE,
+          fileUrl,
+          fileName: file.originalname,
+        };
+      }),
+    );
   }
 
   private getUserIdFromAuthorization(
@@ -94,10 +165,7 @@ export class TaskResultService {
     const token = authorization.replace('Bearer ', '');
 
     try {
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_SECRET!,
-      ) as AccessTokenPayload;
+      const payload = verifyAccessToken(token);
 
       return payload.userId;
     } catch {
