@@ -98,7 +98,7 @@ export class PerformanceService {
       data: {
         promptType: PromptType.PROMPT_A,
         promptVersion: "v1",
-        request: promptARequest,
+        request: promptARequest as Prisma.InputJsonValue,
         response: promptAResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -153,7 +153,7 @@ export class PerformanceService {
       await this.prisma.reflectionSnapshot.create({
         data: {
           dailyEntryId,
-          promptAResult,
+          promptAResult: promptAResult as Prisma.InputJsonValue,
         },
       });
 
@@ -268,7 +268,7 @@ export class PerformanceService {
       data: {
         promptType: PromptType.PROMPT_A,
         promptVersion: "v1",
-        request: promptARequest,
+        request: promptARequest as Prisma.InputJsonValue,
         response: promptAResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -353,8 +353,8 @@ export class PerformanceService {
             reflectionSnapshotId,
           },
           data: {
-            promptAResult,
-            promptBResult,
+            promptAResult: promptAResult as Prisma.InputJsonValue,
+            promptBResult: promptBResult as Prisma.InputJsonValue,
           },
         });
     } 
@@ -363,8 +363,8 @@ export class PerformanceService {
         await this.prisma.reflectionSnapshot.create({
           data: {
             dailyEntryId: request.dailyEntryId,
-            promptAResult,
-            promptBResult,
+            promptAResult: promptAResult as Prisma.InputJsonValue,
+            promptBResult: promptBResult as Prisma.InputJsonValue,
           },
         });
     }
@@ -373,7 +373,7 @@ export class PerformanceService {
     data: {
       promptType: PromptType.PROMPT_B,
       promptVersion: "v1",
-      request: promptBRequest,
+      request: promptBRequest as Prisma.InputJsonValue,
       response: promptBResponse,
       status: AiRunStatus.SUCCESS,
       reflectionSnapshotId:
