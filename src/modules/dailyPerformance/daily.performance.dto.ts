@@ -50,19 +50,33 @@ export class PerformanceListResponseDto {
 }
 
 export class IncompleteTaskDto {
-  @Example("개발")
-  tag?: string;
+  @Example({
+    tagName: "개발",
+    color: "#4A90E2",
+  })
+  tag!: TagInfoDto | null;
 
   @Example("AI 프롬프트 개선")
   title!: string;
+}
+
+export class TagInfoDto {
+  @Example("개발")
+  tagName!: string;
+
+  @Example("#4A90E2")
+  color!: string | null;
 }
 
 export class PerformanceTaskDto {
   @Example("a1b2c3d4-e5f6-7890-abcd-123456789012",)
   taskId!: string;
 
-  @Example("개발")
-  tag?: string;
+  @Example({
+    tagName: "개발",
+    color: "#4A90E2",
+  })
+  tag!: TagInfoDto | null;
 
   @Example("성과 변환 API 구현")
   title!: string;
@@ -89,6 +103,12 @@ export class PerformanceDetailResponseDto {
 
   @Example(80)
   achievementRate!: number;
+
+  @Example(5)
+  totalTaskCount!: number;
+
+  @Example(4)
+  completedTaskCount!: number;
 
   @Example([
     {
