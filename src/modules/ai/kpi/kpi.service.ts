@@ -68,7 +68,7 @@ export class KpiService {
       data: {
         promptType: PromptType.PROMPT_C,
         promptVersion: "v1",
-        request: prompt as Prisma.InputJsonValue,
+        request: JSON.parse(JSON.stringify(prompt)),
         response,
         status: AiRunStatus.SUCCESS,
       },

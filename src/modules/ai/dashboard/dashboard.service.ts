@@ -153,7 +153,7 @@ export class DashboardService {
       data: {
         promptType: PromptType.PROMPT_C,
         promptVersion: "v1",
-        request: promptRequest as Prisma.InputJsonValue,
+        request: JSON.parse(JSON.stringify(promptRequest)),
         response: promptResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -336,7 +336,7 @@ export class DashboardService {
         include:{
           kpis:true,
           tagAnalyses:true,
-          weeklyReflection:true,
+          weeklyReflections:true,
         },
       });
 
@@ -361,19 +361,19 @@ export class DashboardService {
             summary: dashboard.summary,
             kpis:
               dashboard.kpis.map(
-                (kpi: typeof dashboard.kpis[number])=>({
-                  kpiName:kpi.kpiName,
-                  progress:kpi.progress,
+                (kpi) => ({
+                  kpiName: kpi.kpiName ?? "",
+                  progress: kpi.progress ?? "",
                 }),
               ),
             tagAnalyses:
-              dashboard.tagAnalyses.map(
-                (tag: typeof dashboard.tagAnalyses[number]) => ({
-                  goal: tag.goal,
-                  expectedOutcome: tag.expectedOutcome,
-                  achievementStatus: tag.achievementStatus,
-                }),
-              ),
+            dashboard.tagAnalyses.map(
+              (tag)=>({
+                goal: tag.goal ?? "",
+                expectedOutcome: tag.expectedOutcome ?? "",
+                achievementStatus: tag.achievementStatus ?? "",
+              }),
+            ),
             weeklyReflection:
               dashboard.weeklyReflections[0]
                 ? {
@@ -406,7 +406,7 @@ export class DashboardService {
       data:{
         promptType:PromptType.PROMPT_D,
         promptVersion:"v1",
-        request:promptRequest as Prisma.InputJsonValue,
+        request: JSON.parse(JSON.stringify(promptRequest)),
         response:promptResponse,
         status:AiRunStatus.SUCCESS,
       },

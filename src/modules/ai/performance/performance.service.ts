@@ -92,7 +92,7 @@ export class PerformanceService {
       data: {
         promptType: PromptType.PROMPT_A,
         promptVersion: "v1",
-        request: promptARequest as Prisma.InputJsonValue,
+        request: JSON.parse(JSON.stringify(promptARequest)),
         response: promptAResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -147,7 +147,7 @@ export class PerformanceService {
       await this.prisma.reflectionSnapshot.create({
         data: {
           dailyEntryId,
-          promptAResult: promptAResult as Prisma.InputJsonValue,
+          request: JSON.parse(JSON.stringify(promptAResult)),
         },
       });
 
@@ -274,7 +274,7 @@ export class PerformanceService {
       data: {
         promptType: PromptType.PROMPT_A,
         promptVersion: "v1",
-        request: promptARequest as Prisma.InputJsonValue,
+        request: JSON.parse(JSON.stringify(promptARequest)),
         response: promptAResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -359,8 +359,8 @@ export class PerformanceService {
             reflectionSnapshotId,
           },
           data: {
-            promptAResult: promptAResult as Prisma.InputJsonValue,
-            promptBResult: promptBResult as Prisma.InputJsonValue,
+            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+            promptBResult: JSON.parse(JSON.stringify(promptBResult)),
           },
         });
     } 
@@ -369,8 +369,8 @@ export class PerformanceService {
         await this.prisma.reflectionSnapshot.create({
           data: {
             dailyEntryId: request.dailyEntryId,
-            promptAResult: promptAResult as Prisma.InputJsonValue,
-            promptBResult: promptBResult as Prisma.InputJsonValue,
+            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+            promptBResult: JSON.parse(JSON.stringify(promptBResult)),
           },
         });
     }
@@ -379,7 +379,7 @@ export class PerformanceService {
     data: {
       promptType: PromptType.PROMPT_B,
       promptVersion: "v1",
-      request: promptBRequest as Prisma.InputJsonValue,
+      request: JSON.parse(JSON.stringify(promptBRequest)),
       response: promptBResponse,
       status: AiRunStatus.SUCCESS,
       reflectionSnapshotId:

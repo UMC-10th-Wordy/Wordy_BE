@@ -266,6 +266,8 @@ export const getDailyEntriesDetail = async (
     throw new Error("해당 일지를 찾을 수 없습니다.");
   }
 
+  const latestSnapshot = entry.reflectionSnapshots[0];
+
   const base = {
     dailyEntryId: entry.dailyEntryId,
     dailyPerformanceId: entry.dailyPerformance?.dailyPerformanceId ?? null,

@@ -109,7 +109,7 @@ export class DailyPerformanceService {
 
         // AI 생성 결과
         nextAction: promptB.nextActions,
-        structuredResult: promptA as Prisma.InputJsonValue,
+        structuredResult: JSON.parse(JSON.stringify(promptA)),
       });
 
     // PerformanceItem 저장
@@ -230,7 +230,7 @@ export class DailyPerformanceService {
             taskId: task.taskId,
             tag: task.tag
               ? {
-                  tagName: task.tag.name,
+                  tagName: task.tag.tagName,
                   color: task.tag.color,
                 }
               : null,
@@ -246,7 +246,7 @@ export class DailyPerformanceService {
           taskId: task.taskId,
           tag: task.tag
             ? {
-                tagName: task.tag.name,
+                tagName: task.tag.tagName,
                 color: task.tag.color,
               }
             : null,
@@ -274,7 +274,7 @@ export class DailyPerformanceService {
         incompleteTasks.map((task) => ({
           tag: task.tag
             ? {
-                tagName: task.tag.name,
+                tagName: task.tag.tagName,
                 color: task.tag.color,
               }
             : null,
