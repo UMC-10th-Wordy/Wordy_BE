@@ -18,6 +18,8 @@ import { DashboardController } from './../modules/dashboard.week/dashboard.week.
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MonthlyDashboardController } from './../modules/dashboard.month/dashboard.month.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DailyPerformanceController } from './../modules/dailyPerformance/daily.performance.controller.js';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DailyEntriesWriteController } from './../modules/dailyentries/dailyentries.write.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DailyEntriesController } from './../modules/dailyentries/dailyentries.controller.js';
@@ -114,12 +116,29 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "FileType": {
+        "dataType": "refEnum",
+        "enums": ["FILE","IMG"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "AttachmentResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "attachmentId": {"dataType":"string","required":true},
+            "fileType": {"ref":"FileType","required":true},
+            "fileUrl": {"dataType":"string","required":true},
+            "fileName": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TaskResultResponse": {
         "dataType": "refObject",
         "properties": {
             "taskResultId": {"dataType":"string","required":true},
             "taskId": {"dataType":"string","required":true},
             "content": {"dataType":"string","required":true},
+            "attachments": {"dataType":"array","array":{"dataType":"refObject","ref":"AttachmentResponse"},"required":true},
             "createdAt": {"dataType":"datetime","required":true},
             "updatedAt": {"dataType":"datetime","required":true},
         },
@@ -303,14 +322,6 @@ const models: TsoaRoute.Models = {
             "code": {"dataType":"string","required":true},
             "message": {"dataType":"string","required":true},
             "result": {"dataType":"union","subSchemas":[{"ref":"TaskResultResponse"},{"dataType":"enum","enums":[null]}],"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UpsertTaskResultRequest": {
-        "dataType": "refObject",
-        "properties": {
-            "content": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -793,6 +804,80 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateDailyPerformanceResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "dailyPerformanceId": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateDailyPerformanceRequestDto": {
+        "dataType": "refObject",
+        "properties": {
+            "reflectionSnapshotId": {"dataType":"string","required":true},
+            "summary": {"dataType":"string","required":true},
+            "growthInsights": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceListItemDto": {
+        "dataType": "refObject",
+        "properties": {
+            "dailyPerformanceId": {"dataType":"string","required":true},
+            "achievementRate": {"dataType":"double","required":true},
+            "summary": {"dataType":"string","required":true},
+            "createdAt": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceListResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "performances": {"dataType":"array","array":{"dataType":"refObject","ref":"PerformanceListItemDto"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IncompleteTaskDto": {
+        "dataType": "refObject",
+        "properties": {
+            "tag": {"dataType":"string"},
+            "title": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceTaskDto": {
+        "dataType": "refObject",
+        "properties": {
+            "taskId": {"dataType":"string","required":true},
+            "tag": {"dataType":"string"},
+            "title": {"dataType":"string","required":true},
+            "output": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "impact": {"dataType":"array","array":{"dataType":"string"}},
+            "message": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PerformanceDetailResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "dailyPerformanceId": {"dataType":"string","required":true},
+            "achievementRate": {"dataType":"double","required":true},
+            "incompleteTasks": {"dataType":"array","array":{"dataType":"refObject","ref":"IncompleteTaskDto"},"required":true},
+            "summary": {"dataType":"string","required":true},
+            "growthInsights": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "nextActions": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "taskPerformances": {"dataType":"array","array":{"dataType":"refObject","ref":"PerformanceTaskDto"},"required":true},
+            "createdAt": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreateDailyEntryResponse": {
         "dataType": "refObject",
         "properties": {
@@ -1007,6 +1092,7 @@ const models: TsoaRoute.Models = {
             "reflectionContent": {"dataType":"string","required":true},
             "completedCount": {"dataType":"double","required":true},
             "incompleteCount": {"dataType":"double","required":true},
+            "converted": {"dataType":"boolean","required":true},
             "tasks": {"dataType":"array","array":{"dataType":"refObject","ref":"DailyEntriesTaskItem"},"required":true},
         },
         "additionalProperties": false,
@@ -1670,9 +1756,16 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsTaskResultController_upsertTaskResult: Record<string, TsoaRoute.ParameterSchema> = {
                 authorization: {"in":"header","name":"authorization","required":true,"dataType":"string"},
                 taskId: {"in":"path","name":"taskId","required":true,"dataType":"string"},
-                body: {"in":"body","name":"body","required":true,"ref":"UpsertTaskResultRequest"},
+                content: {"in":"formData","name":"content","required":true,"dataType":"string"},
+                removedAttachmentIds: {"in":"formData","name":"removedAttachmentIds","dataType":"string"},
+                files: {"in":"formData","name":"files","dataType":"array","array":{"dataType":"file"}},
         };
         app.put('/tasks/:taskId/result',
+            upload.fields([
+                {
+                    name: "files",
+                }
+            ]),
             ...(fetchMiddlewares<RequestHandler>(TaskResultController)),
             ...(fetchMiddlewares<RequestHandler>(TaskResultController.prototype.upsertTaskResult)),
 
@@ -2037,6 +2130,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"endDate":{"dataType":"string","required":true},"startDate":{"dataType":"string","required":true}}},
         };
         app.post('/dashboards',
@@ -2187,6 +2281,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsMonthlyDashboardController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"endDate":{"dataType":"string","required":true},"startDate":{"dataType":"string","required":true}}},
         };
         app.post('/dashboards/monthly',
@@ -2205,6 +2300,98 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'createDashboard',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDailyPerformanceController_createDailyPerformance: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
+                request: {"in":"body","name":"request","required":true,"ref":"CreateDailyPerformanceRequestDto"},
+        };
+        app.post('/performances',
+            ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController)),
+            ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController.prototype.createDailyPerformance)),
+
+            async function DailyPerformanceController_createDailyPerformance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDailyPerformanceController_createDailyPerformance, request, response });
+
+                const controller = new DailyPerformanceController();
+
+              await templateService.apiHandler({
+                methodName: 'createDailyPerformance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDailyPerformanceController_getDailyPerformances: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
+        };
+        app.get('/performances',
+            ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController)),
+            ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController.prototype.getDailyPerformances)),
+
+            async function DailyPerformanceController_getDailyPerformances(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDailyPerformanceController_getDailyPerformances, request, response });
+
+                const controller = new DailyPerformanceController();
+
+              await templateService.apiHandler({
+                methodName: 'getDailyPerformances',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDailyPerformanceController_getDailyPerformanceDetail: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
+                dailyPerformanceId: {"in":"path","name":"dailyPerformanceId","required":true,"dataType":"string"},
+        };
+        app.get('/performances/:dailyPerformanceId',
+            ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController)),
+            ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController.prototype.getDailyPerformanceDetail)),
+
+            async function DailyPerformanceController_getDailyPerformanceDetail(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDailyPerformanceController_getDailyPerformanceDetail, request, response });
+
+                const controller = new DailyPerformanceController();
+
+              await templateService.apiHandler({
+                methodName: 'getDailyPerformanceDetail',
                 controller,
                 response,
                 next,
