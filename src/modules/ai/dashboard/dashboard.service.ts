@@ -335,7 +335,7 @@ export class DashboardService {
         },
         include:{
           kpis:true,
-          tagAnalysis:true,
+          tagAnalyses:true,
           weeklyReflection:true,
         },
       });
