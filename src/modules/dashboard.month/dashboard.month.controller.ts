@@ -16,6 +16,9 @@ import {
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
+import { ApiError } from "../../common/errors/api.error.js";
+import { ErrorCode } from "../../common/errors/error.code.js";
+import { verifyAccessToken } from "../../auth.config.js";
 
 @Route("dashboards/monthly")
 @Tags("MonthlyDashboard")
@@ -52,13 +55,17 @@ export class MonthlyDashboardController extends Controller {
     },
   })
   public async getEligibility(
-    @Query() baseDate?: string
+  @Header("Authorization") authorization: string | undefined,
+  @Query() baseDate?: string
   ): Promise<ApiResponse<MonthlyEligibilityResponse>> {
-    const userId = "test-user-id";
-    const data = await getMonthlyEligibility(userId, baseDate);
-    return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
+  const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+  if (!token) {
+    throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
   }
-
+  const userId = verifyAccessToken(token).userId;
+  const data = await getMonthlyEligibility(userId, baseDate);
+  return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
+  } 
   /**
    * @summary 월간 대시보드 목록 조회
    */
@@ -77,8 +84,14 @@ export class MonthlyDashboardController extends Controller {
       },
     ],
   })
-  public async getList(): Promise<ApiResponse<MonthlyDashboardListItem[]>> {
-    const userId = "test-user-id";
+  public async getList(
+  @Header("Authorization") authorization: string | undefined
+    ): Promise<ApiResponse<MonthlyDashboardListItem[]>> {
+  const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    if (!token) {
+      throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
+    }
+    const userId = verifyAccessToken(token).userId;
     const data = await getMonthlyDashboardList(userId);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
@@ -130,9 +143,14 @@ export class MonthlyDashboardController extends Controller {
     },
   })
   public async getDetail(
+    @Header("Authorization") authorization: string | undefined,
     @Path() dashboardId: string
   ): Promise<ApiResponse<MonthlyDashboardDetail>> {
-    const userId = "test-user-id";
+    const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    if (!token) {
+      throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
+    }
+    const userId = verifyAccessToken(token).userId;
     const data = await getMonthlyDashboardDetail(dashboardId, userId);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
@@ -153,10 +171,15 @@ export class MonthlyDashboardController extends Controller {
     },
   })
   public async createReflection(
+    @Header("Authorization") authorization: string | undefined,
     @Path() dashboardId: string,
     @Body() body: CreateMonthlyReflectionRequest
   ): Promise<ApiResponse<any>> {
-    const userId = "test-user-id";
+    const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    if (!token) {
+      throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
+    }
+    const userId = verifyAccessToken(token).userId;
     const data = await addMonthlyReflection(dashboardId, userId, body);
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
