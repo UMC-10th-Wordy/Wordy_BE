@@ -142,6 +142,7 @@ export class DailyEntriesController extends Controller {
     message: "조회에 성공했습니다.",
     result: {
       dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+      dailyPerformanceId: "550e8400-e29b-41d4-a716-446655440000",
       entryDate: "2026-08-21",
       reflectionContent: "오늘은 JWT 인증 기능 구현을 완료했다.",
 
