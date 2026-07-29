@@ -6,7 +6,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `dailyperformance` ADD COLUMN `daily_entry_id` CHAR(36) NOT NULL,
+ALTER TABLE `DailyPerformance` ADD COLUMN `daily_entry_id` CHAR(36) NOT NULL,
     ADD COLUMN `userId` CHAR(36) NOT NULL;
 
 -- CreateIndex

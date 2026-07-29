@@ -100,6 +100,7 @@ export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
       reflectionSnapshots: {
         orderBy: { createdAt: "desc" },
         include: {
+          dailyPerformance: true,
           reflectionTaskSnapshots: {
             include: {
               task: { include: { tag: true } },

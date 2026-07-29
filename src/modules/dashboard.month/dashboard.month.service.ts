@@ -13,6 +13,7 @@ import { PromptManager } from "../ai/common/prompt.manager.js";
 import { ResponseParser } from "../ai/common/response.parser.js";
 import { RuleEngine } from "../ai/common/rule.engine.js";
 import { prisma } from "../../db.config.js";
+import { verifyAccessToken } from "../../auth.config.js"; // 인증토큰 받아오기
 
 const REQUIRED_COUNT = 3; // 월간 생성에 필요한 최소 주간 대시보드 수
 
@@ -134,10 +135,17 @@ export const addMonthlyReflection = async (
 
 // 월간 대시보드 생성 (AI 호출 → DB 저장)
 export const createMonthlyDashboardWithAI = async (
-  userId: string,
+  authorization: string | undefined,
   startDate: string,
   endDate: string
 ) => {
+  // authorization에서 userId 추출 (DB 저장용)
+  const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+  if (!token) {
+    throw new Error("인증이 필요합니다.");
+  }
+  const userId = verifyAccessToken(token).userId;
+
   // 1. AI 서비스 인스턴스 생성
   const aiService = new DashboardService(
     new LlmClient(),
@@ -147,20 +155,19 @@ export const createMonthlyDashboardWithAI = async (
     prisma
   );
 
-  // 2. AI로 대시보드 내용 생성 (월간도 같은 AI 함수, 기간만 한 달)
-  const aiResult = await aiService.generateMonthlyDashboard({
-    userId,
+  // 2. AI로 대시보드 내용 생성 (authorization 그대로 전달)
+  const aiResult = await aiService.generateMonthlyDashboard(authorization, {
     startDate,
     endDate,
   });
 
-  // 3. AI 결과 + 계산값을 DB에 저장
+  // 3. DB 저장 (위에서 뽑은 userId 사용)
   const saved = await createMonthlyDashboard({
     userId,
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     summary: aiResult.summary,
-    journalDays: aiResult.performanceCount, // TODO: 실제 일지 수로 교체 필요 (팀 확인)
+    journalDays: aiResult.performanceCount,
     performanceCount: aiResult.performanceCount,
     tagCount: aiResult.tagAnalyses.length,
     kpis: aiResult.kpis,

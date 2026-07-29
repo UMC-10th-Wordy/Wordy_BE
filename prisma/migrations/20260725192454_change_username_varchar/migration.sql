@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `profile` MODIFY `user_name` VARCHAR(20) NOT NULL;
+ALTER TABLE `Profile` MODIFY `user_name` VARCHAR(20) NOT NULL;

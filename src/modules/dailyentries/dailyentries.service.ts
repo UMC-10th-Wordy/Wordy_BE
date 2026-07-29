@@ -268,6 +268,7 @@ export const getDailyEntriesDetail = async (
 
   const base = {
     dailyEntryId: entry.dailyEntryId,
+    dailyPerformanceId: entry.dailyPerformance?.dailyPerformanceId ?? null,
     entryDate: toDateStr(entry.entryDate),
     reflectionContent: entry.reflectionContent,
   };
