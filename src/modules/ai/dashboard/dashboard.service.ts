@@ -30,6 +30,22 @@ type PerformanceItem = {
     } | null;
   };
 };
+
+type DailyPerformanceWithItems =
+  Prisma.DailyPerformanceGetPayload<{
+    include: {
+      performanceItems: {
+        include: {
+          task: {
+            include: {
+              tag: true;
+            };
+          };
+        };
+      };
+    };
+  }>;
+
 export class DashboardService {
   constructor(
     private readonly llmClient: LlmClient,
@@ -137,7 +153,7 @@ export class DashboardService {
       data: {
         promptType: PromptType.PROMPT_C,
         promptVersion: "v1",
-        request: promptRequest,
+        request: promptRequest as Prisma.InputJsonValue,
         response: promptResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -185,7 +201,7 @@ export class DashboardService {
 
   // 주간 핵심 성과 후보 생성
   private createWeeklySummaryCandidates(
-    performances: DailyPerformance[],
+    performances: DailyPerformanceWithItems[],
   ): WeeklySummaryCandidateDto[] {
 
     return performances.map(
@@ -205,7 +221,7 @@ export class DashboardService {
 
   // 태그별 Prompt C Input 생성
   private createTagAnalysisInput(
-    performances: DailyPerformance[],
+    performances: DailyPerformanceWithItems[],
   ): DashboardTagInputDto[] {
     const tagMap =
       new Map<string, DashboardTagInputDto>();
@@ -248,7 +264,7 @@ export class DashboardService {
 
   // KPI Prompt C Input 생성
   private createKpiInput(
-    performances: DailyPerformance[],
+    performances: DailyPerformanceWithItems[],
   ): DashboardKpiInputDto[] {
 
     const kpiMap =
@@ -319,7 +335,7 @@ export class DashboardService {
         },
         include:{
           kpis:true,
-          dashboardTagAnalysis:true,
+          tagAnalyses:true,
           weeklyReflection:true,
         },
       });
@@ -344,29 +360,30 @@ export class DashboardService {
             endDate: dashboard.endDate.toISOString(),
             summary: dashboard.summary,
             kpis:
-              dashboard.dashboardKPI.map(
-                (kpi: typeof dashboard.dashboardKPI[number])=>({
+              dashboard.kpis.map(
+                (kpi: typeof dashboard.kpis[number])=>({
                   kpiName:kpi.kpiName,
                   progress:kpi.progress,
                 }),
               ),
             tagAnalyses:
-              dashboard.dashboardTagAnalysis.map(
-                (tag: typeof dashboard.dashboardTagAnalysis[number])=>({
-                  tagName:tag.tagName,
-                  achievementStatus:
-                    tag.achievementStatus,
-                  insight:
-                    tag.insight,
+              dashboard.tagAnalyses.map(
+                (tag: typeof dashboard.tagAnalyses[number]) => ({
+                  goal: tag.goal,
+                  expectedOutcome: tag.expectedOutcome,
+                  achievementStatus: tag.achievementStatus,
                 }),
               ),
             weeklyReflection:
-              dashboard.weeklyReflection
+              dashboard.weeklyReflections[0]
                 ? {
-                  workSummary: dashboard.weeklyReflection.workSummary,
-                  resourcesUsed: dashboard.weeklyReflection.resourcesUsed,
-                  learning: dashboard.weeklyReflection.learning,
-                }
+                    workSummary:
+                      dashboard.weeklyReflections[0].workSummary ?? "",
+                    resourcesUsed:
+                      dashboard.weeklyReflections[0].resourcesUsed ?? "",
+                    learning:
+                      dashboard.weeklyReflections[0].learning ?? "",
+                  }
                 : undefined,
           }),
         ),
@@ -389,7 +406,7 @@ export class DashboardService {
       data:{
         promptType:PromptType.PROMPT_D,
         promptVersion:"v1",
-        request:promptRequest,
+        request:promptRequest as Prisma.InputJsonValue,
         response:promptResponse,
         status:AiRunStatus.SUCCESS,
       },

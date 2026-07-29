@@ -5,7 +5,7 @@ import { RuleEngine } from "../common/rule.engine";
 
 import { PerformanceRequestDto } from "./dto/api/performance.request.dto";
 import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto";
-import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
+import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/performance.response.dto";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
 
@@ -92,7 +92,7 @@ export class PerformanceService {
       data: {
         promptType: PromptType.PROMPT_A,
         promptVersion: "v1",
-        request: promptARequest,
+        request: promptARequest as Prisma.InputJsonValue,
         response: promptAResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -115,28 +115,28 @@ export class PerformanceService {
         promptAResult,
       )
     ) {
-      const reflectionSnapshotId =
-      await this.saveQuestionSnapshot(
+      const {
+        reflectionSnapshotId,
+        supplementQuestions,
+      } = await this.saveQuestionSnapshot(
         request.dailyEntryId,
         promptAResult,
       );
 
-    return {
-      status: "QUESTION_REQUIRED",
-      reflectionSnapshotId,
-      supplementQuestions:
-        promptAResult.followUpQuestions,
-    };
-  }
-
-  // 질문 필요 없으면 바로 완료
-  return this.createPerformanceResult(
-    promptAResult,
-    request,
-    dailyEntry,
-    userId,
-  );
-}
+      return {
+        status: "QUESTION_REQUIRED",
+        reflectionSnapshotId,
+        supplementQuestions,
+      };
+    }
+      // 질문 필요 없으면 바로 완료
+      return this.createPerformanceResult(
+        promptAResult,
+        request,
+        dailyEntry,
+        userId,
+      );
+    }
   
   // 질문 단계 snapshot 생성
   private async saveQuestionSnapshot(
@@ -147,28 +147,40 @@ export class PerformanceService {
       await this.prisma.reflectionSnapshot.create({
         data: {
           dailyEntryId,
-          promptAResult,
+          promptAResult: promptAResult as Prisma.InputJsonValue,
         },
       });
+
+    const supplementQuestions: SupplementQuestionDto[] = [];
 
     if (
       promptAResult.followUpQuestions &&
       promptAResult.followUpQuestions.length > 0
     ) {
-      await this.prisma.aIQuestion.createMany({
-        data: promptAResult.followUpQuestions.map(
-          (question, index) => ({
-            reflectionSnapshotId:
-              snapshot.reflectionSnapshotId,
-            questionContent: question.question,
-            reason: question.reason ?? null,
-            order: index + 1,
-          }),
-        ),
-      });
+      for (const [index, question] of promptAResult.followUpQuestions.entries()) {
+        const createdQuestion =
+          await this.prisma.aIQuestion.create({
+            data: {
+              reflectionSnapshotId:
+                snapshot.reflectionSnapshotId,
+              questionContent: question.question,
+              reason: question.reason ?? null,
+              order: index + 1,
+            },
+          });
+
+        supplementQuestions.push({
+          aiQuestionId: createdQuestion.aiQuestionId,
+          question: createdQuestion.questionContent,
+          reason: createdQuestion.reason ?? "",
+        });
+      }
     }
 
-    return snapshot.reflectionSnapshotId;
+    return {
+      reflectionSnapshotId: snapshot.reflectionSnapshotId,
+      supplementQuestions,
+    };
   }
 
   // 질문 답변 후 최종 생성
@@ -262,7 +274,7 @@ export class PerformanceService {
       data: {
         promptType: PromptType.PROMPT_A,
         promptVersion: "v1",
-        request: promptARequest,
+        request: promptARequest as Prisma.InputJsonValue,
         response: promptAResponse,
         status: AiRunStatus.SUCCESS,
       },
@@ -347,8 +359,8 @@ export class PerformanceService {
             reflectionSnapshotId,
           },
           data: {
-            promptAResult,
-            promptBResult,
+            promptAResult: promptAResult as Prisma.InputJsonValue,
+            promptBResult: promptBResult as Prisma.InputJsonValue,
           },
         });
     } 
@@ -357,8 +369,8 @@ export class PerformanceService {
         await this.prisma.reflectionSnapshot.create({
           data: {
             dailyEntryId: request.dailyEntryId,
-            promptAResult,
-            promptBResult,
+            promptAResult: promptAResult as Prisma.InputJsonValue,
+            promptBResult: promptBResult as Prisma.InputJsonValue,
           },
         });
     }
@@ -367,7 +379,7 @@ export class PerformanceService {
     data: {
       promptType: PromptType.PROMPT_B,
       promptVersion: "v1",
-      request: promptBRequest,
+      request: promptBRequest as Prisma.InputJsonValue,
       response: promptBResponse,
       status: AiRunStatus.SUCCESS,
       reflectionSnapshotId:

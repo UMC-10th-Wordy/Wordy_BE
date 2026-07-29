@@ -20,9 +20,9 @@ export interface WeeklyKpiInputDto {
 }
 
 export interface WeeklyTagAnalysisInputDto {
-  tagName:string;
-  achievementStatus:string;
-  insight:string;
+  goal: string | null;
+  expectedOutcome: string | null;
+  achievementStatus: string | null;
 }
 
 export interface WeeklyReflectionInputDto {

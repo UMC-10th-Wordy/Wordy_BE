@@ -841,10 +841,19 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TagInfoDto": {
+        "dataType": "refObject",
+        "properties": {
+            "tagName": {"dataType":"string","required":true},
+            "color": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "IncompleteTaskDto": {
         "dataType": "refObject",
         "properties": {
-            "tag": {"dataType":"string"},
+            "tag": {"dataType":"union","subSchemas":[{"ref":"TagInfoDto"},{"dataType":"enum","enums":[null]}],"required":true},
             "title": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -854,7 +863,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "taskId": {"dataType":"string","required":true},
-            "tag": {"dataType":"string"},
+            "tag": {"dataType":"union","subSchemas":[{"ref":"TagInfoDto"},{"dataType":"enum","enums":[null]}],"required":true},
             "title": {"dataType":"string","required":true},
             "output": {"dataType":"array","array":{"dataType":"string"},"required":true},
             "impact": {"dataType":"array","array":{"dataType":"string"}},
@@ -868,6 +877,8 @@ const models: TsoaRoute.Models = {
         "properties": {
             "dailyPerformanceId": {"dataType":"string","required":true},
             "achievementRate": {"dataType":"double","required":true},
+            "totalTaskCount": {"dataType":"double","required":true},
+            "completedTaskCount": {"dataType":"double","required":true},
             "incompleteTasks": {"dataType":"array","array":{"dataType":"refObject","ref":"IncompleteTaskDto"},"required":true},
             "summary": {"dataType":"string","required":true},
             "growthInsights": {"dataType":"array","array":{"dataType":"string"},"required":true},
@@ -1088,6 +1099,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "dailyEntryId": {"dataType":"string","required":true},
+            "dailyPerformanceId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
             "entryDate": {"dataType":"string","required":true},
             "reflectionContent": {"dataType":"string","required":true},
             "completedCount": {"dataType":"double","required":true},
@@ -1252,6 +1264,7 @@ const models: TsoaRoute.Models = {
     "SupplementQuestionDto": {
         "dataType": "refObject",
         "properties": {
+            "aiQuestionId": {"dataType":"string","required":true},
             "question": {"dataType":"string","required":true},
             "reason": {"dataType":"string","required":true},
         },
@@ -2130,6 +2143,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDashboardController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"endDate":{"dataType":"string","required":true},"startDate":{"dataType":"string","required":true}}},
         };
         app.post('/dashboards',
@@ -2280,6 +2294,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsMonthlyDashboardController_createDashboard: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"endDate":{"dataType":"string","required":true},"startDate":{"dataType":"string","required":true}}},
         };
         app.post('/dashboards/monthly',

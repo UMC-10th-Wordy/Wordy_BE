@@ -10,7 +10,7 @@ import { ErrorCode } from "../../../common/errors/error.code";
 import { KpiRequestDto }from "./dto/api/kpi.request.dto";
 import { KpiResponseDto }from "./dto/api/kpi.response.dto";
 import { KpiOutputDto }from "./dto/prompt/kpi.output.dto";
-import { PrismaClient, PromptType, AiRunStatus } from "../../../generated/prisma/client";
+import { PrismaClient, PromptType, AiRunStatus, Prisma } from "../../../generated/prisma/client";
 
 export class KpiService {
   constructor(
@@ -68,7 +68,7 @@ export class KpiService {
       data: {
         promptType: PromptType.PROMPT_C,
         promptVersion: "v1",
-        request: prompt,
+        request: prompt as Prisma.InputJsonValue,
         response,
         status: AiRunStatus.SUCCESS,
       },

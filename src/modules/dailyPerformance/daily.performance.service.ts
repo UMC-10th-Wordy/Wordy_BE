@@ -69,10 +69,10 @@ export class DailyPerformanceService {
     }
 
     const promptA =
-      snapshot.promptAResult as PromptAOutputDto;
+      snapshot.promptAResult as unknown as PromptAOutputDto;
 
     const promptB =
-      snapshot.promptBResult as PromptBOutputDto;
+      snapshot.promptBResult as unknown as PromptBOutputDto;
 
     // Task 조회
     const tasks =
@@ -109,7 +109,7 @@ export class DailyPerformanceService {
 
         // AI 생성 결과
         nextAction: promptB.nextActions,
-        structuredResult: promptA,
+        structuredResult: promptA as Prisma.InputJsonValue,
       });
 
     // PerformanceItem 저장
@@ -252,12 +252,12 @@ export class DailyPerformanceService {
             : null,
           title: task.title,
           output: performanceItem.output
-            ? performanceItem.output
+            ? String(performanceItem.output)
                 .split("\n")
                 .filter(Boolean)
             : [],
           impact: performanceItem.impact
-            ? performanceItem.impact
+            ? String(performanceItem.impact)
                 .split("\n")
                 .filter(Boolean)
             : [],
@@ -283,10 +283,16 @@ export class DailyPerformanceService {
 
       // 사용자 수정값
       summary: performance.summary,
-      growthInsights: performance.growthInsight,
+      growthInsights:
+        Array.isArray(performance.growthInsight)
+          ? performance.growthInsight.map(String)
+          : [],
 
       // AI 생성값
-      nextActions: performance.nextAction,
+      nextActions:
+        Array.isArray(performance.nextAction)
+          ? performance.nextAction.map(String)
+          : [],
       taskPerformances,
       createdAt: performance.createdAt,
     };
