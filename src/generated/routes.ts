@@ -889,6 +889,15 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DailyPerformancePreviewResponseDto": {
+        "dataType": "refObject",
+        "properties": {
+            "exists": {"dataType":"boolean","required":true},
+            "performance": {"ref":"PerformanceDetailResponseDto"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreateDailyEntryResponse": {
         "dataType": "refObject",
         "properties": {
@@ -2366,6 +2375,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsDailyPerformanceController_getDailyPerformances: Record<string, TsoaRoute.ParameterSchema> = {
                 authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
+                date: {"in":"query","name":"date","dataType":"string"},
         };
         app.get('/performances',
             ...(fetchMiddlewares<RequestHandler>(DailyPerformanceController)),
