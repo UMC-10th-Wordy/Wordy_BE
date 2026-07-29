@@ -6,13 +6,13 @@
 
 */
 -- DropForeignKey
-ALTER TABLE `dailyperformance` DROP FOREIGN KEY `DailyPerformance_userId_fkey`;
+ALTER TABLE `DailyPerformance` DROP FOREIGN KEY `DailyPerformance_userId_fkey`;
 
 -- DropIndex
-DROP INDEX `DailyPerformance_userId_idx` ON `dailyperformance`;
+DROP INDEX `DailyPerformance_userId_idx` ON `DailyPerformance`;
 
 -- AlterTable
-ALTER TABLE `dailyperformance` DROP COLUMN `userId`,
+ALTER TABLE `DailyPerformance` DROP COLUMN `userId`,
     ADD COLUMN `user_id` CHAR(36) NOT NULL;
 
 -- CreateIndex

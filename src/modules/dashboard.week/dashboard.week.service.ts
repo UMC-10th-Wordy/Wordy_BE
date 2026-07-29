@@ -16,6 +16,7 @@ import { PromptManager } from "../ai/common/prompt.manager.js";
 import { ResponseParser } from "../ai/common/response.parser.js";
 import { RuleEngine } from "../ai/common/rule.engine.js";
 import { prisma } from "../../db.config.js";
+import { verifyAccessToken } from "../../auth.config.js"; // 인증토큰 받아오기
 
 const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
 
@@ -177,11 +178,18 @@ export const editWeeklyReflection = async (
 
 // 대시보드 생성 (AI 호출 → DB 저장)
 export const createDashboardWithAI = async (
-  userId: string,
+  authorization: string | undefined,
   startDate: string,
   endDate: string
 ) => {
-  // 1. AI 서비스 인스턴스 생성 (ai.controller.ts와 동일한 방식)
+  // authorization에서 userId 추출 (DB 저장용)
+  const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+  if (!token) {
+    throw new Error("인증이 필요합니다.");
+  }
+  const userId = verifyAccessToken(token).userId;
+
+  // 1. AI 서비스 인스턴스 생성
   const aiService = new DashboardService(
     new LlmClient(),
     new PromptManager(),
@@ -190,14 +198,13 @@ export const createDashboardWithAI = async (
     prisma
   );
 
-  // 2. AI로 대시보드 내용 생성 (summary, kpis, tagAnalyses, reflection)
-  const aiResult = await aiService.generateWeeklyDashboard({
-    userId,
+  // 2. AI로 대시보드 내용 생성 (authorization 그대로 전달)
+  const aiResult = await aiService.generateWeeklyDashboard(authorization, {
     startDate,
     endDate,
   });
 
-  // 3. AI 결과 + 계산값을 DB에 저장
+  // 3. DB 저장 (위에서 뽑은 userId 사용)
   const saved = await createDashboard({
     userId,
     startDate: new Date(startDate),
