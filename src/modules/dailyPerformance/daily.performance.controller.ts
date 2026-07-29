@@ -82,9 +82,14 @@ export class DailyPerformanceController extends Controller {
   @Example<PerformanceDetailResponseDto>({
     dailyPerformanceId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
     achievementRate: 80,
+    totalTaskCount: 5,
+    completedTaskCount: 3,
     incompleteTasks: [
       {
-        tag: "개발",
+        tag: {
+          tagName: "개발",
+          color: "#4A90E2",
+        },
         title: "AI 프롬프트 개선",
       },
     ],
@@ -98,7 +103,10 @@ export class DailyPerformanceController extends Controller {
     taskPerformances: [
       {
         taskId: "a1b2c3d4-e5f6-7890-abcd-123456789012",
-        tag: "개발",
+        tag: {
+          tagName: "개발",
+          color: "#4A90E2",
+        },
         title: "성과 변환 API 구현",
         output: [
           "AI 결과 저장 구조 구현",
@@ -110,7 +118,10 @@ export class DailyPerformanceController extends Controller {
       {
         taskId:
           "b2c3d4e5-f6a7-8901-bcde-234567890123",
-        tag: "문서",
+        tag: {
+          tagName: "개발",
+          color: "#4A90E2",
+        },
         title:
           "API 명세 정리",
         output: [],

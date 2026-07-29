@@ -130,6 +130,9 @@ export class DailyEntriesDetailResponse {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
 
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  dailyPerformanceId!: string | null;
+
   @Example("2026-08-21")
   entryDate!: string;
 
