@@ -5,7 +5,7 @@ import { Prisma } from "../../generated/prisma/client";
 import { TaskStatus } from "../../generated/prisma/enums";
 import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto";
-import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto } from "./daily.performance.dto";
+import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto } from "./daily.performance.dto";
 import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository";
 
 export class DailyPerformanceService {
@@ -158,73 +158,38 @@ export class DailyPerformanceService {
     };
   }
 
-  async getDailyPerformanceDetail(
-    authorization: string | undefined,
-    dailyPerformanceId: string,
+  private async buildPerformanceDetail(
+    performance: DailyPerformanceDetail,
+    userId: string,
   ): Promise<PerformanceDetailResponseDto> {
-    const userId = this.extractUserId(authorization);
 
-    const performance =
-      await this.repository.findDailyPerformanceById(
-        dailyPerformanceId,
-        userId,
-      );
-
-    if (!performance) {
-      throw new ApiError(
-        ErrorCode.NOT_FOUND.status,
-        ErrorCode.NOT_FOUND.code,
-        "성과를 찾을 수 없습니다.",
-      );
-    }
-
-    // 해당 일자의 전체 업무 조회
     const tasks =
       await this.repository.findTasksByDailyEntry(
         performance.dailyEntryId,
         userId,
       );
 
-    // 미완료 업무
     const incompleteTasks =
       tasks.filter(
         (task) => task.status === TaskStatus.IN_PROGRESS,
       );
 
-    const completedTaskCount = tasks.filter(
+    const completedTaskCount =
+      tasks.filter(
         (task) => task.status === TaskStatus.COMPLETED,
       ).length;
 
-      const totalTaskCount = tasks.length;
-    
-    /**
-     * Task 기준으로 성과 매핑
-     *
-     * 이유:
-     * - AI 성공 → PerformanceItem 존재
-     * - AI 실패 → PerformanceItem 없음
-     *
-     * 하지만 화면에서는 모든 업무 노출 필요
-     */
+    const totalTaskCount = tasks.length;
+
     const taskPerformances =
       tasks.map((task) => {
+
         const performanceItem =
           performance.performanceItems.find(
-            (
-              item: Prisma.PerformanceItemGetPayload<{
-                include: {
-                  task: {
-                    include: {
-                      tag: true;
-                    };
-                  };
-                };
-              }>
-            ) =>
+            (item) =>
               item.taskId === task.taskId,
           );
 
-        // AI가 성과 변환 실패한 경우
         if (!performanceItem) {
           return {
             taskId: task.taskId,
@@ -251,17 +216,12 @@ export class DailyPerformanceService {
               }
             : null,
           title: task.title,
-          output: performanceItem.output
-            ? String(performanceItem.output)
-                .split("\n")
-                .filter(Boolean)
-            : [],
-          impact: performanceItem.impact
-            ? String(performanceItem.impact)
-                .split("\n")
-                .filter(Boolean)
-            : [],
-          message: undefined,
+          output: String(performanceItem.output)
+            .split("\n")
+            .filter(Boolean),
+          impact: String(performanceItem.impact)
+            .split("\n")
+            .filter(Boolean),
         };
       });
 
@@ -281,20 +241,77 @@ export class DailyPerformanceService {
           title: task.title,
         })),
 
-      // 사용자 수정값
       summary: performance.summary,
+
       growthInsights:
         Array.isArray(performance.growthInsight)
           ? performance.growthInsight.map(String)
           : [],
 
-      // AI 생성값
       nextActions:
         Array.isArray(performance.nextAction)
           ? performance.nextAction.map(String)
           : [],
+
       taskPerformances,
       createdAt: performance.createdAt,
+    };
+  }
+
+  async getDailyPerformanceDetail(
+    authorization: string | undefined,
+    dailyPerformanceId: string,
+  ): Promise<PerformanceDetailResponseDto> {
+
+    const userId = this.extractUserId(authorization);
+
+    const performance =
+      await this.repository.findDailyPerformanceById(
+        dailyPerformanceId,
+        userId,
+      );
+
+    if (!performance) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "성과를 찾을 수 없습니다.",
+      );
+    }
+
+    return this.buildPerformanceDetail(
+      performance,
+      userId,
+    );
+  }
+
+  async getDailyPerformanceByDate(
+    authorization: string | undefined,
+    date: string,
+  ): Promise<DailyPerformancePreviewResponseDto> {
+
+    const userId =
+      this.extractUserId(authorization);
+
+    const performance =
+      await this.repository.findDailyPerformanceByDate(
+        userId,
+        new Date(date),
+      );
+
+    if (!performance) {
+      return {
+        exists: false,
+      };
+    }
+
+    return {
+      exists: true,
+      performance:
+        await this.buildPerformanceDetail(
+          performance,
+          userId,
+        ),
     };
   }
 }

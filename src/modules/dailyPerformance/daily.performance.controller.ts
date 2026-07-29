@@ -1,7 +1,8 @@
-import { Body, Controller, Example, Get, Header, Path, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Get, Header, Path, Post, Query, Route, Tags } from "tsoa";
 import {
   CreateDailyPerformanceRequestDto,
   CreateDailyPerformanceResponseDto,
+  DailyPerformancePreviewResponseDto,
   PerformanceDetailResponseDto,
   PerformanceListResponseDto,
 } from "./daily.performance.dto";
@@ -44,37 +45,43 @@ export class DailyPerformanceController extends Controller {
     );
   }
 
-  /**
-   * @summary 업무 성과 목록 조회
-   */
-  @Get()
-  @Example<PerformanceListResponseDto>({
-    performances: [
-      {
-        dailyPerformanceId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
-        achievementRate: 80,
-        summary:
-          "Swagger 문서화 및 AI 성과 분석 기능을 구현했습니다.",
-        createdAt: new Date(),
-      },
-      {
-        dailyPerformanceId:
-          "e2f1b3c4-9b7a-4d2b-9a10-a0e238a1ad11",
-        achievementRate: 100,
-        summary:
-          "Dashboard API와 성과 데이터를 연동했습니다.",
-        createdAt: new Date(),
-      },
-    ],
-  })
-  public async getDailyPerformances(
-    @Header("Authorization")
-    authorization: string | undefined,
-  ): Promise<PerformanceListResponseDto> {
-    return this.dailyPerformanceService.getDailyPerformances(
-      authorization,
-    );
-  }
+    /**
+     * @summary 업무 성과 조회
+     */
+    @Get()
+    @Example<PerformanceListResponseDto>({
+      performances: [
+        {
+          dailyPerformanceId:
+            "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+          achievementRate: 80,
+          summary:
+            "Swagger 문서화 및 AI 성과 분석 기능을 구현했습니다.",
+          createdAt: new Date(),
+        },
+      ],
+    })
+    public async getDailyPerformances(
+      @Header("Authorization")
+      authorization: string | undefined,
+
+      @Query()
+      date?: string,
+    ): Promise<
+      PerformanceListResponseDto | DailyPerformancePreviewResponseDto
+    > {
+
+      if (date) {
+        return this.dailyPerformanceService.getDailyPerformanceByDate(
+          authorization,
+          date,
+        );
+      }
+
+      return this.dailyPerformanceService.getDailyPerformances(
+        authorization,
+      );
+    }
 
   /**
    * @summary 업무 성과 상세 조회

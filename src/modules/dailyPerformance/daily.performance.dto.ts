@@ -151,3 +151,15 @@ export class PerformanceDetailResponseDto {
   @Example(new Date())
   createdAt!: Date;
 }
+
+export class DailyPerformancePreviewResponseDto {
+  @Example(false)
+  exists!: boolean;
+
+  @Example({
+    dailyPerformanceId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+    achievementRate: 80,
+    summary: "AI 업무 변환 기능을 구현했습니다.",
+  })
+  performance?: PerformanceDetailResponseDto;
+}
