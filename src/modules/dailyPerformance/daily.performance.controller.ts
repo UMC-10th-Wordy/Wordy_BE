@@ -82,6 +82,8 @@ export class DailyPerformanceController extends Controller {
   @Example<PerformanceDetailResponseDto>({
     dailyPerformanceId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
     achievementRate: 80,
+    totalTaskCount: 5,
+    completedTaskCount: 3,
     incompleteTasks: [
       {
         tag: "개발",

@@ -191,6 +191,12 @@ export class DailyPerformanceService {
         (task) => task.status === TaskStatus.IN_PROGRESS,
       );
 
+    const completedTaskCount = tasks.filter(
+        (task) => task.status === TaskStatus.COMPLETED,
+      ).length;
+
+      const totalTaskCount = tasks.length;
+    
     /**
      * Task 기준으로 성과 매핑
      *
@@ -252,6 +258,8 @@ export class DailyPerformanceService {
     return {
       dailyPerformanceId: performance.dailyPerformanceId,
       achievementRate: performance.achievementRate,
+      totalTaskCount,
+      completedTaskCount,
       incompleteTasks:
         incompleteTasks.map((task) => ({
           tag: task.tag?.name,

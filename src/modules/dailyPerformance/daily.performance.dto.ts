@@ -90,6 +90,12 @@ export class PerformanceDetailResponseDto {
   @Example(80)
   achievementRate!: number;
 
+  @Example(5)
+  totalTaskCount!: number;
+
+  @Example(4)
+  completedTaskCount!: number;
+
   @Example([
     {
       tag: "개발",
