@@ -228,7 +228,12 @@ export class DailyPerformanceService {
         if (!performanceItem) {
           return {
             taskId: task.taskId,
-            tag: task.tag?.name,
+            tag: task.tag
+              ? {
+                  tagName: task.tag.name,
+                  color: task.tag.color,
+                }
+              : null,
             title: task.title,
             output: [],
             impact: [],
@@ -239,7 +244,12 @@ export class DailyPerformanceService {
 
         return {
           taskId: task.taskId,
-          tag: task.tag?.name,
+          tag: task.tag
+            ? {
+                tagName: task.tag.name,
+                color: task.tag.color,
+              }
+            : null,
           title: task.title,
           output: performanceItem.output
             ? performanceItem.output
@@ -262,7 +272,12 @@ export class DailyPerformanceService {
       completedTaskCount,
       incompleteTasks:
         incompleteTasks.map((task) => ({
-          tag: task.tag?.name,
+          tag: task.tag
+            ? {
+                tagName: task.tag.name,
+                color: task.tag.color,
+              }
+            : null,
           title: task.title,
         })),
 
