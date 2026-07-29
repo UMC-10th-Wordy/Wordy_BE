@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Path, Body, Query, Route, Tags, Example } from "tsoa";
+import { Controller, Get, Post, Patch, Path, Body, Query, Route, Tags, Example, Header } from "tsoa";
 import {
   getEligibility,
   getDashboardList,
@@ -264,10 +264,10 @@ export class DashboardController extends Controller {
     },
   })
   public async createDashboard(
+    @Header("Authorization") authorization: string | undefined,
     @Body() body: { startDate: string; endDate: string }
   ): Promise<ApiResponse<any>> {
-    const userId = "test-user-id";
-    const data = await createDashboardWithAI(userId, body.startDate, body.endDate);
+    const data = await createDashboardWithAI(authorization, body.startDate, body.endDate); 
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
   }
