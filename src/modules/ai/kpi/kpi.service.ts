@@ -20,6 +20,7 @@ export class KpiService {
     private readonly ruleEngine:RuleEngine,
     private readonly prisma:PrismaClient,
   ){}
+  
 
   private extractUserId(
     authorization: string | undefined,
@@ -60,13 +61,20 @@ export class KpiService {
         request,
       );
 
+    console.log("===== KPI PROMPT =====");
+    console.log(JSON.stringify(prompt, null, 2));
+
     const response =
       await this.llmClient.generate(
         prompt,
       );
+
+    console.log("===== KPI LLM RESPONSE =====");
+    console.log(response);
+
     await this.prisma.aIRun.create({
       data: {
-        promptType: PromptType.PROMPT_C,
+        promptType: PromptType.KPI,
         promptVersion: "v1",
         request: JSON.parse(JSON.stringify(prompt)),
         response,

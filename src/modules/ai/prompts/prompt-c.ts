@@ -10,5 +10,29 @@ export const promptCInstructions = `
 지시 5: 주간 회고에는 업무 요약, 활용한 자원 및 협업, 이번 주에 얻은 학습이나 인사이트를 포함하세요.
 지시 6: 입력에 없는 프로젝트, KPI, 성과를 새롭게 만들지 마세요.
 
-출력 조건: JSON만 반환하세요. 설명 문장이나 마크다운을 추가하지 마세요.
+출력 조건:
+- 반드시 JSON 객체 형식으로만 반환하세요.
+- JSON 외 설명 문장, 마크다운, 코드블럭을 포함하지 마세요.
+- 입력 데이터에 존재하는 KPI와 프로젝트만 사용하세요.
+
+반환 형식:
+{
+  "summary": "주간 업무 요약",
+  "kpis": [
+    {
+      "kpiName": "입력된 KPI 이름",
+      "progress": "진행 상황",
+      "relatedAchievement": "관련 성과"
+    }
+  ],
+  "tagAnalyses": [
+    {
+      "tagName": "프로젝트 태그명",
+      "objective": "프로젝트 목표",
+      "expectedOutcome": "기대 결과",
+      "achievementStatus": "달성 상태",
+      "insight": "분석 인사이트"
+    }
+  ]
+}
 `;
