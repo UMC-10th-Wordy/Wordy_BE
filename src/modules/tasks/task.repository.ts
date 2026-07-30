@@ -136,7 +136,15 @@ export class TaskRepository {
         sortOrder,
         memo: body.memo,
         taskDate: new Date(body.taskDate),
-        tagId: body.tagId,
+
+        status: body.status ?? TaskStatus.IN_PROGRESS,
+
+        completedAt:
+          body.status === TaskStatus.COMPLETED
+          ? new Date()
+          : null,
+
+        tagId: body.tagId ?? null,
       },
       include: {
         tag: {

@@ -146,6 +146,12 @@ export class TaskController extends Controller {
   }
 
   /**
+   * 업무카드를 생성합니다.
+   *
+   * status를 생략하면 IN_PROGRESS로 생성됩니다.
+   * COMPLETED로 생성할 경우 completedAt이 생성 시각으로 설정됩니다.
+   * tagId는 선택값이며 생략하거나 null로 전달할 수 있습니다.
+   *
    * @summary 업무카드 생성
    */
   @Post()

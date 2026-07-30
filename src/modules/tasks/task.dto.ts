@@ -22,8 +22,11 @@ export class CreateTaskRequest {
   @Example('2026-07-21')
   taskDate!: string;
 
+  @Example(TaskStatus.IN_PROGRESS)
+  status?: TaskStatus;
+
   @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
-  tagId!: string;
+  tagId?: string | null;
 
   @Example('Swagger Example 추가')
   memo?: string;
@@ -43,7 +46,7 @@ export class UpdateTaskRequest {
   taskDate?: string;
 
   @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
-  tagId?: string;
+  tagId?: string | null;
 
   @Example('메모 수정')
   memo?: string | null;
@@ -101,9 +104,9 @@ export class TaskResponse {
   userId!: string;
 
   @Example('7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2')
-  tagId!: string;
+  tagId!: string | null;
 
-  tag?: TaskTagResponse;
+  tag?: TaskTagResponse | null;
 }
 
 export class TaskWithResultResponse extends TaskResponse {

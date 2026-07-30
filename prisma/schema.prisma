@@ -202,10 +202,10 @@ model Task {
   completedAt DateTime?    @map("completed_at") @db.DateTime(0)
   taskDate    DateTime     @map("task_date") @db.Date
   userId      String       @map("user_id") @db.Char(36)
-  tagId       String       @map("tag_id") @db.Char(36)
+  tagId       String?       @map("tag_id") @db.Char(36)
 
   user                    User                     @relation(fields: [userId], references: [userId])
-  tag                     Tag                      @relation(fields: [tagId], references: [tagId])
+  tag                     Tag?                      @relation(fields: [tagId], references: [tagId])
   taskResult              TaskResult?
   reflectionTasks         ReflectionTask[]
   reflectionTaskSnapshots ReflectionTaskSnapshot[]
