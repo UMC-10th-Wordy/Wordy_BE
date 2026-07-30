@@ -393,6 +393,7 @@ export class PerformanceService {
       growthInsights: promptBResult.growthInsights,
       nextActions: promptBResult.nextActions,
       taskPerformances: promptBResult.taskPerformances,
+      reflectionSnapshotId: snapshot.reflectionSnapshotId,
     };
   }
 }
