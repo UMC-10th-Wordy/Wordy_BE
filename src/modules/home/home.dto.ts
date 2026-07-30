@@ -1,4 +1,4 @@
-import { TaskPriority, TaskStatus } from '../tasks/task.dto';
+import { TaskPriority, TaskStatus } from '../tasks/task.dto.js';
 
 export enum PlanType {
   FREE = 'FREE',

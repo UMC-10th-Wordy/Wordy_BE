@@ -1,13 +1,13 @@
 import { randomUUID } from 'crypto';
 import path from 'path';
-import { TaskRepository } from '../tasks/task.repository';
-import { TaskStatus } from '../tasks/task.dto';
-import { AttachmentInput, TaskResultRepository } from './task-result.repository';
-import { FileType, TaskResultResponse } from './task-result.dto';
-import { ApiError } from '../../common/errors/api.error';
-import { ErrorCode } from '../../common/errors/error.code';
-import { uploadToGcs } from '../../common/storage/gcs.storage';
-import { verifyAccessToken } from '../../auth.config';
+import { TaskRepository } from '../tasks/task.repository.js';
+import { TaskStatus } from '../tasks/task.dto.js';
+import { AttachmentInput, TaskResultRepository } from './task-result.repository.js';
+import { FileType, TaskResultResponse } from './task-result.dto.js';
+import { ApiError } from '../../common/errors/api.error.js';
+import { ErrorCode } from '../../common/errors/error.code.js';
+import { uploadToGcs } from '../../common/storage/gcs.storage.js';
+import { verifyAccessToken } from '../../auth.config.js';
 
 class UnauthorizedError extends ApiError {
   constructor() {

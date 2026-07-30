@@ -1,15 +1,15 @@
 import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
-import { LlmClient } from "../common/llm.client";
-import { PromptManager } from "../common/prompt.manager";
-import { ResponseParser } from "../common/response.parser";
-import { RuleEngine } from "../common/rule.engine";
-import { prisma } from "../../../common/prisma/prisma.client";
+import { LlmClient } from "../common/llm.client.js";
+import { PromptManager } from "../common/prompt.manager.js";
+import { ResponseParser } from "../common/response.parser.js";
+import { RuleEngine } from "../common/rule.engine.js";
+import { prisma } from "../../../common/prisma/prisma.client.js";
 
-import { PerformanceService } from "./performance.service";
-import { PerformanceRequestDto } from "./dto/api/performance.request.dto";
-import { PerformanceResponseDto } from "./dto/api/performance.response.dto";
-import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto";
+import { PerformanceService } from "./performance.service.js";
+import { PerformanceRequestDto } from "./dto/api/performance.request.dto.js";
+import { PerformanceResponseDto } from "./dto/api/performance.response.dto.js";
+import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto.js";
 
 @Route("ai")
 @Tags("AI")

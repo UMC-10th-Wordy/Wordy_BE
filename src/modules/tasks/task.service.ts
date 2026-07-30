@@ -1,4 +1,4 @@
-import { TaskRepository } from './task.repository';
+import { TaskRepository } from './task.repository.js';
 import {
   CreateTaskRequest,
   TaskPriority,
@@ -7,10 +7,10 @@ import {
   TaskResponse,
   TaskWithResultResponse,
   UpdateTaskRequest,
-} from './task.dto';
-import { ApiError } from '../../common/errors/api.error';
-import { ErrorCode } from '../../common/errors/error.code';
-import { verifyAccessToken } from '../../auth.config';
+} from './task.dto.js';
+import { ApiError } from '../../common/errors/api.error.js';
+import { ErrorCode } from '../../common/errors/error.code.js';
+import { verifyAccessToken } from '../../auth.config.js';
 
 class UnauthorizedError extends ApiError {
   constructor() {

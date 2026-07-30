@@ -1,5 +1,5 @@
 import { Example } from 'tsoa';
-import { TaskResultResponse } from '../task-results/task-result.dto';
+import { TaskResultResponse } from '../task-results/task-result.dto.js';
 
 export enum TaskPriority {
   MUST_DO = 'MUST_DO',

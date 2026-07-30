@@ -1,18 +1,18 @@
-import { PromptManager } from "../common/prompt.manager";
-import { LlmClient } from "../common/llm.client";
-import { ResponseParser } from "../common/response.parser";
-import { RuleEngine } from "../common/rule.engine";
+import { PromptManager } from "../common/prompt.manager.js";
+import { LlmClient } from "../common/llm.client.js";
+import { ResponseParser } from "../common/response.parser.js";
+import { RuleEngine } from "../common/rule.engine.js";
 
-import { PerformanceRequestDto } from "./dto/api/performance.request.dto";
-import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto";
-import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/performance.response.dto";
-import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto";
-import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto";
+import { PerformanceRequestDto } from "./dto/api/performance.request.dto.js";
+import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto.js";
+import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/performance.response.dto.js";
+import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto.js";
+import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto.js";
 
-import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client";
-import { verifyAccessToken } from "../../../auth.config";
-import { ApiError } from "../../../common/errors/api.error";
-import { ErrorCode } from "../../../common/errors/error.code";
+import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client.js";
+import { verifyAccessToken } from "../../../auth.config.js";
+import { ApiError } from "../../../common/errors/api.error.js";
+import { ErrorCode } from "../../../common/errors/error.code.js";
 
 export class PerformanceService {
   constructor(

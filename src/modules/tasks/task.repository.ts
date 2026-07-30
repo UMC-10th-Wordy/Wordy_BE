@@ -1,11 +1,11 @@
-import { prisma } from '../../db.config';
+import { prisma } from '../../db.config.js';
 import {
   CreateTaskRequest,
   UpdateTaskRequest,
   TaskStatus,
   TaskPriority,
   TaskReorderItem,
-} from './task.dto';
+} from './task.dto.js';
 
 export class TaskRepository {
   public async findManyByUserIdAndDate(

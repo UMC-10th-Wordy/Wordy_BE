@@ -13,7 +13,7 @@ import {
   Route,
   Tags,
 } from 'tsoa';
-import { TaskService } from './task.service';
+import { TaskService } from './task.service.js';
 import {
   CreateTaskRequest,
   TaskPriority,
@@ -23,10 +23,10 @@ import {
   TaskStatus,
   TaskWithResultResponse,
   UpdateTaskRequest,
-} from './task.dto';
-import { ApiResponse } from '../../common/responses/api.response';
-import { success } from '../../common/responses/response';
-import { SuccessCode } from '../../common/responses/success.code';
+} from './task.dto.js';
+import { ApiResponse } from '../../common/responses/api.response.js';
+import { success } from '../../common/responses/response.js';
+import { SuccessCode } from '../../common/responses/success.code.js';
 
 @Route('tasks')
 @Tags('Tasks')

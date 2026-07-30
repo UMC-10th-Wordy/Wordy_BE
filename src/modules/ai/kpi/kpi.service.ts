@@ -1,16 +1,16 @@
-import { PromptManager } from "../common/prompt.manager";
-import { LlmClient } from "../common/llm.client";
-import { ResponseParser } from "../common/response.parser";
-import { RuleEngine } from "../common/rule.engine";
+import { PromptManager } from "../common/prompt.manager.js";
+import { LlmClient } from "../common/llm.client.js";
+import { ResponseParser } from "../common/response.parser.js";
+import { RuleEngine } from "../common/rule.engine.js";
 
-import { verifyAccessToken } from "../../../auth.config";
-import { ApiError } from "../../../common/errors/api.error";
-import { ErrorCode } from "../../../common/errors/error.code";
+import { verifyAccessToken } from "../../../auth.config.js";
+import { ApiError } from "../../../common/errors/api.error.js";
+import { ErrorCode } from "../../../common/errors/error.code.js";
 
-import { KpiRequestDto }from "./dto/api/kpi.request.dto";
-import { KpiResponseDto }from "./dto/api/kpi.response.dto";
-import { KpiOutputDto }from "./dto/prompt/kpi.output.dto";
-import { PrismaClient, PromptType, AiRunStatus, Prisma } from "../../../generated/prisma/client";
+import { KpiRequestDto }from "./dto/api/kpi.request.dto.js";
+import { KpiResponseDto }from "./dto/api/kpi.response.dto.js";
+import { KpiOutputDto }from "./dto/prompt/kpi.output.dto.js";
+import { PrismaClient, PromptType, AiRunStatus, Prisma } from "../../../generated/prisma/client.js";
 
 export class KpiService {
   constructor(

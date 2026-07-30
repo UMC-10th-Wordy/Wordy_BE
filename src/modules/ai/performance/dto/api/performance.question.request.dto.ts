@@ -1,4 +1,4 @@
-import { PerformanceRequestDto } from "./performance.request.dto";
+import { PerformanceRequestDto } from "./performance.request.dto.js";
 import { Example } from "tsoa";
 
 export class PerformanceQuestionRequestDto {

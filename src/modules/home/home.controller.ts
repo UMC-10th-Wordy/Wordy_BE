@@ -1,10 +1,10 @@
 import { Controller, Get, Route, Tags, Header, Example, Response } from 'tsoa';
-import { HomeService } from './home.service';
-import { HomeData, PlanType } from './home.dto';
-import { TaskPriority, TaskStatus } from '../tasks/task.dto';
-import { ApiResponse } from '../../common/responses/api.response';
-import { success } from '../../common/responses/response';
-import { SuccessCode } from '../../common/responses/success.code';
+import { HomeService } from './home.service.js';
+import { HomeData, PlanType } from './home.dto.js';
+import { TaskPriority, TaskStatus } from '../tasks/task.dto.js';
+import { ApiResponse } from '../../common/responses/api.response.js';
+import { success } from '../../common/responses/response.js';
+import { SuccessCode } from '../../common/responses/success.code.js';
 
 @Route('home')
 @Tags('Home')

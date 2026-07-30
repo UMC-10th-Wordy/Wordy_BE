@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AuthProvider } from '../../generated/prisma/enums';
+import { AuthProvider } from '../../generated/prisma/enums.js';
 import {
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
@@ -10,14 +10,14 @@ import {
   verifyAccessToken,
   generateGoogleSignupPendingToken,
   verifyGoogleSignupPendingToken,
-} from '../../auth.config';
-import { getGoogleAuthUrl, getGoogleProfile } from '../../google.config';
-import { AuthRepository } from './auth.repository';
-import { sendVerificationEmail } from '../../mailer';
-import { AgreementInput, AgreementType, AuthSessionResult, GoogleCallbackResult } from './auth.dto';
-import { PlanType } from '../home/home.dto';
-import { ApiError } from '../../common/errors/api.error';
-import { ErrorCode } from '../../common/errors/error.code';
+} from '../../auth.config.js';
+import { getGoogleAuthUrl, getGoogleProfile } from '../../google.config.js';
+import { AuthRepository } from './auth.repository.js';
+import { sendVerificationEmail } from '../../mailer.js';
+import { AgreementInput, AgreementType, AuthSessionResult, GoogleCallbackResult } from './auth.dto.js';
+import { PlanType } from '../home/home.dto.js';
+import { ApiError } from '../../common/errors/api.error.js';
+import { ErrorCode } from '../../common/errors/error.code.js';
 
 const REQUIRED_AGREEMENT_TYPES = Object.values(AgreementType).filter(
   (type) => type !== AgreementType.MARKETING,

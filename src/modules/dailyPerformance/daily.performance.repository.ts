@@ -4,8 +4,8 @@ import {
   Prisma,
   PrismaClient,
   ReflectionSnapshot,
-} from "../../generated/prisma/client";
-import { TaskStatus } from "../tasks/task.dto";
+} from "../../generated/prisma/client.js";
+import { TaskStatus } from "../tasks/task.dto.js";
 
 type TaskWithResultAndTag = Prisma.TaskGetPayload<{
   include: {

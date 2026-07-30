@@ -1,9 +1,9 @@
 import { Controller, Post, Put, Get, Route, Tags, Body, Header, UploadedFile, Example, Response } from 'tsoa';
-import { UsersService, UnauthorizedError, UserNotFoundError } from './users.service';
-import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfService, JobRole } from './users.dto';
-import { ApiResponse } from '../../common/responses/api.response';
-import { success } from '../../common/responses/response';
-import { SuccessCode } from '../../common/responses/success.code';
+import { UsersService, UnauthorizedError, UserNotFoundError } from './users.service.js';
+import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfService, JobRole } from './users.dto.js';
+import { ApiResponse } from '../../common/responses/api.response.js';
+import { success } from '../../common/responses/response.js';
+import { SuccessCode } from '../../common/responses/success.code.js';
 
 @Route('users')
 @Tags('Users')
