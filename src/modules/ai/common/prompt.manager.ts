@@ -1,11 +1,11 @@
-import { PromptRequest } from "../types/ai.types";
-import { kpiInstructions, promptAInstructions, promptBInstructions, promptCInstructions, promptDInstructions } from "../prompts";
+import { PromptRequest } from "../types/ai.types.js";
+import { kpiInstructions, promptAInstructions, promptBInstructions, promptCInstructions, promptDInstructions } from "../prompts/index.js";
 
-import { KpiInputDto } from "../kpi/dto/prompt/kpi.input.dto";
-import { PromptAInputDto } from "../performance/dto/prompt/prompt.a.input.dto";
-import { PromptBInputDto } from "../performance/dto/prompt/prompt.b.input.dto";
-import { PromptCInputDto } from "../dashboard/dto/prompt/prompt.c.input.dto";
-import { PromptDInputDto } from "../dashboard/dto/prompt/prompt.d.input.dto";
+import { KpiInputDto } from "../kpi/dto/prompt/kpi.input.dto.js";
+import { PromptAInputDto } from "../performance/dto/prompt/prompt.a.input.dto.js";
+import { PromptBInputDto } from "../performance/dto/prompt/prompt.b.input.dto.js";
+import { PromptCInputDto } from "../dashboard/dto/prompt/prompt.c.input.dto.js";
+import { PromptDInputDto } from "../dashboard/dto/prompt/prompt.d.input.dto.js";
 
 export class PromptManager {
   buildPromptA(dto: PromptAInputDto): PromptRequest {

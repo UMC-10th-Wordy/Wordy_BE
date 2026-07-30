@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Delete, Route, Tags, Body, Query, Header, Res, TsoaResponse, Example } from "tsoa";
-import { AuthService } from "./auth.service";
+import { AuthService } from "./auth.service.js";
 import {
   SignupRequest,
   LoginRequest,
@@ -9,12 +9,12 @@ import {
   GoogleCompleteSignupRequest,
   GoogleCallbackResult,
   AuthSessionResult,
-} from "./auth.dto";
-import { PlanType } from "../home/home.dto";
+} from "./auth.dto.js";
+import { PlanType } from "../home/home.dto.js";
 
-import { ApiResponse } from "../../common/responses/api.response";
-import { success } from "../../common/responses/response";
-import { SuccessCode } from "../../common/responses/success.code";
+import { ApiResponse } from "../../common/responses/api.response.js";
+import { success } from "../../common/responses/response.js";
+import { SuccessCode } from "../../common/responses/success.code.js";
 
 @Route("auth")
 @Tags("Auth")

@@ -1,5 +1,5 @@
 import { Example } from "tsoa";
-import { JobRole } from "../../../../users/users.dto";
+import { JobRole } from "../../../../users/users.dto.js";
 
 export class KpiRequestDto {
   @Example("AI 업무 관리")

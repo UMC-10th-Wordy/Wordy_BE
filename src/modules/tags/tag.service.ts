@@ -1,8 +1,8 @@
-import { TagRepository } from './tag.repository';
-import { CreateTagRequest, UpdateTagRequest } from './tag.dto';
-import { ApiError } from '../../common/errors/api.error';
-import { ErrorCode } from '../../common/errors/error.code';
-import { verifyAccessToken } from '../../auth.config';
+import { TagRepository } from './tag.repository.js';
+import { CreateTagRequest, UpdateTagRequest } from './tag.dto.js';
+import { ApiError } from '../../common/errors/api.error.js';
+import { ErrorCode } from '../../common/errors/error.code.js';
+import { verifyAccessToken } from '../../auth.config.js';
 
 export class UnauthorizedError extends ApiError {
   constructor() {

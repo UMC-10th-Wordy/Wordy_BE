@@ -9,11 +9,11 @@ import {
   Tags,
   UploadedFiles,
 } from 'tsoa';
-import { TaskResultService } from './task-result.service';
-import { FileType, TaskResultResponse } from './task-result.dto';
-import { ApiResponse } from '../../common/responses/api.response';
-import { success } from '../../common/responses/response';
-import { SuccessCode } from '../../common/responses/success.code';
+import { TaskResultService } from './task-result.service.js';
+import { FileType, TaskResultResponse } from './task-result.dto.js';
+import { ApiResponse } from '../../common/responses/api.response.js';
+import { success } from '../../common/responses/response.js';
+import { SuccessCode } from '../../common/responses/success.code.js';
 
 @Route('tasks')
 @Tags('Task Results')

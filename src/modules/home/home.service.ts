@@ -1,8 +1,8 @@
-import { verifyAccessToken } from '../../auth.config';
-import { HomeRepository } from './home.repository';
-import { DayRecord, DayTasks, HomeData, PlanType, TaskSummary } from './home.dto';
-import { ApiError } from '../../common/errors/api.error';
-import { ErrorCode } from '../../common/errors/error.code';
+import { verifyAccessToken } from '../../auth.config.js';
+import { HomeRepository } from './home.repository.js';
+import { DayRecord, DayTasks, HomeData, PlanType, TaskSummary } from './home.dto.js';
+import { ApiError } from '../../common/errors/api.error.js';
+import { ErrorCode } from '../../common/errors/error.code.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

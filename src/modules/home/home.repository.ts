@@ -1,5 +1,5 @@
-import { prisma } from '../../db.config';
-import { PlanType as PrismaPlanType } from '../../generated/prisma/client';
+import { prisma } from '../../db.config.js';
+import { PlanType as PrismaPlanType } from '../../generated/prisma/client.js';
 
 const taskSelect = {
   taskId: true,

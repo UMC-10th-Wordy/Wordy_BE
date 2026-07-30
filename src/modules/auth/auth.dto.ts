@@ -1,4 +1,4 @@
-import { PlanType } from '../home/home.dto';
+import { PlanType } from '../home/home.dto.js';
 
 export enum AgreementType {
   TERMS_OF_SERVICE = 'TERMS_OF_SERVICE',

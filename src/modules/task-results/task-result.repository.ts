@@ -1,5 +1,5 @@
-import { prisma } from '../../db.config';
-import { FileType } from '../../generated/prisma/client';
+import { prisma } from '../../db.config.js';
+import { FileType } from '../../generated/prisma/client.js';
 
 export interface AttachmentInput {
   fileType: FileType;

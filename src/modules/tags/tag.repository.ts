@@ -1,6 +1,6 @@
-import { prisma } from '../../db.config';
-import { Prisma } from '../../generated/prisma/client';
-import { CreateTagRequest, UpdateTagRequest } from './tag.dto';
+import { prisma } from '../../db.config.js';
+import { Prisma } from '../../generated/prisma/client.js';
+import { CreateTagRequest, UpdateTagRequest } from './tag.dto.js';
 
 export class TagRepository {
   public async findManyByUserId(userId: string) {

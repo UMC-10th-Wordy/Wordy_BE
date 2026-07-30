@@ -1,6 +1,6 @@
-import { prisma } from '../../db.config';
-import { AuthProvider, AgreementType as PrismaAgreementType } from '../../generated/prisma/client';
-import { AgreementInput } from './auth.dto';
+import { prisma } from '../../db.config.js';
+import { AuthProvider, AgreementType as PrismaAgreementType } from '../../generated/prisma/client.js';
+import { AgreementInput } from './auth.dto.js';
 
 export class AuthRepository {
   public async findByEmail(email: string) {

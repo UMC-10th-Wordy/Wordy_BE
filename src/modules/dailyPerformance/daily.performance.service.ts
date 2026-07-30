@@ -1,12 +1,12 @@
-import { verifyAccessToken } from "../../auth.config";
-import { ApiError } from "../../common/errors/api.error";
-import { ErrorCode } from "../../common/errors/error.code";
-import { Prisma } from "../../generated/prisma/client";
-import { TaskStatus } from "../../generated/prisma/enums";
-import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto";
-import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto";
-import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto } from "./daily.performance.dto";
-import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository";
+import { verifyAccessToken } from "../../auth.config.js";
+import { ApiError } from "../../common/errors/api.error.js";
+import { ErrorCode } from "../../common/errors/error.code.js";
+import { Prisma } from "../../generated/prisma/client.js";
+import { TaskStatus } from "../../generated/prisma/enums.js";
+import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto.js";
+import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
+import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto } from "./daily.performance.dto.js";
+import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository.js";
 
 export class DailyPerformanceService {
   constructor(

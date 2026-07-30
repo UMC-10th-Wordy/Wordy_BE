@@ -5,11 +5,11 @@ import {
   DailyPerformancePreviewResponseDto,
   PerformanceDetailResponseDto,
   PerformanceListResponseDto,
-} from "./daily.performance.dto";
+} from "./daily.performance.dto.js";
 
-import { prisma } from "../../db.config";
-import { DailyPerformanceService } from "./daily.performance.service";
-import { DailyPerformanceRepository } from "./daily.performance.repository";
+import { prisma } from "../../db.config.js";
+import { DailyPerformanceService } from "./daily.performance.service.js";
+import { DailyPerformanceRepository } from "./daily.performance.repository.js";
 
 @Route("performances")
 @Tags("Performance")

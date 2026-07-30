@@ -1,11 +1,11 @@
-import { ApiError } from "../../../common/errors/api.error";
-import { ErrorCode } from "../../../common/errors/error.code";
+import { ApiError } from "../../../common/errors/api.error.js";
+import { ErrorCode } from "../../../common/errors/error.code.js";
 
-import { PromptCOutputDto } from "../dashboard/dto/prompt/prompt.c.output.dto";
-import { PromptDOutputDto } from "../dashboard/dto/prompt/prompt.d.output.dto";
-import { KpiOutputDto } from "../kpi/dto/prompt/kpi.output.dto";
-import { PromptAOutputDto } from "../performance/dto/prompt/prompt.a.output.dto";
-import { PromptBOutputDto } from "../performance/dto/prompt/prompt.b.output.dto";
+import { PromptCOutputDto } from "../dashboard/dto/prompt/prompt.c.output.dto.js";
+import { PromptDOutputDto } from "../dashboard/dto/prompt/prompt.d.output.dto.js";
+import { KpiOutputDto } from "../kpi/dto/prompt/kpi.output.dto.js";
+import { PromptAOutputDto } from "../performance/dto/prompt/prompt.a.output.dto.js";
+import { PromptBOutputDto } from "../performance/dto/prompt/prompt.b.output.dto.js";
 
 export class RuleEngine {
   private requireString(
