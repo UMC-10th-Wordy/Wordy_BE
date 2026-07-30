@@ -147,7 +147,7 @@ export class PerformanceService {
       await this.prisma.reflectionSnapshot.create({
         data: {
           dailyEntryId,
-          request: JSON.parse(JSON.stringify(promptAResult)),
+          promptAResult: JSON.parse(JSON.stringify(promptAResult)),
         },
       });
 
