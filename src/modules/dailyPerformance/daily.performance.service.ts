@@ -93,24 +93,55 @@ export class DailyPerformanceService {
             (completedCount / tasks.length) * 100,
           );
 
-    // DailyPerformance 저장
-    const performance =
-      await this.repository.createDailyPerformance({
+    // 기존 DailyPerformance 조회
+    const existingPerformance =
+      await this.repository.findDailyPerformanceByDailyEntry(
+        snapshot.dailyEntryId,
         userId,
-        dailyEntryId: snapshot.dailyEntryId,
-        reflectionSnapshotId:
-          snapshot.reflectionSnapshotId,
+      );
 
-        achievementRate,
+    let performance;
 
-        // 사용자가 수정한 값
-        summary: request.summary,
-        growthInsight: request.growthInsights,
+    const performanceData = {
+      reflectionSnapshotId:
+        snapshot.reflectionSnapshotId,
 
-        // AI 생성 결과
-        nextAction: promptB.nextActions,
-        structuredResult: JSON.parse(JSON.stringify(promptA)),
-      });
+      achievementRate,
+
+      // 사용자가 수정한 값
+      summary: request.summary,
+      growthInsight: request.growthInsights,
+
+      // AI 생성 결과
+      nextAction: promptB.nextActions,
+      structuredResult:
+        JSON.parse(JSON.stringify(promptA)),
+    };
+
+
+    // 기존 성과 있으면 갱신
+    if (existingPerformance) {
+      performance =
+        await this.repository.updateDailyPerformance(
+          existingPerformance.dailyPerformanceId,
+          performanceData,
+        );
+
+      // 기존 Task 성과 제거
+      await this.repository.deletePerformanceItems(
+        existingPerformance.dailyPerformanceId,
+      );
+
+    } 
+    // 없으면 신규 생성
+    else {
+      performance =
+        await this.repository.createDailyPerformance({
+          userId,
+          dailyEntryId: snapshot.dailyEntryId,
+          ...performanceData,
+        });
+    }
 
     // PerformanceItem 저장
     const taskPerformances =
@@ -129,8 +160,7 @@ export class DailyPerformanceService {
     }
 
     return {
-      dailyPerformanceId:
-        performance.dailyPerformanceId,
+      dailyPerformanceId: performance.dailyPerformanceId,
     };
   }
 

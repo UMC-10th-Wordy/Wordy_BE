@@ -205,4 +205,39 @@ export class DailyPerformanceRepository {
       },
     });
   }
+
+    async findDailyPerformanceByDailyEntry(
+    dailyEntryId: string,
+    userId: string,
+  ): Promise<DailyPerformance | null> {
+    return this.prisma.dailyPerformance.findFirst({
+      where: {
+        dailyEntryId,
+        userId,
+        deletedAt: null,
+      },
+    });
+  }
+
+  async updateDailyPerformance(
+    dailyPerformanceId: string,
+    data: Prisma.DailyPerformanceUncheckedUpdateInput,
+  ): Promise<DailyPerformance> {
+    return this.prisma.dailyPerformance.update({
+      where: {
+        dailyPerformanceId,
+      },
+      data,
+    });
+  }
+
+  async deletePerformanceItems(
+    dailyPerformanceId: string,
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.performanceItem.deleteMany({
+      where: {
+        dailyPerformanceId,
+      },
+    });
+  }
 }

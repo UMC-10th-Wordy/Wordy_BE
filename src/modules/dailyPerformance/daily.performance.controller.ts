@@ -26,7 +26,7 @@ export class DailyPerformanceController extends Controller {
   }
 
   /**
-   * @summary 업무 성과 저장
+   * @summary 업무 성과 저장 및 갱신
    */
   @Post()
   @Example<CreateDailyPerformanceResponseDto>({
