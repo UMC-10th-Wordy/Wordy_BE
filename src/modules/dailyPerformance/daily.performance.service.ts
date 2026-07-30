@@ -5,7 +5,7 @@ import { Prisma } from "../../generated/prisma/client.js";
 import { TaskStatus } from "../../generated/prisma/enums.js";
 import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
-import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto } from "./daily.performance.dto.js";
+import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
 import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository.js";
 
 export class DailyPerformanceService {
@@ -342,6 +342,43 @@ export class DailyPerformanceService {
           performance,
           userId,
         ),
+    };
+  }
+
+  async updateDailyPerformance(
+    authorization: string | undefined,
+    dailyPerformanceId: string,
+    request: UpdateDailyPerformanceRequestDto,
+  ): Promise<UpdateDailyPerformanceResponseDto> {
+
+    const userId =
+      this.extractUserId(authorization);
+
+    const performance =
+      await this.repository.findDailyPerformance(
+        dailyPerformanceId,
+        userId,
+      );
+
+    if (!performance) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "성과 데이터를 찾을 수 없습니다.",
+      );
+    }
+
+    const updatedPerformance =
+      await this.repository.updateDailyPerformance(
+        dailyPerformanceId,
+        {
+          summary: request.summary,
+          growthInsight: request.growthInsights,
+        },
+      );
+
+    return {
+      dailyPerformanceId: updatedPerformance.dailyPerformanceId,
     };
   }
 }

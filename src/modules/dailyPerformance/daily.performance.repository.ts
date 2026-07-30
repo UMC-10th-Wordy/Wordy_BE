@@ -154,6 +154,18 @@ export class DailyPerformanceRepository {
     });
   } 
 
+  async findDailyPerformance(
+    dailyPerformanceId: string,
+    userId: string,
+  ): Promise<DailyPerformance | null> {
+    return this.prisma.dailyPerformance.findFirst({
+      where: {
+        dailyPerformanceId,
+        userId,
+      },
+    });
+  }
+
   async findDailyPerformances(
     userId: string,
   ): Promise<PerformanceList[]> {

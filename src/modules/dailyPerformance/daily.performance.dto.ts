@@ -19,7 +19,6 @@ export class CreateDailyPerformanceResponseDto {
   dailyPerformanceId!: string;
 }
 
-
 export class PerformanceListItemDto {
   @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",)
   dailyPerformanceId!: string;
@@ -33,7 +32,6 @@ export class PerformanceListItemDto {
   @Example(new Date())
   createdAt!: Date;
 }
-
 
 export class PerformanceListResponseDto {
   @Example([
@@ -95,7 +93,6 @@ export class PerformanceTaskDto {
   @Example("내용이 충분하지 않아 성과를 정리하지 못했어요.",)
   message?: string;
 }
-
 
 export class PerformanceDetailResponseDto {
   @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",)
@@ -162,4 +159,21 @@ export class DailyPerformancePreviewResponseDto {
     summary: "AI 업무 변환 기능을 구현했습니다.",
   })
   performance?: PerformanceDetailResponseDto;
+}
+
+export class UpdateDailyPerformanceRequestDto {
+  @Example("오늘 AI 업무 변환 기능과 성과 저장 API를 구현했습니다.")
+  summary!: string;
+
+  @Example([
+    "업무 데이터를 구조화하는 능력이 향상되었습니다.",
+    "AI 결과를 서비스 데이터로 연결하는 경험을 쌓았습니다.",
+  ])
+  growthInsights!: string[];
+}
+
+
+export class UpdateDailyPerformanceResponseDto {
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  dailyPerformanceId!: string;
 }
