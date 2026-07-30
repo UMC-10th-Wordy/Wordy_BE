@@ -1,9 +1,9 @@
-import { prisma } from '../../db.config';
+import { prisma } from '../../db.config.js';
 import {
   YearsOfService as PrismaYearsOfService,
   JobRole as PrismaJobRole,
-} from '../../generated/prisma/client';
-import { YearsOfService, JobRole } from './users.dto';
+} from '../../generated/prisma/client.js';
+import { YearsOfService, JobRole } from './users.dto.js';
 
 interface UpdateProfileData {
   userName: string;

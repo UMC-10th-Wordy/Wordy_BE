@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
-import { verifyAccessToken } from '../../auth.config';
-import { UsersRepository } from './users.repository';
-import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfService, JobRole } from './users.dto';
-import { ApiError } from '../../common/errors/api.error';
-import { ErrorCode } from '../../common/errors/error.code';
-import { uploadToGcs } from '../../common/storage/gcs.storage';
+import { verifyAccessToken } from '../../auth.config.js';
+import { UsersRepository } from './users.repository.js';
+import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfService, JobRole } from './users.dto.js';
+import { ApiError } from '../../common/errors/api.error.js';
+import { ErrorCode } from '../../common/errors/error.code.js';
+import { uploadToGcs } from '../../common/storage/gcs.storage.js';
 
 const PROFILE_IMAGE_EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',

@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Example, Get, Header, Patch, Path, Post, Route, Tags } from 'tsoa';
-import { CreateTagRequest, TagResponse, UpdateTagRequest } from './tag.dto';
-import { TagService } from './tag.service';
-import { ApiResponse } from '../../common/responses/api.response';
-import { success } from '../../common/responses/response';
-import { SuccessCode } from '../../common/responses/success.code';
+import { CreateTagRequest, TagResponse, UpdateTagRequest } from './tag.dto.js';
+import { TagService } from './tag.service.js';
+import { ApiResponse } from '../../common/responses/api.response.js';
+import { success } from '../../common/responses/response.js';
+import { SuccessCode } from '../../common/responses/success.code.js';
 
 @Route('tags')
 @Tags('Tags')

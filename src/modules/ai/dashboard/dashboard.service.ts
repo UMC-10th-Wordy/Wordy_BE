@@ -1,21 +1,21 @@
-import { Prisma } from "../../../generated/prisma/client";
+import { Prisma } from "../../../generated/prisma/client.js";
 
-import { PromptManager } from "../common/prompt.manager";
-import { LlmClient } from "../common/llm.client";
-import { ResponseParser } from "../common/response.parser";
-import { RuleEngine } from "../common/rule.engine";
+import { PromptManager } from "../common/prompt.manager.js";
+import { LlmClient } from "../common/llm.client.js";
+import { ResponseParser } from "../common/response.parser.js";
+import { RuleEngine } from "../common/rule.engine.js";
 
-import { PrismaClient, DailyPerformance, PromptType, AiRunStatus } from "../../../generated/prisma/client";
-import { ApiError } from "../../../common/errors/api.error";
-import { ErrorCode } from "../../../common/errors/error.code";
-import { verifyAccessToken } from "../../../auth.config";
+import { PrismaClient, DailyPerformance, PromptType, AiRunStatus } from "../../../generated/prisma/client.js";
+import { ApiError } from "../../../common/errors/api.error.js";
+import { ErrorCode } from "../../../common/errors/error.code.js";
+import { verifyAccessToken } from "../../../auth.config.js";
 
-import { DashboardRequestDto }from "./dto/api/dashboard.request.dto";
-import { DashboardResponseDto }from "./dto/api/dashboard.response.dto";
-import { DashboardKpiInputDto, DashboardTagInputDto, PromptCInputDto, WeeklySummaryCandidateDto }from "./dto/prompt/prompt.c.input.dto";
-import { PromptCOutputDto }from "./dto/prompt/prompt.c.output.dto";
-import { PromptDOutputDto } from "./dto/prompt/prompt.d.output.dto";
-import { PromptDInputDto } from "./dto/prompt/prompt.d.input.dto";
+import { DashboardRequestDto }from "./dto/api/dashboard.request.dto.js";
+import { DashboardResponseDto }from "./dto/api/dashboard.response.dto.js";
+import { DashboardKpiInputDto, DashboardTagInputDto, PromptCInputDto, WeeklySummaryCandidateDto }from "./dto/prompt/prompt.c.input.dto.js";
+import { PromptCOutputDto }from "./dto/prompt/prompt.c.output.dto.js";
+import { PromptDOutputDto } from "./dto/prompt/prompt.d.output.dto.js";
+import { PromptDInputDto } from "./dto/prompt/prompt.d.input.dto.js";
 
 type PerformanceItem = {
   output: unknown;

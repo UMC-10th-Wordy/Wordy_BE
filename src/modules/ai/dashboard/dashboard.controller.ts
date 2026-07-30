@@ -2,15 +2,15 @@ console.log("dashboard.controller.ts loaded");
 
 import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
 
-import { prisma } from "../../../common/prisma/prisma.client";
-import { LlmClient } from "../common/llm.client";
-import { PromptManager } from "../common/prompt.manager";
-import { ResponseParser } from "../common/response.parser";
-import { RuleEngine } from "../common/rule.engine";
+import { prisma } from "../../../common/prisma/prisma.client.js";
+import { LlmClient } from "../common/llm.client.js";
+import { PromptManager } from "../common/prompt.manager.js";
+import { ResponseParser } from "../common/response.parser.js";
+import { RuleEngine } from "../common/rule.engine.js";
 
-import { DashboardRequestDto } from "./dto/api/dashboard.request.dto";
-import { DashboardResponseDto } from "./dto/api/dashboard.response.dto";
-import { DashboardService } from "./dashboard.service";
+import { DashboardRequestDto } from "./dto/api/dashboard.request.dto.js";
+import { DashboardResponseDto } from "./dto/api/dashboard.response.dto.js";
+import { DashboardService } from "./dashboard.service.js";
 
 @Route("ai")
 @Tags("AI")

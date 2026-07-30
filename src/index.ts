@@ -9,10 +9,10 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { ValidateError } from 'tsoa';
 import { MulterError } from 'multer';
-import { RegisterRoutes } from './generated/routes';
-import { ErrorCode } from './common/errors/error.code';
-import { ApiError } from './common/errors/api.error';
-import { apiLogMiddleware } from './common/middlewares/api.log.middleware';
+import { RegisterRoutes } from './generated/routes.js';
+import { ErrorCode } from './common/errors/error.code.js';
+import { ApiError } from './common/errors/api.error.js';
+import { apiLogMiddleware } from './common/middlewares/api.log.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,7 +33,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 const swaggerDocument = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'generated/swagger.json'), 'utf-8'),
+  fs.readFileSync(path.join(__dirname, '../src/generated/swagger.json'), 'utf-8'),
 );
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

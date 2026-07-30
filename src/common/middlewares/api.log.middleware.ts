@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../../db.config';
-import { verifyAccessToken } from '../../auth.config';
+import { prisma } from '../../db.config.js';
+import { verifyAccessToken } from '../../auth.config.js';
 
 function extractUserId(authorization: string | undefined): string | null {
   const token = authorization?.startsWith('Bearer ')

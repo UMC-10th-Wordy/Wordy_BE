@@ -1,4 +1,4 @@
-import { ApiResponse } from "./api.response";
+import { ApiResponse } from "./api.response.js";
 
 export const success = <T>(
   code: string,

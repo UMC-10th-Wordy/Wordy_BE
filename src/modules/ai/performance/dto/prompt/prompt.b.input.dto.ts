@@ -1,4 +1,4 @@
-import { PromptAOutputDto } from "./prompt.a.output.dto";
+import { PromptAOutputDto } from "./prompt.a.output.dto.js";
 
 export interface PromptBInputDto {
   structuredData: PromptAOutputDto;

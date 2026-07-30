@@ -1,7 +1,7 @@
 import OpenAI from "openai";
-import { PromptRequest } from "../types/ai.types";
-import { ApiError } from "../../../common/errors/api.error";
-import { ErrorCode } from "../../../common/errors/error.code";
+import { PromptRequest } from "../types/ai.types.js";
+import { ApiError } from "../../../common/errors/api.error.js";
+import { ErrorCode } from "../../../common/errors/error.code.js";
 
 export class LlmClient {
   private readonly client: OpenAI;
