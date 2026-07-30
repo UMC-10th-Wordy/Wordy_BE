@@ -72,16 +72,18 @@ export class TaskService {
 
     this.validateCreateTaskRequest(body);
 
-    const existsTag =
-      await this.taskRepository.existsActiveTagByIdAndUserId(
-        body.tagId,
-        userId,
-      );
+    if (body.tagId !== undefined && body.tagId !== null) {
+      const existsTag =
+        await this.taskRepository.existsActiveTagByIdAndUserId(
+          body.tagId,
+          userId,
+        );
 
-    if (!existsTag) {
-      throw new BadRequestError(
-        '존재하지 않거나 사용할 수 없는 태그입니다.',
-      );
+      if (!existsTag) {
+        throw new BadRequestError(
+          '존재하지 않거나 사용할 수 없는 태그입니다.',
+        );
+      }
     }
 
     const taskDate = new Date(body.taskDate);
@@ -187,7 +189,7 @@ export class TaskService {
 
     this.validateUpdateTaskRequest(body);
 
-    if (body.tagId !== undefined) {
+    if (body.tagId !== undefined && body.tagId !== null) {
       const existsTag =
         await this.taskRepository.existsActiveTagByIdAndUserId(
           body.tagId,
@@ -323,12 +325,6 @@ export class TaskService {
     }
 
     this.validateDate(body.taskDate);
-
-    if (!body.tagId) {
-      throw new BadRequestError(
-        '태그는 필수입니다.',
-      );
-    }
   }
 
   private validateUpdateTaskRequest(
