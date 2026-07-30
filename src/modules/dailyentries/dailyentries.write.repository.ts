@@ -94,3 +94,20 @@ export const restoreDailyEntryWithTasks = async (
     });
   });
 };
+
+export const updateDailyEntryReflectionContent = async (
+  dailyEntryId: string,
+  reflectionContent: string,
+) => {
+  return prisma.dailyEntry.update({
+    where: {
+      dailyEntryId,
+    },
+    data: {
+      reflectionContent,
+    },
+    include: {
+      reflectionTasks: true,
+    },
+  });
+};

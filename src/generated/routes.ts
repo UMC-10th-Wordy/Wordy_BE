@@ -20,9 +20,9 @@ import { MonthlyDashboardController } from './../modules/dashboard.month/dashboa
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DailyPerformanceController } from './../modules/dailyPerformance/daily.performance.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DailyEntriesWriteController } from './../modules/dailyentries/dailyentries.write.controller.js';
+import { DailyEntriesWriteController } from './../modules/dailyEntries/dailyentries.write.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DailyEntriesController } from './../modules/dailyentries/dailyentries.controller.js';
+import { DailyEntriesController } from './../modules/dailyEntries/dailyentries.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
