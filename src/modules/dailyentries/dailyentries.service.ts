@@ -270,7 +270,7 @@ export const getDailyEntriesDetail = async (
 
   const base = {
     dailyEntryId: entry.dailyEntryId,
-    dailyPerformanceId: entry.dailyPerformance?.dailyPerformanceId ?? null,
+    dailyPerformanceId: entry.reflectionSnapshots[0]?.dailyPerformances[0]?.dailyPerformanceId ?? null,
     entryDate: toDateStr(entry.entryDate),
     reflectionContent: entry.reflectionContent,
   };
