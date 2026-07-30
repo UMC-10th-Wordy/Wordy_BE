@@ -1,15 +1,20 @@
-import { Body, Controller, Example, Get, Header, Path, Post, Query, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Get, Header, Patch, Path, Post, Query, Route, Tags } from "tsoa";
 import {
   CreateDailyPerformanceRequestDto,
   CreateDailyPerformanceResponseDto,
   DailyPerformancePreviewResponseDto,
   PerformanceDetailResponseDto,
   PerformanceListResponseDto,
+  UpdateDailyPerformanceRequestDto,
+  UpdateDailyPerformanceResponseDto,
 } from "./daily.performance.dto.js";
 
 import { prisma } from "../../db.config.js";
 import { DailyPerformanceService } from "./daily.performance.service.js";
 import { DailyPerformanceRepository } from "./daily.performance.repository.js";
+import { ApiResponse } from "../../common/responses/api.response.js";
+import { success } from "../../common/responses/response.js";
+import { SuccessCode } from "../../common/responses/success.code.js";
 
 @Route("performances")
 @Tags("Performance")
@@ -26,11 +31,17 @@ export class DailyPerformanceController extends Controller {
   }
 
   /**
-   * @summary 업무 성과 저장
+   * @summary 업무 성과 저장 및 갱신
    */
   @Post()
-  @Example<CreateDailyPerformanceResponseDto>({
-    dailyPerformanceId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+  @Example<ApiResponse<CreateDailyPerformanceResponseDto>>({
+    success: true,
+    code: "S200",
+    message: "업무 성과 저장에 성공했습니다.",
+    result: {
+      dailyPerformanceId:
+        "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+    },
   })
   public async createDailyPerformance(
     @Header("Authorization")
@@ -38,18 +49,30 @@ export class DailyPerformanceController extends Controller {
 
     @Body()
     request: CreateDailyPerformanceRequestDto,
-  ): Promise<CreateDailyPerformanceResponseDto> {
-    return this.dailyPerformanceService.createDailyPerformance(
-      authorization,
-      request,
+  ): Promise<ApiResponse<CreateDailyPerformanceResponseDto>> {
+
+    const result =
+      await this.dailyPerformanceService.createDailyPerformance(
+        authorization,
+        request,
+      );
+
+    return success(
+      SuccessCode.OK.code,
+      "업무 성과 저장에 성공했습니다.",
+      result,
     );
   }
 
-    /**
-     * @summary 업무 성과 조회
-     */
-    @Get()
-    @Example<PerformanceListResponseDto>({
+  /**
+   * @summary 업무 성과 조회
+   */
+  @Get()
+  @Example<ApiResponse<PerformanceListResponseDto>>({
+    success: true,
+    code: "S200",
+    message: "업무 성과 조회에 성공했습니다.",
+    result: {
       performances: [
         {
           dailyPerformanceId:
@@ -60,85 +83,60 @@ export class DailyPerformanceController extends Controller {
           createdAt: new Date(),
         },
       ],
-    })
-    public async getDailyPerformances(
-      @Header("Authorization")
-      authorization: string | undefined,
+    },
+  })
+  public async getDailyPerformances(
+    @Header("Authorization")
+    authorization: string | undefined,
 
-      @Query()
-      date?: string,
-    ): Promise<
-      PerformanceListResponseDto | DailyPerformancePreviewResponseDto
-    > {
+    @Query()
+    date?: string,
+  ): Promise<ApiResponse<
+    PerformanceListResponseDto | DailyPerformancePreviewResponseDto
+  >> {
 
-      if (date) {
-        return this.dailyPerformanceService.getDailyPerformanceByDate(
+    const result = date
+      ? await this.dailyPerformanceService.getDailyPerformanceByDate(
           authorization,
           date,
+        )
+      : await this.dailyPerformanceService.getDailyPerformances(
+          authorization,
         );
-      }
 
-      return this.dailyPerformanceService.getDailyPerformances(
-        authorization,
-      );
-    }
+    return success(
+      SuccessCode.OK.code,
+      "업무 성과 조회에 성공했습니다.",
+      result,
+    );
+  }
 
   /**
    * @summary 업무 성과 상세 조회
    */
   @Get("/{dailyPerformanceId}")
-  @Example<PerformanceDetailResponseDto>({
-    dailyPerformanceId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
-    achievementRate: 80,
-    totalTaskCount: 5,
-    completedTaskCount: 3,
-    incompleteTasks: [
-      {
-        tag: {
-          tagName: "개발",
-          color: "#4A90E2",
-        },
-        title: "AI 프롬프트 개선",
-      },
-    ],
-    summary: "AI 업무 성과 변환 기능을 구현했습니다.",
-    growthInsights: [
-      "업무 내용을 구조화하는 능력이 향상되었습니다.",
-    ],
-    nextActions: [
-      "프롬프트 정확도 개선하기",
-    ],
-    taskPerformances: [
-      {
-        taskId: "a1b2c3d4-e5f6-7890-abcd-123456789012",
-        tag: {
-          tagName: "개발",
-          color: "#4A90E2",
-        },
-        title: "성과 변환 API 구현",
-        output: [
-          "AI 결과 저장 구조 구현",
-        ],
-        impact: [
-          "사용자가 업무 성과를 확인할 수 있도록 개선",
-        ],
-      },
-      {
-        taskId:
-          "b2c3d4e5-f6a7-8901-bcde-234567890123",
-        tag: {
-          tagName: "개발",
-          color: "#4A90E2",
-        },
-        title:
-          "API 명세 정리",
-        output: [],
-        impact: [],
-        message:
-          "내용이 충분하지 않아 성과를 정리하지 못했어요.",
-      },
-    ],
-    createdAt: new Date(),
+  @Example<ApiResponse<PerformanceDetailResponseDto>>({
+    success: true,
+    code: "S200",
+    message: "업무 성과 상세 조회에 성공했습니다.",
+    result: {
+      dailyPerformanceId:
+        "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+      achievementRate: 80,
+      totalTaskCount: 5,
+      completedTaskCount: 3,
+      incompleteTasks: [],
+      summary:
+        "AI 업무 성과 변환 기능을 구현했습니다.",
+      growthInsights: [
+        "업무 내용을 구조화하는 능력이 향상되었습니다.",
+      ],
+      nextActions: [
+        "프롬프트 정확도 개선하기",
+      ],
+      taskPerformances: [],
+      createdAt: new Date(),
+    },
   })
   public async getDailyPerformanceDetail(
     @Header("Authorization")
@@ -146,10 +144,56 @@ export class DailyPerformanceController extends Controller {
 
     @Path()
     dailyPerformanceId: string,
-  ): Promise<PerformanceDetailResponseDto> {
-    return this.dailyPerformanceService.getDailyPerformanceDetail(
-      authorization,
-      dailyPerformanceId,
+  ): Promise<ApiResponse<PerformanceDetailResponseDto>> {
+
+    const result =
+      await this.dailyPerformanceService.getDailyPerformanceDetail(
+        authorization,
+        dailyPerformanceId,
+      );
+
+    return success(
+      SuccessCode.OK.code,
+      "업무 성과 상세 조회에 성공했습니다.",
+      result,
+    );
+  }
+
+  /**
+   * @summary 업무 성과 수정
+   */
+  @Patch("/{dailyPerformanceId}")
+  @Example<ApiResponse<UpdateDailyPerformanceResponseDto>>({
+    success: true,
+    code: "S200",
+    message: "업무 성과 수정에 성공했습니다.",
+    result: {
+      dailyPerformanceId:
+        "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+    },
+  })
+  public async updateDailyPerformance(
+    @Header("Authorization")
+    authorization: string | undefined,
+
+    @Path()
+    dailyPerformanceId: string,
+
+    @Body()
+    request: UpdateDailyPerformanceRequestDto,
+  ): Promise<ApiResponse<UpdateDailyPerformanceResponseDto>> {
+
+    const result =
+      await this.dailyPerformanceService.updateDailyPerformance(
+        authorization,
+        dailyPerformanceId,
+        request,
+      );
+
+    return success(
+      SuccessCode.OK.code,
+      "업무 성과 수정에 성공했습니다.",
+      result,
     );
   }
 }

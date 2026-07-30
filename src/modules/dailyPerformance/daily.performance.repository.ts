@@ -154,6 +154,18 @@ export class DailyPerformanceRepository {
     });
   } 
 
+  async findDailyPerformance(
+    dailyPerformanceId: string,
+    userId: string,
+  ): Promise<DailyPerformance | null> {
+    return this.prisma.dailyPerformance.findFirst({
+      where: {
+        dailyPerformanceId,
+        userId,
+      },
+    });
+  }
+
   async findDailyPerformances(
     userId: string,
   ): Promise<PerformanceList[]> {
@@ -202,6 +214,41 @@ export class DailyPerformanceRepository {
       },
       include: {
         tag: true,
+      },
+    });
+  }
+
+    async findDailyPerformanceByDailyEntry(
+    dailyEntryId: string,
+    userId: string,
+  ): Promise<DailyPerformance | null> {
+    return this.prisma.dailyPerformance.findFirst({
+      where: {
+        dailyEntryId,
+        userId,
+        deletedAt: null,
+      },
+    });
+  }
+
+  async updateDailyPerformance(
+    dailyPerformanceId: string,
+    data: Prisma.DailyPerformanceUncheckedUpdateInput,
+  ): Promise<DailyPerformance> {
+    return this.prisma.dailyPerformance.update({
+      where: {
+        dailyPerformanceId,
+      },
+      data,
+    });
+  }
+
+  async deletePerformanceItems(
+    dailyPerformanceId: string,
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.performanceItem.deleteMany({
+      where: {
+        dailyPerformanceId,
       },
     });
   }
