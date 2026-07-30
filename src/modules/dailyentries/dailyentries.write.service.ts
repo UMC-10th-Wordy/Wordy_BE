@@ -2,6 +2,7 @@ import {
   createDailyEntryWithTasks,
   findDailyEntryByUserIdAndDate,
   findTasksByUserIdAndDate,
+  updateDailyEntryReflectionContent,
 } from './dailyentries.write.repository.js';
 
 import {
@@ -46,11 +47,21 @@ export const createDailyEntry = async (
   const existingEntry =
   await findDailyEntryByUserIdAndDate(userId, entryDate);
 
-    if (existingEntry) {
-    throw new BadRequestError(
-        '해당 날짜의 업무 일지가 이미 존재합니다.',
-    );
-    }
+  if (existingEntry) {
+    const updatedEntry =
+      await updateDailyEntryReflectionContent(
+        existingEntry.dailyEntryId,
+        body.reflectionContent.trim(),
+      );
+
+    return {
+      dailyEntryId: updatedEntry.dailyEntryId,
+      entryDate: body.entryDate,
+      reflectionContent: updatedEntry.reflectionContent,
+      linkedTaskCount: updatedEntry.reflectionTasks.length,
+      createdAt: updatedEntry.createdAt,
+    };
+  }
 
     const tasks = await findTasksByUserIdAndDate(
     userId,
