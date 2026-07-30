@@ -1,0 +1,513 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum AuthProvider {
+  local
+  google
+}
+
+enum PlanType {
+  FREE
+  PRO
+}
+
+enum AgreementType {
+  TERMS_OF_SERVICE
+  PRIVACY_POLICY
+  AGE_OVER_14
+  MARKETING
+}
+
+enum YearsOfService {
+  UNDER_1
+  ONE_TO_3
+  THREE_TO_5
+  FIVE_TO_10
+  OVER_10
+}
+
+enum JobRole {
+  PRODUCT_PLANNING
+  DEVELOPMENT
+  DESIGN
+  MARKETING_SALES
+  DATA_ANALYSIS
+  CUSTOMER_SUPPORT
+  HR
+  FINANCE_ACCOUNTING
+  EDUCATION_RESEARCH
+  FREELANCER
+  STUDENT
+  ETC
+}
+
+enum TaskPriority {
+  MUST_DO
+  SHOULD_DO
+  COULD_DO
+}
+
+enum TaskStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum FileType {
+  FILE @map("file")
+  IMG  @map("img")
+}
+
+enum AiRunStatus {
+  SUCCESS @map("success")
+  FAILED  @map("failed")
+}
+
+enum AIQuestionStatus {
+  WAITING
+  ANSWERED
+  SKIPPED
+}
+
+enum PromptType {
+  PROMPT_A
+  PROMPT_B
+  PROMPT_C
+  PROMPT_D
+  KPI
+}
+
+model ApiLog {
+  logId      Int      @id @default(autoincrement()) @map("log_id")
+  userId     String?  @map("user_id") @db.Char(36)
+  method     String   @db.VarChar(10)
+  path       String   @db.Text
+  ipAddress  String   @map("ip_address") @db.VarChar(45)
+  statusCode Int      @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([userId, createdAt])
+  @@map("ApiLog")
+}
+
+model User {
+  userId       String       @id @default(uuid()) @map("user_id") @db.Char(36)
+  email        String       @unique @db.VarChar(255)
+  provider     AuthProvider @default(local)
+  password     String?      @db.VarChar(255)
+  refreshToken String?      @map("refresh_token") @db.VarChar(512)
+  lastLoginAt  DateTime?    @map("last_login_at") @db.DateTime(0)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt    DateTime?    @map("deleted_at") @db.DateTime(0)
+
+  profile      Profile?
+  plan         Plan?
+  agreements   UserAgreement[]
+  tags         Tag[]
+  tasks        Task[]
+  dailyEntries DailyEntry[]
+  dashboards   Dashboard[]
+  dailyPerformances DailyPerformance[]
+
+  @@map("User")
+}
+
+model Plan {
+  planId    String   @id @default(uuid()) @map("plan_id") @db.Char(36)
+  type      PlanType @default(FREE)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+  userId    String   @unique @map("user_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@map("Plan")
+}
+
+model Profile {
+  profileId      String         @id @default(uuid()) @map("profile_id") @db.Char(36)
+  userName       String         @map("user_name") @db.VarChar(20)
+  profileImgUrl  String?        @map("profile_img_url") @db.VarChar(255)
+  yearsOfService YearsOfService @map("years_of_service")
+  jobRole        JobRole        @map("job_role")
+  createdAt      DateTime       @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt      DateTime?      @map("deleted_at") @db.DateTime(0)
+  userId         String         @unique @map("user_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@map("Profile")
+}
+
+model UserAgreement {
+  agreementId   String        @id @default(uuid()) @map("agreement_id") @db.Char(36)
+  type          AgreementType
+  isAgreed      Boolean       @map("is_agreed")
+  agreedAt      DateTime      @default(now()) @map("agreed_at") @db.DateTime(0)
+  revokedAt     DateTime?     @map("revoke_at") @db.DateTime(0)
+  policyVersion String        @default("v1") @map("policy_version") @db.VarChar(50)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.DateTime(0)
+  userId        String        @map("user_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, type])
+  @@map("UserAgreement")
+}
+
+model Tag {
+  tagId             String    @id @default(uuid()) @map("tag_id") @db.Char(36)
+  tagName           String    @map("tag_name") @db.VarChar(30)
+  color             String?   @db.VarChar(20)
+  projectName       String?   @map("project_name") @db.VarChar(100)
+  projectPurpose    String?   @map("project_purpose") @db.Text
+  expectedOutcome   String?   @map("expected_outcome") @db.Text
+  expectedStartDate DateTime? @map("expected_start_date") @db.Date
+  expectedEndDate   DateTime? @map("expected_end_date") @db.Date
+  kpis              Json?
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt DateTime? @map("deleted_at") @db.DateTime(0)
+
+  userId String @map("user_id") @db.Char(36)
+
+  user  User   @relation(fields: [userId], references: [userId])
+  tasks Task[]
+
+  @@index([userId])
+  @@index([userId, deletedAt])
+  @@index([userId, expectedStartDate, expectedEndDate])
+  @@map("Tag")
+}
+
+model Task {
+  taskId      String       @id @default(uuid()) @map("task_id") @db.Char(36)
+  priority    TaskPriority
+  title       String       @db.VarChar(100)
+  memo        String?      @db.Text
+  status      TaskStatus   @default(IN_PROGRESS)
+  sortOrder   Int          @default(0) @map("sort_order")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt   DateTime?    @map("deleted_at") @db.DateTime(0)
+  completedAt DateTime?    @map("completed_at") @db.DateTime(0)
+  taskDate    DateTime     @map("task_date") @db.Date
+  userId      String       @map("user_id") @db.Char(36)
+  tagId       String?       @map("tag_id") @db.Char(36)
+
+  user                    User                     @relation(fields: [userId], references: [userId])
+  tag                     Tag?                      @relation(fields: [tagId], references: [tagId])
+  taskResult              TaskResult?
+  reflectionTasks         ReflectionTask[]
+  reflectionTaskSnapshots ReflectionTaskSnapshot[]
+  performanceItems        PerformanceItem[]
+
+  @@index([userId, taskDate])
+  @@index([tagId])
+  @@map("Task")
+}
+
+model DailyEntry {
+  dailyEntryId      String    @id @default(uuid()) @map("daily_entry_id") @db.Char(36)
+  reflectionContent String    @map("reflection_content") @db.Text
+  entryDate         DateTime  @map("entry_date") @db.Date
+  createdAt         DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt         DateTime? @map("deleted_at") @db.DateTime(0)
+  userId            String    @map("user_id") @db.Char(36)
+
+  user                User                 @relation(fields: [userId], references: [userId])
+  reflectionTasks     ReflectionTask[]
+  dailyPerformances   DailyPerformance[]
+  reflectionSnapshots ReflectionSnapshot[]
+
+  @@unique([userId, entryDate])
+  @@index([userId])
+  @@map("DailyEntry")
+}
+
+model ReflectionTask {
+  taskId       String @map("task_id") @db.Char(36)
+  dailyEntryId String @map("daily_entry_id") @db.Char(36)
+
+  task       Task       @relation(fields: [taskId], references: [taskId])
+  dailyEntry DailyEntry @relation(fields: [dailyEntryId], references: [dailyEntryId])
+
+  @@id([taskId, dailyEntryId])
+  @@map("ReflectionTask")
+}
+
+model TaskResult {
+  taskResultId String    @id @default(uuid()) @map("task_result_id") @db.Char(36)
+  content      String    @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt    DateTime? @map("deleted_at") @db.DateTime(0)
+  taskId       String    @unique @map("task_id") @db.Char(36)
+
+  task                          Task                           @relation(fields: [taskId], references: [taskId])
+  attachments                   Attachment[]
+  reflectionTaskResultSnapshots ReflectionTaskResultSnapshot[]
+
+  @@map("TaskResult")
+}
+
+model Attachment {
+  attachmentId String    @id @default(uuid()) @map("attachment_id") @db.Char(36)
+  fileType     FileType  @map("file_type")
+  fileUrl      String    @map("file_url") @db.VarChar(255)
+  fileName     String    @map("file_name") @db.VarChar(255)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  deletedAt    DateTime? @map("deleted_at") @db.DateTime(0)
+  taskResultId String    @map("task_result_id") @db.Char(36)
+
+  taskResult TaskResult @relation(fields: [taskResultId], references: [taskResultId])
+
+  @@index([taskResultId])
+  @@map("Attachment")
+}
+
+model ReflectionSnapshot {
+  reflectionSnapshotId String   @id @default(uuid()) @map("reflection_snapshot_id") @db.Char(36)
+  dailyEntryId         String   @map("daily_entry_id") @db.Char(36)
+  promptAResult        Json?    @map("prompt_a_result")
+  promptBResult        Json?    @map("prompt_b_result")
+  createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  dailyEntry           DailyEntry @relation(fields: [dailyEntryId], references: [dailyEntryId])
+  aiQuestions             AIQuestion[]
+  dailyPerformances       DailyPerformance[]
+  aiRuns                  AIRun[]
+  reflectionTaskSnapshots ReflectionTaskSnapshot[]
+  
+  @@index([dailyEntryId])
+  @@map("ReflectionSnapshot")
+}
+
+model ReflectionTaskSnapshot {
+  reflectionTaskSnapshotId String       @id @default(uuid()) @map("reflection_task_snapshot_id") @db.Char(36)
+  title                    String       @db.VarChar(100)
+  priority                 TaskPriority
+  memo                     String?      @db.Text
+  status                   TaskStatus
+  completedAt              DateTime?    @map("completed_at") @db.DateTime(0)
+  reflectionSnapshotId     String       @map("reflection_snapshot_id") @db.Char(36)
+  taskId                   String       @map("task_id") @db.Char(36)
+
+  reflectionSnapshot ReflectionSnapshot             @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+  task               Task                           @relation(fields: [taskId], references: [taskId])
+  resultSnapshots    ReflectionTaskResultSnapshot[]
+
+  @@index([reflectionSnapshotId])
+  @@index([taskId])
+  @@map("ReflectionTaskSnapshot")
+}
+
+model ReflectionTaskResultSnapshot {
+  reflectionTaskResultSnapshotId String @id @default(uuid()) @map("reflection_task_result_snapshot_id") @db.Char(36)
+  content                        String @db.Text
+  reflectionTaskSnapshotId       String @map("reflection_task_snapshot_id") @db.Char(36)
+  taskResultId                   String @map("task_result_id") @db.Char(36)
+
+  reflectionTaskSnapshot ReflectionTaskSnapshot @relation(fields: [reflectionTaskSnapshotId], references: [reflectionTaskSnapshotId])
+  taskResult             TaskResult             @relation(fields: [taskResultId], references: [taskResultId])
+
+  @@index([reflectionTaskSnapshotId])
+  @@index([taskResultId])
+  @@map("ReflectionTaskResultSnapshot")
+}
+
+model AIQuestion {
+  aiQuestionId         String           @id @default(uuid()) @map("ai_question_id") @db.Char(36)
+  questionContent      String           @map("question_content") @db.Text
+  answer               String?          @db.Text
+  reason               String?          @db.Text
+  order                Int              @default(1)
+  status               AIQuestionStatus @default(WAITING)
+  createdAt            DateTime         @default(now()) @map("created_at") @db.DateTime(0)
+  reflectionSnapshotId String           @map("reflection_snapshot_id") @db.Char(36)
+
+  reflectionSnapshot ReflectionSnapshot @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+
+  @@index([reflectionSnapshotId])
+  @@map("AIQuestion")
+}
+
+model AIRun {
+  aiRunId              String      @id @default(uuid()) @map("ai_run_id") @db.Char(36)
+  promptType           PromptType
+  promptVersion        String      @map("prompt_version") @db.VarChar(50)
+  request              Json?
+  response             Json?
+  status               AiRunStatus
+  inputTokens          Int         @default(0) @map("input_tokens")
+  outputTokens         Int?        @map("output_tokens")
+  totalTokens          Int?        @map("total_tokens")
+  cost                 Decimal     @default(0) @db.Decimal(10, 4)
+  errorMessage         String?     @map("error_message") @db.Text
+  createdAt            DateTime    @default(now()) @map("created_at") @db.DateTime(0)
+  dashboardId          String?     @map("dashboard_id") @db.Char(36)
+  reflectionSnapshotId String?     @map("reflection_snapshot_id") @db.Char(36)
+
+  dashboard          Dashboard?          @relation(fields: [dashboardId], references: [dashboardId])
+  reflectionSnapshot ReflectionSnapshot? @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+  ruleEngineLogs     RuleEngineLog[]
+
+  @@index([dashboardId])
+  @@index([reflectionSnapshotId])
+  @@map("AIRun")
+}
+
+model RuleEngineLog {
+  ruleEngineLogId String   @id @default(uuid()) @map("rule_engine_log_id") @db.Char(36)
+  ruleName        String   @map("rule_name") @db.VarChar(100)
+  beforeText      String   @map("before_text") @db.Text
+  afterText       String   @map("after_text") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  aiRunId         String   @map("ai_run_id") @db.Char(36)
+
+  aiRun AIRun @relation(fields: [aiRunId], references: [aiRunId])
+
+  @@index([aiRunId])
+  @@map("RuleEngineLog")
+}
+
+model DailyPerformance {
+  dailyPerformanceId   String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
+  achievementRate      Int      @map("achievement_rate") @db.TinyInt
+  summary              String   @db.Text
+  growthInsight        Json     @map("growth_insight")
+  nextAction           Json     @map("next_action")
+  structuredResult     Json     @map("structured_result")
+  createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  
+  reflectionSnapshotId String   @map("reflection_snapshot_id") @db.Char(36)
+  userId String   @map("user_id") @db.Char(36)
+  dailyEntryId String @map("daily_entry_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+  dailyEntry DailyEntry    @relation(fields: [dailyEntryId], references: [dailyEntryId])
+  reflectionSnapshot ReflectionSnapshot     @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+  performanceItems   PerformanceItem[]
+  dashboardLinks     DashboardPerformance[]
+
+  @@index([userId])
+  @@index([dailyEntryId])
+  @@index([reflectionSnapshotId])
+  @@map("DailyPerformance")
+}
+
+model PerformanceItem {
+  performanceItemId  String   @id @default(uuid()) @map("performance_item_id") @db.Char(36)
+  output             Json
+  impact             Json
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  taskId             String   @map("task_id") @db.Char(36)
+  dailyPerformanceId String   @map("daily_performance_id") @db.Char(36)
+
+  task             Task             @relation(fields: [taskId], references: [taskId])
+  dailyPerformance DailyPerformance @relation(fields: [dailyPerformanceId], references: [dailyPerformanceId])
+
+  @@index([taskId])
+  @@index([dailyPerformanceId])
+  @@map("PerformanceItem")
+}
+
+model Dashboard {
+  dashboardId      String    @id @default(uuid()) @map("dashboard_id") @db.Char(36)
+  startDate        DateTime  @map("start_date") @db.Date
+  endDate          DateTime  @map("end_date") @db.Date
+  summary          String    @map("summary") @db.Text
+  journalDays      Int       @map("journal_days")
+  performanceCount Int       @map("performance_count")
+  tagCount         Int       @map("tag_count")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+  deletedAt        DateTime? @map("deleted_at") @db.DateTime(0)
+  userId           String    @map("user_id") @db.Char(36)
+
+  user              User                   @relation(fields: [userId], references: [userId])
+  aiRuns            AIRun[]
+  performances      DashboardPerformance[]
+  kpis              DashboardKPI[]
+  insights          DashboardInsight[]
+  tagAnalyses       DashboardTagAnalysis[]
+  weeklyReflections WeeklyReflection[]
+
+  @@index([userId])
+  @@map("Dashboard")
+}
+
+model DashboardPerformance {
+  dashboardId        String @map("dashboard_id") @db.Char(36)
+  dailyPerformanceId String @map("daily_performance_id") @db.Char(36)
+
+  dashboard        Dashboard        @relation(fields: [dashboardId], references: [dashboardId])
+  dailyPerformance DailyPerformance @relation(fields: [dailyPerformanceId], references: [dailyPerformanceId])
+
+  @@id([dashboardId, dailyPerformanceId])
+  @@map("DashboardPerformance")
+}
+
+model DashboardKPI {
+  dashboardKpiId String  @id @default(uuid()) @map("dashboard_kpi_id") @db.Char(36)
+  kpiName        String? @map("kpi_name") @db.VarChar(100)
+  progress       String? @db.Text
+  dashboardId    String  @map("dashboard_id") @db.Char(36)
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
+
+  @@index([dashboardId])
+  @@map("DashboardKPI")
+}
+
+model DashboardInsight {
+  dashboardInsightId String @id @default(uuid()) @map("dashboard_insight_id") @db.Char(36)
+  journalDays        Int    @map("journal_days")
+  performanceCount   Int    @map("performance_count")
+  tagCount           Int    @map("tag_count")
+  dashboardId        String @map("dashboard_id") @db.Char(36)
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
+
+  @@index([dashboardId])
+  @@map("DashboardInsight")
+}
+
+model DashboardTagAnalysis {
+  dashboardTagAnalysisId String    @id @default(uuid()) @map("dashboard_tag_analysis_id") @db.Char(36)
+  goal                   String?   @db.Text
+  expectedOutcome        String?   @map("expected_outcome") @db.Text
+  taskCount              Int?      @map("task_count")
+  periodStart            DateTime? @map("period_start") @db.Date
+  periodEnd              DateTime? @map("period_end") @db.Date
+  achievementStatus      String?   @map("achievement_status") @db.Text
+  dashboardId            String    @map("dashboard_id") @db.Char(36)
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
+
+  @@index([dashboardId])
+  @@map("DashboardTagAnalysis")
+}
+
+model WeeklyReflection {
+  weeklyReflectionId String   @id @default(uuid()) @map("weekly_reflection_id") @db.Char(36)
+  workSummary        String?  @map("work_summary") @db.Text
+  resourcesUsed      String?  @map("resources_used") @db.Text
+  learning           String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  dashboardId        String   @map("dashboard_id") @db.Char(36)
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
+
+  @@index([dashboardId])
+  @@map("WeeklyReflection")
+}

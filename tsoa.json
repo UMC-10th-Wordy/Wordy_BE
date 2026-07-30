@@ -1,0 +1,17 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/**/*.controller.ts"],
+  "spec": {
+    "outputDirectory": "src/generated",
+    "specVersion": 3,
+    "basePath": "/api/v1"
+  },
+  "routes": {
+    "routesDir": "src/generated",
+    "esm": true
+  },
+  "multerOpts": {
+    "limits": { "fileSize": 5242880 }
+  }
+}
