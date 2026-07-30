@@ -1323,7 +1323,7 @@ const models: TsoaRoute.Models = {
             "completedAt": {"dataType":"string"},
             "title": {"dataType":"string","required":true},
             "memo": {"dataType":"string"},
-            "taskResult": {"ref":"TaskResultDto","required":true},
+            "taskResult": {"ref":"TaskResultDto"},
         },
         "additionalProperties": false,
     },

@@ -40,7 +40,7 @@ export class TaskDto {
   @Example("Request/Response 예시 추가")
   memo?: string;
 
-  taskResult!: TaskResultDto;
+  taskResult?: TaskResultDto;
 }
 
 export class TaskResultDto {
