@@ -211,7 +211,8 @@ export class DailyPerformanceService {
   ): Promise<PerformanceDetailResponseDto> {
 
     const tasks =
-      performance.reflectionSnapshot.reflectionTaskSnapshots;
+      performance.reflectionSnapshot.reflectionTaskSnapshots
+        .filter(task => task.status === TaskStatus.COMPLETED);
 
     const taskPerformances =
       tasks.map((task) => {
