@@ -19,6 +19,9 @@ export const promptBInstructions = `
 
 지시 4: 업무별 Output은 수행 결과 중심으로, Impact는 업무가 만든 변화 중심으로 작성하세요.
 
+완료(COMPLETED)된 업무에 대해서만 Output과 Impact를 생성하세요.
+진행 중(IN_PROGRESS) 또는 미완료 업무는 taskPerformances에 포함하지 마세요.
+
 지시 5: 프로젝트 태그가 있는 업무는 핵심 KPI와 관련된 기여 문장을 우선 사용하세요.
 
 지시 6: KPI가 실제로 달성되었다고 단정하지 말고
@@ -55,6 +58,7 @@ JSON만 반환하세요.
 - taskPerformances는 반드시 배열로 반환하세요.
 - output과 impact는 각각 반드시 문자열 배열로 반환하세요.
 - Output 또는 Impact를 찾지 못한 경우 ["찾지 못했어요."] 형태로 반환하세요.
-- 입력에 존재하는 각 업무의 taskId를 그대로 사용하세요.
+- 완료(COMPLETED)된 업무만 taskPerformances에 포함하세요.
+- taskPerformances의 taskId는 입력에 존재하는 완료 업무의 taskId를 그대로 사용하세요.
 - 위 JSON 구조에 없는 필드는 추가하지 마세요.
 `;
