@@ -240,3 +240,71 @@ export const countMatchingTags = async (
     },
   });
 };
+
+// 제목 검색 (업무 일지 탭)
+export const searchByTitle = async (
+  userId: string,
+  keyword: string,
+  sort: "latest" | "oldest"
+) => {
+  return prisma.dailyEntry.findMany({
+    where: {
+      userId,
+      deletedAt: null,
+      reflectionTasks: {
+        some: { task: { title: { contains: keyword }, deletedAt: null } },
+      },
+    },
+    orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
+    select: {
+      dailyEntryId: true,
+      entryDate: true,
+      reflectionTasks: {
+        select: {
+          task: {
+            select: {
+              title: true,
+              deletedAt: true,
+              tag: { select: { tagName: true, color: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+// 태그 검색 (프로젝트 태그 탭)
+export const searchByTag = async (
+  userId: string,
+  keyword: string,
+  sort: "latest" | "oldest"
+) => {
+  return prisma.dailyEntry.findMany({
+    where: {
+      userId,
+      deletedAt: null,
+      reflectionTasks: {
+        some: {
+          task: { tag: { tagName: { contains: keyword } }, deletedAt: null },
+        },
+      },
+    },
+    orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
+    select: {
+      dailyEntryId: true,
+      entryDate: true,
+      reflectionTasks: {
+        select: {
+          task: {
+            select: {
+              title: true,
+              deletedAt: true,
+              tag: { select: { tagName: true, color: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+};
