@@ -112,6 +112,7 @@ export class PerformanceDetailResponseDto {
 
   @Example([
     {
+      taskId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
       tag: {
         tagName: "개발",
         color:"#4A90E2",
