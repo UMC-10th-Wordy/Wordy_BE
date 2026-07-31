@@ -153,8 +153,16 @@ export class DailyPerformanceService {
     }
 
     // PerformanceItem 저장
+    const completedTaskIds = new Set(
+      tasks
+        .filter(task => task.status === TaskStatus.COMPLETED)
+        .map(task => task.taskId),
+    );
+
     const taskPerformances =
-      promptB.taskPerformances ?? [];
+      (promptB.taskPerformances ?? []).filter(task =>
+        completedTaskIds.has(task.taskId),
+      );
 
     if (taskPerformances.length > 0) {
       await this.repository.createPerformanceItems(
