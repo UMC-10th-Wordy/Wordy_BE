@@ -1,9 +1,7 @@
 import {
   DailyPerformance,
-  PerformanceItem,
   Prisma,
   PrismaClient,
-  ReflectionSnapshot,
 } from "../../generated/prisma/client.js";
 import { TaskStatus } from "../tasks/task.dto.js";
 
@@ -25,13 +23,26 @@ type PerformanceList = Prisma.DailyPerformanceGetPayload<{
 
 export type DailyPerformanceDetail = Prisma.DailyPerformanceGetPayload<{
   include: {
-    reflectionSnapshot: true;
-    dailyEntry: true;
-    performanceItems: {
+    reflectionSnapshot: {
       include: {
-        task: {
+        reflectionTaskSnapshots: {
           include: {
-            tag: true;
+            resultSnapshots: true,
+            task: {
+              include: {
+                tag: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    dailyEntry:true;
+    performanceItems:{
+      include:{
+        task:{
+          include:{
+            tag:true;
           };
         };
       };
@@ -58,6 +69,16 @@ export class DailyPerformanceRepository {
       },
       include: {
         dailyEntry: true,
+        reflectionTaskSnapshots: {
+          include: {
+            resultSnapshots: true,
+            task: {
+              include: {
+                tag: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -111,7 +132,20 @@ export class DailyPerformanceRepository {
         userId,
       },
       include: {
-        reflectionSnapshot: true,
+        reflectionSnapshot: {
+          include: {
+            reflectionTaskSnapshots: {
+              include: {
+                resultSnapshots: true,
+                task: {
+                  include: {
+                    tag: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         dailyEntry: true,
         performanceItems: {
           include: {
@@ -130,6 +164,13 @@ export class DailyPerformanceRepository {
     userId: string,
     date: Date,
   ): Promise<DailyPerformanceDetail | null> {
+
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const nextDay = new Date(startOfDay);
+    nextDay.setDate(nextDay.getDate() + 1);
+
     return this.prisma.dailyPerformance.findFirst({
       where: {
         userId,
@@ -138,8 +179,24 @@ export class DailyPerformanceRepository {
           deletedAt: null,
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
       include: {
-        reflectionSnapshot: true,
+        reflectionSnapshot: {
+          include: {
+            reflectionTaskSnapshots: {
+              include: {
+                resultSnapshots: true,
+                task: {
+                  include: {
+                    tag: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         dailyEntry: true,
         performanceItems: {
           include: {
@@ -218,7 +275,7 @@ export class DailyPerformanceRepository {
     });
   }
 
-    async findDailyPerformanceByDailyEntry(
+  async findDailyPerformanceByDailyEntry(
     dailyEntryId: string,
     userId: string,
   ): Promise<DailyPerformance | null> {
@@ -227,6 +284,9 @@ export class DailyPerformanceRepository {
         dailyEntryId,
         userId,
       },
+      orderBy: {
+        createdAt: "desc"
+      }
     });
   }
 

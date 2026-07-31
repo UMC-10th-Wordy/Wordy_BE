@@ -3,7 +3,7 @@ import { LlmClient } from "../common/llm.client.js";
 import { ResponseParser } from "../common/response.parser.js";
 import { RuleEngine } from "../common/rule.engine.js";
 
-import { PerformanceRequestDto } from "./dto/api/performance.request.dto.js";
+import { PerformanceRequestDto, TaskDto } from "./dto/api/performance.request.dto.js";
 import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto.js";
 import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/performance.response.dto.js";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto.js";
@@ -374,6 +374,20 @@ export class PerformanceService {
           },
         });
     }
+  
+  // 기존 업무 스냅샷 제거 (재변환 대비)
+  await this.prisma.reflectionTaskSnapshot.deleteMany({
+    where: {
+      reflectionSnapshotId:
+        snapshot.reflectionSnapshotId,
+    },
+  });
+
+  // 변환 시점 업무 스냅샷 생성
+  await this.createReflectionTaskSnapshots(
+    snapshot.reflectionSnapshotId,
+    request.tasks,
+  );
 
   await this.prisma.aIRun.create({
     data: {
@@ -395,5 +409,37 @@ export class PerformanceService {
       taskPerformances: promptBResult.taskPerformances,
       reflectionSnapshotId: snapshot.reflectionSnapshotId,
     };
+  }
+
+    private async createReflectionTaskSnapshots(
+    reflectionSnapshotId: string,
+    tasks: TaskDto[],
+  ) {
+    for (const task of tasks) {
+      const taskSnapshot =
+        await this.prisma.reflectionTaskSnapshot.create({
+          data: {
+            reflectionSnapshotId,
+            taskId: task.taskId,
+            title: task.title,
+            priority: task.priority,
+            memo: task.memo ?? null,
+            status: task.status,
+            completedAt: task.completedAt
+              ? new Date(task.completedAt)
+              : null,
+          },
+        });
+
+      if (task.taskResult?.taskResultId) {
+        await this.prisma.reflectionTaskResultSnapshot.create({
+          data: {
+            reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
+            taskResultId: task.taskResult.taskResultId,
+            content: task.taskResult.content,
+          },
+        });
+      }
+    }
   }
 }
