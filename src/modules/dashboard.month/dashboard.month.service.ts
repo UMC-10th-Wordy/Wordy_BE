@@ -14,6 +14,8 @@ import { ResponseParser } from "../ai/common/response.parser.js";
 import { RuleEngine } from "../ai/common/rule.engine.js";
 import { prisma } from "../../db.config.js";
 import { verifyAccessToken } from "../../auth.config.js"; // 인증토큰 받아오기
+import { ApiError } from "../../common/errors/api.error.js";
+import { ErrorCode } from "../../common/errors/error.code.js";
 
 const REQUIRED_COUNT = 3; // 월간 생성에 필요한 최소 주간 대시보드 수
 
@@ -40,7 +42,20 @@ export const getMonthlyEligibility = async (
   userId: string,
   baseDate?: string
 ) => {
-  const base = baseDate ? new Date(baseDate) : new Date();
+  // baseDate가 있으면 그 날짜 기준, 없으면 오늘 기준
+  let base = new Date();
+  if (baseDate) {
+    const parsed = new Date(baseDate);
+    if (isNaN(parsed.getTime())) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "baseDate 형식이 올바르지 않습니다. (예: 2026-07-31)"
+      );
+    }
+    base = parsed;
+  }
+
   const { start, end } = getMonthRange(base);
 
   const weeklyDashboards = await findWeeklyDashboards(userId, start, end);
@@ -59,7 +74,6 @@ export const getMonthlyEligibility = async (
     })),
   };
 };
-
 // 월간 대시보드 목록 조회
 export const getMonthlyDashboardList = async (userId: string) => {
   const dashboards = await findMonthlyDashboards(userId);
