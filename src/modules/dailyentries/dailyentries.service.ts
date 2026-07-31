@@ -3,6 +3,7 @@ import {
   findAllEntryDates,
   findEntriesWithTags,
   findEntriesByMonth,
+  findEntryByDate,
   findEntryDetail,
   findEntryById,
   softDeleteEntry,
@@ -14,10 +15,14 @@ import type {
   DailyEntriesSummaryResponse,
   MonthlyRecordItem,
   DailyRecordItem,
+  DailyEntryByDateResponse,
   DailyEntriesDetailResponse,
   DailyEntriesSearchResponse,
   TagChip,
 } from "./dailyentries.dto.js";
+
+import { ApiError } from "../../common/errors/api.error.js";
+import { ErrorCode } from "../../common/errors/error.code.js";
 
 // 공통 헬퍼
 
@@ -254,6 +259,56 @@ export const getMonthlyEntries = async (
       summary: e.reflectionContent ?? null,
     };
   });
+};
+
+// 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)
+export const getDailyEntryByDate = async (
+  userId: string,
+  date: string,
+): Promise<DailyEntryByDateResponse | null> => {
+  const entryDate = parseDate(date);
+
+  const entry = await findEntryByDate(
+    userId,
+    entryDate,
+  );
+
+  if (!entry) {
+    return null;
+  }
+
+  return {
+    dailyEntryId: entry.dailyEntryId,
+    entryDate: date,
+    reflectionContent: entry.reflectionContent,
+  };
+};
+
+const parseDate = (date: string): Date => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new ApiError(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      "날짜는 YYYY-MM-DD 형식으로 입력해주세요.",
+    );
+  }
+
+  const parsed = new Date(
+    `${date}T00:00:00.000Z`,
+  );
+
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== date
+  ) {
+    throw new ApiError(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      "유효하지 않은 날짜입니다.",
+    );
+  }
+
+  return parsed;
 };
 
 // 4) 일자 상세 --> 스냅샷 기반

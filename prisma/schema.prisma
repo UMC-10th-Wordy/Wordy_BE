@@ -383,6 +383,9 @@ model RuleEngineLog {
 model DailyPerformance {
   dailyPerformanceId   String   @id @default(uuid()) @map("daily_performance_id") @db.Char(36)
   achievementRate      Int      @map("achievement_rate") @db.TinyInt
+  totalTaskCount       Int @map("total_task_count")
+  completedTaskCount   Int @map("completed_task_count")
+  incompleteTasks Json @map("incomplete_tasks")
   summary              String   @db.Text
   growthInsight        Json     @map("growth_insight")
   nextAction           Json     @map("next_action")
