@@ -6,8 +6,8 @@ import {
   findEntryDetail,
   findEntryById,
   softDeleteEntry,
-  searchEntries,
-  countMatchingTags,
+  searchByTitle,
+  searchByTag,
 } from "./dailyentries.repository.js";
 
 import type {
@@ -375,35 +375,43 @@ export const searchDailyEntries = async (
 ): Promise<DailyEntriesSearchResponse> => {
   const trimmed = (keyword ?? "").trim();
   if (trimmed.length === 0) {
-    return { keyword: "", entryCount: 0, tagCount: 0, results: [] };
+    return {
+      keyword: "",
+      journalTab: { count: 0, results: [] },
+      tagTab: { count: 0, results: [] },
+    };
   }
 
-  const [entries, tagCount] = await Promise.all([
-    searchEntries(userId, trimmed, sort),
-    countMatchingTags(userId, trimmed),
+  const [titleEntries, tagEntries] = await Promise.all([
+    searchByTitle(userId, trimmed, sort),
+    searchByTag(userId, trimmed, sort),
   ]);
 
-  const results = entries.map((e) => {
-    const tasks = e.reflectionTasks
-      .map((rt) => rt.task)
-      .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+  // 공통 매핑 함수
+  const toResults = (entries: typeof titleEntries) =>
+    entries.map((e) => {
+      const tasks = e.reflectionTasks
+        .map((rt) => rt.task)
+        .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
 
-    const tagList = tasks
-      .filter((t) => t.tag)
-      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+      const tagList = tasks
+        .filter((t) => t.tag)
+        .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
 
-    return {
-      dailyEntryId: e.dailyEntryId,
-      entryDate: toDateStr(e.entryDate),
-      tags: pickTags(tagList),
-      title: tasks[0]?.title ?? null,
-    };
-  });
+      return {
+        dailyEntryId: e.dailyEntryId,
+        entryDate: toDateStr(e.entryDate),
+        tags: pickTags(tagList),
+        title: tasks[0]?.title ?? null,
+      };
+    });
+
+  const journalResults = toResults(titleEntries);
+  const tagResults = toResults(tagEntries);
 
   return {
     keyword: trimmed,
-    entryCount: results.length,
-    tagCount,
-    results,
+    journalTab: { count: journalResults.length, results: journalResults },
+    tagTab: { count: tagResults.length, results: tagResults },
   };
 };

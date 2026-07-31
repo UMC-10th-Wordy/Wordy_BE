@@ -233,48 +233,34 @@ export class AttachmentItem {
 
 
 // 5. 검색
-export class DailyEntriesSearchResponse {
-  @Example("JWT")
-  keyword!: string;
-
-  @Example(5)
-  entryCount!: number; // "업무 일지" 탭 카운트
-
-  @Example(2)
-  tagCount!: number; // "프로젝트 태그" 탭 카운트
-
-  @Example([
-    {
-      dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
-      entryDate: "2026-08-21",
-      tags: [
-        {
-          tagName: "백엔드",
-          color: "#4A90E2",
-        },
-      ],
-      title: "JWT 인증 구현",
-    },
-  ])
-  results!: SearchResultItem[];
-}
-
-
+// 검색 결과 항목 (탭 안의 개별 일지)
 export class SearchResultItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
 
-  @Example("2026-08-21")
+  @Example("2026-06-21")
   entryDate!: string;
 
-  @Example([
-    {
-      tagName: "백엔드",
-      color: "#4A90E2",
-    },
-  ])
+  @Example([{ tagName: "온보딩 리뉴얼", color: "#10B981" }])
   tags!: TagChip[];
 
-  @Example("JWT 인증 구현")
-  title!: string | null; // 대표 업무 제목
+  @Example("Product Strategy Alignment 회의 준비")
+  title!: string | null;
+}
+
+// 탭 하나 (건수 + 결과 목록)
+export class SearchTab {
+  @Example(7)
+  count!: number;
+
+  results!: SearchResultItem[];
+}
+
+// 검색 응답 (업무 일지 탭 / 프로젝트 태그 탭)
+export class DailyEntriesSearchResponse {
+  @Example("회의")
+  keyword!: string;
+
+  journalTab!: SearchTab; // 업무 일지 탭 (제목 매칭)
+  tagTab!: SearchTab;     // 프로젝트 태그 탭 (태그 매칭)
 }

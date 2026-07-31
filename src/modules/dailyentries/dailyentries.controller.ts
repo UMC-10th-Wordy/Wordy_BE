@@ -126,13 +126,13 @@ export class DailyEntriesController extends Controller {
    */
   @Get("search")
   @Example<ApiResponse<DailyEntriesSearchResponse>>({
-    success: true,
-    code: "S200",
-    message: "조회에 성공했습니다.",
-    result: {
-      keyword: "회의",
-      entryCount: 7,
-      tagCount: 3,
+  success: true,
+  code: "S200",
+  message: "조회에 성공했습니다.",
+  result: {
+    keyword: "회의",
+    journalTab: {
+      count: 7,
       results: [
         {
           dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
@@ -142,6 +142,18 @@ export class DailyEntriesController extends Controller {
         },
       ],
     },
+    tagTab: {
+      count: 3,
+      results: [
+        {
+          dailyEntryId: "660e8400-e29b-41d4-a716-446655440001",
+          entryDate: "2026-06-20",
+          tags: [{ tagName: "회의", color: "#3B82F6" }],
+          title: "주간 회의록 정리",
+        },
+      ],
+    },
+  },
   })
   public async search(
   @Header("Authorization") authorization: string | undefined,
