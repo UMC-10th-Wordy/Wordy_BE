@@ -91,6 +91,27 @@ export const findEntriesByMonth = async (
 };
 
 // ============================================================
+// 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)
+// ============================================================
+export const findEntryByDate = async (
+  userId: string,
+  entryDate: Date,
+) => {
+  return prisma.dailyEntry.findFirst({
+    where: {
+      userId,
+      entryDate,
+      deletedAt: null,
+    },
+    select: {
+      dailyEntryId: true,
+      entryDate: true,
+      reflectionContent: true,
+    },
+  });
+};
+
+// ============================================================
 // 일자 상세 => 스냅샷 기반으로 변경
 // ============================================================
 export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
