@@ -3,6 +3,7 @@ import {
   getDailyEntriesSummary,
   getMonthlyList,
   getMonthlyEntries,
+  getDailyEntryByDate,
   getDailyEntriesDetail,
   removeDailyEntry,
   searchDailyEntries,
@@ -11,6 +12,7 @@ import {
   DailyEntriesSummaryResponse,
   MonthlyRecordItem,
   DailyRecordItem,
+  DailyEntryByDateResponse,
   DailyEntriesDetailResponse,
   DailyEntriesSearchResponse,
 } from "./dailyentries.dto.js";
@@ -155,6 +157,63 @@ export class DailyEntriesController extends Controller {
   const userId = verifyAccessToken(token).userId;
   const data = await searchDailyEntries(userId, query, sort);
   return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
+}
+
+/**
+ * 날짜를 기준으로 저장된 일지를 조회합니다.
+ * 오늘의 업무 화면 재진입 시 저장된 회고를 복원하는 용도입니다.
+ *
+ * @summary 날짜별 일지 조회
+ * @param date 조회할 날짜 (YYYY-MM-DD)
+ */
+@Get()
+@Example<ApiResponse<DailyEntryByDateResponse | null>>({
+  success: true,
+  code: "S200",
+  message: "날짜별 일지 조회가 완료되었습니다.",
+  result: {
+    dailyEntryId:
+      "550e8400-e29b-41d4-a716-446655440000",
+    entryDate: "2026-07-31",
+    reflectionContent:
+      "오늘 업무에서 잘한 점과 아쉬운 점을 정리했다.",
+  },
+})
+public async getByDate(
+  @Header("Authorization")
+  authorization: string | undefined,
+
+  @Query()
+  date: string,
+): Promise<
+  ApiResponse<DailyEntryByDateResponse | null>
+> {
+  const token = authorization?.startsWith(
+    "Bearer ",
+  )
+    ? authorization.slice(7)
+    : null;
+
+  if (!token) {
+    throw new ApiError(
+      ErrorCode.UNAUTHORIZED.status,
+      ErrorCode.UNAUTHORIZED.code,
+      "인증이 필요합니다.",
+    );
+  }
+
+  const userId = verifyAccessToken(token).userId;
+
+  const data = await getDailyEntryByDate(
+    userId,
+    date,
+  );
+
+  return success(
+    SuccessCode.GET_SUCCESS.code,
+    "날짜별 일지 조회가 완료되었습니다.",
+    data,
+  );
 }
 
   /**

@@ -124,8 +124,19 @@ export class DailyRecordItem {
   summary!: string | null; // 하루 한 줄 요약 (reflectionContent 기반)
 }
 
+// 4. 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)
+export class DailyEntryByDateResponse {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  dailyEntryId!: string;
 
-// 4. 일자 상세
+  @Example("2026-07-31")
+  entryDate!: string;
+
+  @Example("오늘 업무에서 잘한 점과 아쉬운 점을 정리했다.")
+  reflectionContent!: string;
+}
+
+// 5. 일자 상세
 export class DailyEntriesDetailResponse {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
@@ -232,7 +243,7 @@ export class AttachmentItem {
 }
 
 
-// 5. 검색
+// 6. 검색
 export class DailyEntriesSearchResponse {
   @Example("JWT")
   keyword!: string;
