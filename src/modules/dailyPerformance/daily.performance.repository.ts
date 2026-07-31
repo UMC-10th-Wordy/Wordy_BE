@@ -226,7 +226,6 @@ export class DailyPerformanceRepository {
       where: {
         dailyEntryId,
         userId,
-        deletedAt: null,
       },
     });
   }
