@@ -152,19 +152,17 @@ export const searchEntries = async (
       userId,
       deletedAt: null,
       OR: [
-        { reflectionContent: { contains: keyword } },
+        // 업무 일지 제목
         {
           reflectionTasks: {
             some: { task: { title: { contains: keyword }, deletedAt: null } },
           },
         },
+        // 프로젝트 태그 이름
         {
           reflectionTasks: {
             some: {
-              task: {
-                taskResult: { content: { contains: keyword }, deletedAt: null },
-                deletedAt: null,
-              },
+              task: { tag: { tagName: { contains: keyword } }, deletedAt: null },
             },
           },
         },
