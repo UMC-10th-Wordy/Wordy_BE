@@ -94,9 +94,11 @@ export class DashboardService {
       await this.prisma.dailyPerformance.findMany({
         where: {
           userId,
-          createdAt: {
-            gte: new Date(request.startDate),
-            lte: new Date(request.endDate),
+          dailyEntry: {
+            entryDate: {
+              gte: new Date(request.startDate),
+              lte: new Date(request.endDate),
+            },
           },
         },
         include: {
