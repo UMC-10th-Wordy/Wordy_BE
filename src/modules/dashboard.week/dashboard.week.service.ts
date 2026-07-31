@@ -17,6 +17,8 @@ import { ResponseParser } from "../ai/common/response.parser.js";
 import { RuleEngine } from "../ai/common/rule.engine.js";
 import { prisma } from "../../db.config.js";
 import { verifyAccessToken } from "../../auth.config.js"; // 인증토큰 받아오기
+import { ApiError } from "../../common/errors/api.error.js";
+import { ErrorCode } from "../../common/errors/error.code.js";
 
 const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
 
@@ -45,7 +47,19 @@ const toDateStr = (d: Date) => {
 // 생성 조건 충족 여부 확인 (baseDate: 조회할 주의 기준 날짜)
 export const getEligibility = async (userId: string, baseDate?: string) => {
   // baseDate가 있으면 그 날짜 기준, 없으면 오늘 기준
-  const base = baseDate ? new Date(baseDate) : new Date();
+  let base = new Date();
+  if (baseDate) {
+    const parsed = new Date(baseDate);
+    if (isNaN(parsed.getTime())) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "baseDate 형식이 올바르지 않습니다. (예: 2026-07-31)"
+      );
+    }
+    base = parsed;
+  }
+
   const { start, end } = getWeekRange(base);
 
   const entries = await findDailyEntries(userId, start, end);

@@ -1,11 +1,10 @@
 import { verifyAccessToken } from "../../auth.config.js";
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
-import { Prisma } from "../../generated/prisma/client.js";
 import { TaskStatus } from "../../generated/prisma/enums.js";
 import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
-import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, PerformanceDetailResponseDto, PerformanceListResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
+import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, IncompleteTaskDto, PerformanceDetailResponseDto, PerformanceListResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
 import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository.js";
 
 export class DailyPerformanceService {
@@ -102,22 +101,35 @@ export class DailyPerformanceService {
 
     let performance;
 
+    const incompleteTasks =
+    tasks.filter(
+      task => task.status === TaskStatus.IN_PROGRESS
+    );
+
     const performanceData = {
-      reflectionSnapshotId:
-        snapshot.reflectionSnapshotId,
-
+      reflectionSnapshotId: snapshot.reflectionSnapshotId,
       achievementRate,
+      totalTaskCount: tasks.length,
+      completedTaskCount: completedCount,
+      incompleteTasks:
+        JSON.parse(JSON.stringify(
+          incompleteTasks.map(task => ({
+            taskId: task.taskId,
+            title: task.title,
+            tag: task.tag
+              ? {
+                  tagName: task.tag.tagName,
+                  color: task.tag.color,
+                }
+              : null,
+          }))
+        )),
 
-      // 사용자가 수정한 값
       summary: request.summary,
       growthInsight: request.growthInsights,
-
-      // AI 생성 결과
       nextAction: promptB.nextActions,
-      structuredResult:
-        JSON.parse(JSON.stringify(promptA)),
+      structuredResult: JSON.parse(JSON.stringify(promptA)),
     };
-
 
     // 기존 성과 있으면 갱신
     if (existingPerformance) {
@@ -199,18 +211,6 @@ export class DailyPerformanceService {
         userId,
       );
 
-    const incompleteTasks =
-      tasks.filter(
-        (task) => task.status === TaskStatus.IN_PROGRESS,
-      );
-
-    const completedTaskCount =
-      tasks.filter(
-        (task) => task.status === TaskStatus.COMPLETED,
-      ).length;
-
-    const totalTaskCount = tasks.length;
-
     const taskPerformances =
       tasks.map((task) => {
 
@@ -258,20 +258,14 @@ export class DailyPerformanceService {
     return {
       dailyPerformanceId: performance.dailyPerformanceId,
       achievementRate: performance.achievementRate,
-      totalTaskCount,
-      completedTaskCount,
-      incompleteTasks:
-        incompleteTasks.map((task) => ({
-          tag: task.tag
-            ? {
-                tagName: task.tag.tagName,
-                color: task.tag.color,
-              }
-            : null,
-          title: task.title,
-        })),
-
+      totalTaskCount: performance.totalTaskCount,
+      completedTaskCount: performance.completedTaskCount,
       summary: performance.summary,
+
+      incompleteTasks:
+      Array.isArray(performance.incompleteTasks)
+        ? performance.incompleteTasks as unknown as IncompleteTaskDto[]
+        : [],
 
       growthInsights:
         Array.isArray(performance.growthInsight)

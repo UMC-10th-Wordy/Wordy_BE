@@ -136,8 +136,10 @@ export class TaskResultService {
 
     return Promise.all(
       files.map(async (file) => {
-        const extension = path.extname(file.originalname);
+        const decodedFileName = this.decodeFileName(file.originalname);
+        const extension = path.extname(decodedFileName);
         const destination = `task-results/${randomUUID()}${extension}`;
+
         const fileUrl = await uploadToGcs(
           file.buffer,
           destination,
@@ -149,11 +151,35 @@ export class TaskResultService {
             ? FileType.IMG
             : FileType.FILE,
           fileUrl,
-          fileName: file.originalname,
+          fileName: decodedFileName,
         };
       }),
     );
   }
+
+  /**
+ * multipart/form-data에서 Latin-1로 해석된 UTF-8 파일명을 복원
+ */
+private decodeFileName(originalName: string): string {
+  // 이미 정상적인 한글·유니코드 파일명이면 그대로 사용
+  if (
+    [...originalName].some(
+      (character) => character.charCodeAt(0) > 255,
+    )
+  ) {
+    return originalName;
+  }
+
+  const decodedFileName = Buffer.from(
+    originalName,
+    'latin1',
+  ).toString('utf8');
+
+  // 잘못된 변환으로 대체 문자가 생기면 원본 유지
+  return decodedFileName.includes('\uFFFD')
+    ? originalName
+    : decodedFileName;
+}
 
   private getUserIdFromAuthorization(
     authorization: string | undefined,

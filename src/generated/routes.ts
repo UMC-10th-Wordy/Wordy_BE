@@ -20,9 +20,9 @@ import { MonthlyDashboardController } from './../modules/dashboard.month/dashboa
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DailyPerformanceController } from './../modules/dailyPerformance/daily.performance.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DailyEntriesWriteController } from './../modules/dailyEntries/dailyentries.write.controller.js';
+import { DailyEntriesWriteController } from './../modules/dailyentries/dailyentries.write.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DailyEntriesController } from './../modules/dailyEntries/dailyentries.controller.js';
+import { DailyEntriesController } from './../modules/dailyentries/dailyentries.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../modules/auth/auth.controller.js';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -865,6 +865,7 @@ const models: TsoaRoute.Models = {
     "IncompleteTaskDto": {
         "dataType": "refObject",
         "properties": {
+            "taskId": {"dataType":"string","required":true},
             "tag": {"dataType":"union","subSchemas":[{"ref":"TagInfoDto"},{"dataType":"enum","enums":[null]}],"required":true},
             "title": {"dataType":"string","required":true},
         },
@@ -1128,6 +1129,27 @@ const models: TsoaRoute.Models = {
             "code": {"dataType":"string","required":true},
             "message": {"dataType":"string","required":true},
             "result": {"dataType":"union","subSchemas":[{"ref":"DailyEntriesSearchResponse"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DailyEntryByDateResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "dailyEntryId": {"dataType":"string","required":true},
+            "entryDate": {"dataType":"string","required":true},
+            "reflectionContent": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_DailyEntryByDateResponse-or-null_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "code": {"dataType":"string","required":true},
+            "message": {"dataType":"string","required":true},
+            "result": {"dataType":"union","subSchemas":[{"dataType":"union","subSchemas":[{"ref":"DailyEntryByDateResponse"},{"dataType":"enum","enums":[null]}]},{"dataType":"enum","enums":[null]}],"required":true},
         },
         "additionalProperties": false,
     },
@@ -2705,6 +2727,37 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'search',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsDailyEntriesController_getByDate: Record<string, TsoaRoute.ParameterSchema> = {
+                authorization: {"in":"header","name":"Authorization","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
+                date: {"in":"query","name":"date","required":true,"dataType":"string"},
+        };
+        app.get('/daily-entries',
+            ...(fetchMiddlewares<RequestHandler>(DailyEntriesController)),
+            ...(fetchMiddlewares<RequestHandler>(DailyEntriesController.prototype.getByDate)),
+
+            async function DailyEntriesController_getByDate(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsDailyEntriesController_getByDate, request, response });
+
+                const controller = new DailyEntriesController();
+
+              await templateService.apiHandler({
+                methodName: 'getByDate',
                 controller,
                 response,
                 next,

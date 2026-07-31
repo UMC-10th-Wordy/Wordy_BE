@@ -48,6 +48,9 @@ export class PerformanceListResponseDto {
 }
 
 export class IncompleteTaskDto {
+  @Example("a1b2c3d4-e5f6-7890-abcd-123456789012")
+  taskId!: string;
+
   @Example({
     tagName: "개발",
     color: "#4A90E2",
@@ -109,7 +112,11 @@ export class PerformanceDetailResponseDto {
 
   @Example([
     {
-      tag: "개발",
+      taskId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+      tag: {
+        tagName: "개발",
+        color:"#4A90E2",
+      },
       title: "AI 프롬프트 개선",
     },
   ])
