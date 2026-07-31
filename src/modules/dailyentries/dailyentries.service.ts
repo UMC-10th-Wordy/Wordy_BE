@@ -266,60 +266,90 @@ export const getDailyEntriesDetail = async (
     throw new Error("해당 일지를 찾을 수 없습니다.");
   }
 
-  const latestSnapshot = entry.reflectionSnapshots[0];
-
+  // 회고는 변환 여부와 무관하게 항상 노출
   const base = {
     dailyEntryId: entry.dailyEntryId,
-    dailyPerformanceId: entry.reflectionSnapshots[0]?.dailyPerformances[0]?.dailyPerformanceId ?? null,
     entryDate: toDateStr(entry.entryDate),
     reflectionContent: entry.reflectionContent,
   };
 
   const snapshot = entry.reflectionSnapshots[0];
 
-  if (!snapshot) {
-    return {
-      ...base,
-      converted: false,
-      completedCount: 0,
-      incompleteCount: 0,
-      tasks: [],
-    };
+  // 성과 미리보기 ID (변환됐고 성과가 있으면, 없으면 null)
+  const dailyPerformanceId =
+    snapshot?.dailyPerformances[0]?.dailyPerformanceId ?? null;
+
+  let tasks;
+  let converted: boolean;
+
+  if (snapshot) {
+    // 변환됨: 스냅샷(그 시점 박제) 기준
+    converted = true;
+    tasks = snapshot.reflectionTaskSnapshots.map((ts) => {
+      const rs = ts.resultSnapshots[0];
+      const result = rs
+        ? {
+            taskResultId: rs.taskResult.taskResultId,
+            content: rs.content,
+            attachments: rs.taskResult.attachments.map((a) => ({
+              fileType: a.fileType,
+              fileUrl: a.fileUrl,
+              fileName: a.fileName,
+            })),
+          }
+        : null;
+      return {
+        taskId: ts.taskId,
+        tag: ts.task?.tag
+          ? { tagName: ts.task.tag.tagName, color: ts.task.tag.color }
+          : null,
+        title: ts.title,
+        memo: ts.memo ?? null,
+        priority: ts.priority,
+        status: ts.status,
+        result,
+      };
+    });
+  } else {
+    // 변환 전: 현재 Task 기준
+    converted = false;
+    tasks = entry.reflectionTasks
+      .map((rt) => rt.task)
+      .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt)
+      .map((t) => {
+        const tr = t.taskResult;
+        const result =
+          tr && !tr.deletedAt
+            ? {
+                taskResultId: tr.taskResultId,
+                content: tr.content,
+                attachments: tr.attachments.map((a) => ({
+                  fileType: a.fileType,
+                  fileUrl: a.fileUrl,
+                  fileName: a.fileName,
+                })),
+              }
+            : null;
+        return {
+          taskId: t.taskId,
+          tag: t.tag ? { tagName: t.tag.tagName, color: t.tag.color } : null,
+          title: t.title,
+          memo: t.memo ?? null,
+          priority: t.priority,
+          status: t.status,
+          result,
+        };
+      });
   }
 
-  const tasks = snapshot.reflectionTaskSnapshots.map((ts) => {
-    const rs = ts.resultSnapshots[0];
-    const result = rs
-      ? {
-          taskResultId: rs.taskResult.taskResultId,
-          content: rs.content,
-          attachments: rs.taskResult.attachments.map((a) => ({
-            fileType: a.fileType,
-            fileUrl: a.fileUrl,
-            fileName: a.fileName,
-          })),
-        }
-      : null;
-
-    return {
-      taskId: ts.taskId,
-      tag: ts.task?.tag
-        ? { tagName: ts.task.tag.tagName, color: ts.task.tag.color }
-        : null,
-      title: ts.title,
-      memo: ts.memo ?? null,
-      priority: ts.priority,
-      status: ts.status,
-      result,
-    };
-  });
-
+  // 완료/미완료는 두 경우 모두 tasks의 status 기준
   const completedCount = tasks.filter((t) => t.status === "COMPLETED").length;
   const incompleteCount = tasks.length - completedCount;
 
   return {
     ...base,
-    converted: true,
+    dailyPerformanceId,
+    converted,
     completedCount,
     incompleteCount,
     tasks,

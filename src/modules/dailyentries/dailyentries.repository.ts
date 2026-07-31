@@ -97,10 +97,14 @@ export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
   return prisma.dailyEntry.findFirst({
     where: { dailyEntryId, userId, deletedAt: null },
     include: {
+      // 변환됨: 스냅샷 (그 시점 박제) + 성과 미리보기 ID
       reflectionSnapshots: {
         orderBy: { createdAt: "desc" },
         include: {
-          dailyPerformances: true,
+          dailyPerformances: {
+            orderBy: { createdAt: "desc" },
+            select: { dailyPerformanceId: true },
+          },
           reflectionTaskSnapshots: {
             include: {
               task: { include: { tag: true } },
@@ -111,6 +115,21 @@ export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
                       attachments: { where: { deletedAt: null } },
                     },
                   },
+                },
+              },
+            },
+          },
+        },
+      },
+      // 변환 전: 현재 Task
+      reflectionTasks: {
+        include: {
+          task: {
+            include: {
+              tag: true,
+              taskResult: {
+                include: {
+                  attachments: { where: { deletedAt: null } },
                 },
               },
             },
