@@ -9,6 +9,7 @@ import {
   softDeleteEntry,
   searchByTitle,
   searchByTag,
+  countMatchingTags,
 } from "./dailyentries.repository.js";
 
 import type {
@@ -437,29 +438,27 @@ export const searchDailyEntries = async (
     };
   }
 
-  const [titleEntries, tagEntries] = await Promise.all([
+  const [titleEntries, tagEntries, tagCount] = await Promise.all([
     searchByTitle(userId, trimmed, sort),
     searchByTag(userId, trimmed, sort),
+    countMatchingTags(userId, trimmed),
   ]);
 
-  // 공통 매핑 함수
   const toResults = (entries: typeof titleEntries) =>
-    entries.map((e) => {
-      const tasks = e.reflectionTasks
-        .map((rt) => rt.task)
-        .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+  entries.map((e) => {
+    const tags = e.reflectionTasks
+      .map((rt) => rt.task)
+      .filter((t): t is NonNullable<typeof t> => !!t)
+      .filter((t) => t.tag)
+      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
 
-      const tagList = tasks
-        .filter((t) => t.tag)
-        .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
-
-      return {
-        dailyEntryId: e.dailyEntryId,
-        entryDate: toDateStr(e.entryDate),
-        tags: pickTags(tagList),
-        title: tasks[0]?.title ?? null,
-      };
-    });
+    return {
+      dailyEntryId: e.dailyEntryId,
+      entryDate: toDateStr(e.entryDate),
+      tags: pickTags(tags),
+      title: e.title,  // ← 일지 title (task 아님)
+    };
+  });
 
   const journalResults = toResults(titleEntries);
   const tagResults = toResults(tagEntries);
@@ -467,6 +466,6 @@ export const searchDailyEntries = async (
   return {
     keyword: trimmed,
     journalTab: { count: journalResults.length, results: journalResults },
-    tagTab: { count: tagResults.length, results: tagResults },
+    tagTab: { count: tagCount, results: tagResults },
   };
 };

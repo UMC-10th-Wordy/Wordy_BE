@@ -218,6 +218,7 @@ model Task {
 
 model DailyEntry {
   dailyEntryId      String    @id @default(uuid()) @map("daily_entry_id") @db.Char(36)
+  title             String    @default("") @map("title") @db.VarChar(255)  // 추가
   reflectionContent String    @map("reflection_content") @db.Text
   entryDate         DateTime  @map("entry_date") @db.Date
   createdAt         DateTime  @default(now()) @map("created_at") @db.DateTime(0)

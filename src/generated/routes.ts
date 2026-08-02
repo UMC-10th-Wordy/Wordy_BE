@@ -1111,13 +1111,21 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SearchTab": {
+        "dataType": "refObject",
+        "properties": {
+            "count": {"dataType":"double","required":true},
+            "results": {"dataType":"array","array":{"dataType":"refObject","ref":"SearchResultItem"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "DailyEntriesSearchResponse": {
         "dataType": "refObject",
         "properties": {
             "keyword": {"dataType":"string","required":true},
-            "entryCount": {"dataType":"double","required":true},
-            "tagCount": {"dataType":"double","required":true},
-            "results": {"dataType":"array","array":{"dataType":"refObject","ref":"SearchResultItem"},"required":true},
+            "journalTab": {"ref":"SearchTab","required":true},
+            "tagTab": {"ref":"SearchTab","required":true},
         },
         "additionalProperties": false,
     },
