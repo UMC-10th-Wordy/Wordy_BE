@@ -33,6 +33,7 @@ export const findDailyEntryByUserIdAndDate = async (
 export const createDailyEntryWithTasks = async (
   userId: string,
   entryDate: Date,
+  title: string,
   reflectionContent: string,
   taskIds: string[],
 ) => {
@@ -40,6 +41,7 @@ export const createDailyEntryWithTasks = async (
     data: {
       userId,
       entryDate,
+      title,
       reflectionContent,
 
       reflectionTasks: {

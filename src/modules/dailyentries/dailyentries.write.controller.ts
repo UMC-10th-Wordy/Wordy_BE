@@ -36,6 +36,7 @@ export class DailyEntriesWriteController extends Controller {
     result: {
       dailyEntryId:
         '550e8400-e29b-41d4-a716-446655440000',
+      title: '회의 준비 및 API 설계',
       entryDate: '2026-07-24',
       reflectionContent:
         '오늘 업무 결과 API 구현과 Swagger 문서화를 완료했다.',

@@ -56,6 +56,7 @@ export const createDailyEntry = async (
 
     return {
       dailyEntryId: updatedEntry.dailyEntryId,
+      title: updatedEntry.title,
       entryDate: body.entryDate,
       reflectionContent: updatedEntry.reflectionContent,
       linkedTaskCount: updatedEntry.reflectionTasks.length,
@@ -73,12 +74,14 @@ export const createDailyEntry = async (
     const dailyEntry = await createDailyEntryWithTasks(
     userId,
     entryDate,
+    (body.title ?? "").trim(),
     body.reflectionContent.trim(),
     taskIds,
     );
 
     return {
     dailyEntryId: dailyEntry.dailyEntryId,
+    title: dailyEntry.title,
     entryDate: body.entryDate,
     reflectionContent: dailyEntry.reflectionContent,
     linkedTaskCount: dailyEntry.reflectionTasks.length,
