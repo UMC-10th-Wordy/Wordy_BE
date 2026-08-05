@@ -22,7 +22,9 @@ type PerformanceItem = {
   impact: unknown;
   task: {
     tag: {
+      tagId: string;
       tagName: string;
+      color: string | null;
       projectName: string | null;
       projectPurpose: string | null;
       expectedOutcome: string | null;
@@ -138,6 +140,10 @@ export class DashboardService {
         ),
     };
 
+    const tagInfoMap = new Map(
+      promptCInput.tagAnalyses.map((tag) => [tag.tagName, tag]),
+    );
+
     // 3. Prompt 생성
     const promptRequest =
       this.promptManager.buildPromptC(
@@ -172,9 +178,67 @@ export class DashboardService {
       dashboardResult,
     );
 
+    // 8. Dashboard 저장
+    const dashboard = await this.prisma.dashboard.create({
+      data: {
+        userId,
+
+        startDate: new Date(request.startDate),
+        endDate: new Date(request.endDate),
+
+        summary: dashboardResult.summary,
+
+        journalDays: performances.length,
+        performanceCount: performances.length,
+        tagCount: dashboardResult.tagAnalyses.length,
+
+        performances: {
+          create: performances.map((performance) => ({
+            dailyPerformanceId: performance.dailyPerformanceId,
+          })),
+        },
+
+        kpis: {
+          create: dashboardResult.kpis.map((kpi) => ({
+            kpiName: kpi.kpiName,
+            progress: kpi.progress,
+          })),
+        },
+
+        insights: {
+          create: {
+            journalDays: performances.length,
+            performanceCount: performances.length,
+            tagCount: dashboardResult.tagAnalyses.length,
+          },
+        },
+
+        tagAnalyses: {
+          create: dashboardResult.tagAnalyses.map((tag) => {
+            const tagInfo = tagInfoMap.get(tag.tagName);
+
+            return {
+              tagId: tagInfo?.tagId ?? "",
+              tagName: tagInfo?.tagName ?? "",
+              color: tagInfo?.color ?? "",
+
+              goal: tag.objective,
+              expectedOutcome: tag.expectedOutcome,
+              achievementStatus: tag.achievementStatus,
+              insight: tag.insight,
+
+              taskCount: null,
+              periodStart: new Date(request.startDate),
+              periodEnd: new Date(request.endDate),
+            };
+          }),
+        },
+      },
+    });
+
     // 12. Response 반환
     return {
-      dashboardId: "",
+      dashboardId: dashboard.dashboardId,
       startDate: request.startDate,
       endDate: request.endDate,
       summary: dashboardResult.summary,
@@ -189,15 +253,20 @@ export class DashboardService {
           }),
         ),
       tagAnalyses:
-        dashboardResult.tagAnalyses.map(
-          (analysis) => ({
+        dashboardResult.tagAnalyses.map((analysis) => {
+          const tagInfo = tagInfoMap.get(analysis.tagName);
+
+          return {
+            tagId: tagInfo?.tagId ?? "",
             tagName: analysis.tagName,
+            color: tagInfo?.color ?? "",
+
             objective: analysis.objective,
             expectedOutcome: analysis.expectedOutcome,
             achievementStatus: analysis.achievementStatus,
             insight: analysis.insight,
-          }),
-        ),
+          };
+        }),
     };
   }
 
@@ -233,13 +302,18 @@ export class DashboardService {
         performance.performanceItems.forEach(
           (item: PerformanceItem) => {
             const tag = item.task.tag;
+            
+            const tagId = tag?.tagId ?? "";
             const tagName = tag?.tagName ?? "기타";
+            const color = tag?.color ?? "";
 
             if (!tagMap.has(tagName)) {
               tagMap.set(
                 tagName,
                 {
+                  tagId,
                   tagName,
+                  color,
                   projectName: tag?.projectName ?? "",
                   projectPurpose: tag?.projectPurpose ?? "",
                   expectedOutcome: tag?.expectedOutcome ?? "",
@@ -369,13 +443,17 @@ export class DashboardService {
                 }),
               ),
             tagAnalyses:
-            dashboard.tagAnalyses.map(
-              (tag)=>({
-                goal: tag.goal ?? "",
-                expectedOutcome: tag.expectedOutcome ?? "",
-                achievementStatus: tag.achievementStatus ?? "",
-              }),
-            ),
+              dashboard.tagAnalyses.map(
+                (tag) => ({
+                  tagId: tag.tagId ?? "",
+                  tagName: tag.tagName ?? "",
+                  color: tag.color ?? "",
+
+                  goal: tag.goal ?? "",
+                  expectedOutcome: tag.expectedOutcome ?? "",
+                  achievementStatus: tag.achievementStatus ?? "",
+                }),
+              ),
             weeklyReflection:
               dashboard.weeklyReflections[0]
                 ? {
@@ -390,6 +468,15 @@ export class DashboardService {
           }),
         ),
     };
+
+    const tagInfoMap = new Map(
+      weeklyDashboards.flatMap((dashboard) =>
+        dashboard.tagAnalyses.map((tag) => [
+          tag.tagName ?? "",
+          tag,
+        ]),
+      ),
+    );
 
     // 3. Prompt 생성
     const promptRequest =
@@ -424,8 +511,58 @@ export class DashboardService {
       monthlyResult,
     );
 
+    const dashboard = await this.prisma.dashboard.create({
+      data: {
+        userId,
+
+        startDate: new Date(request.startDate),
+        endDate: new Date(request.endDate),
+
+        summary: monthlyResult.summary,
+
+        journalDays: 0,
+        performanceCount: weeklyDashboards.length,
+        tagCount: monthlyResult.tagAnalyses.length,
+
+        kpis: {
+          create: monthlyResult.kpis.map((kpi) => ({
+            kpiName: kpi.kpiName,
+            progress: kpi.progress,
+          })),
+        },
+
+        insights: {
+          create: {
+            journalDays: 0,
+            performanceCount: weeklyDashboards.length,
+            tagCount: monthlyResult.tagAnalyses.length,
+          },
+        },
+
+        tagAnalyses: {
+          create: monthlyResult.tagAnalyses.map((tag) => {
+            const tagInfo = tagInfoMap.get(tag.tagName);
+
+            return {
+              tagId: tagInfo?.tagId ?? "",
+              tagName: tagInfo?.tagName ?? "",
+              color: tagInfo?.color ?? "",
+
+              goal: null,
+              expectedOutcome: null,
+              achievementStatus: tag.achievementStatus,
+              insight: tag.insight,
+
+              periodStart: new Date(request.startDate),
+              periodEnd: new Date(request.endDate),
+            };
+          }),
+        },
+      },
+    });
+
     return {
-      dashboardId: "",
+      dashboardId: dashboard.dashboardId,
       startDate: request.startDate,
       endDate: request.endDate,
       summary: monthlyResult.summary,
@@ -440,15 +577,20 @@ export class DashboardService {
           }),
         ),
       tagAnalyses:
-        monthlyResult.tagAnalyses.map(
-          (tag)=>({
-            tagName:tag.tagName,
-            objective:"",
-            expectedOutcome:"",
+        monthlyResult.tagAnalyses.map((tag) => {
+          const tagInfo = tagInfoMap.get(tag.tagName);
+
+          return {
+            tagId: tagInfo?.tagId ?? "",
+            tagName: tag.tagName,
+            color: tagInfo?.color ?? "",
+
+            objective: "",
+            expectedOutcome: "",
             achievementStatus: tag.achievementStatus,
             insight: tag.insight,
-          }),
-        ),
+          };
+        }),
     };
   }
 }

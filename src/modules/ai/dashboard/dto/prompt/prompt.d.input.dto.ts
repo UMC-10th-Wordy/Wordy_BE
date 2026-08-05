@@ -20,6 +20,9 @@ export interface WeeklyKpiInputDto {
 }
 
 export interface WeeklyTagAnalysisInputDto {
+  tagId: string;
+  tagName: string;
+  color: string;
   goal: string | null;
   expectedOutcome: string | null;
   achievementStatus: string | null;

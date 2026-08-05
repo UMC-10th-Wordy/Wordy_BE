@@ -55,8 +55,14 @@ export class DashboardKpiDto {
 }
 
 export class DashboardTagAnalysisDto {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  tagId!: string;
+
   @Example("AI 기능 구현")
   tagName!: string;
+
+  @Example('#4F46E5')
+  color!: string;
 
   @Example("제품의 AI 기능 개발 목표")
   objective!: string;

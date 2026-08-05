@@ -503,6 +503,7 @@ model DashboardTagAnalysis {
   periodStart            DateTime? @map("period_start") @db.Date
   periodEnd              DateTime? @map("period_end") @db.Date
   achievementStatus      String?   @map("achievement_status") @db.Text
+  insight                String?   @map("insight") @db.Text
   dashboardId            String    @map("dashboard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
