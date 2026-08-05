@@ -113,7 +113,7 @@ export class MonthlyDashboardController extends Controller {
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
-      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5 }],
+      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5, completionRate: 85 }],
       kpis: [{ kpiName: "월간 핵심 목표 달성률", progress: "85% 달성" }],
       tagAnalyses: [
         {
@@ -123,6 +123,9 @@ export class MonthlyDashboardController extends Controller {
           periodStart: "2026-06-01",
           periodEnd: "2026-06-30",
           achievementStatus: "목표 초과 달성",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
+          tagName: "온보딩 리뉴얼",                          //  추가
+          color: "#10B981",                                 //  추가
         },
       ],
       weeklyReflections: [
@@ -134,6 +137,7 @@ export class MonthlyDashboardController extends Controller {
       ],
       performances: [
         {
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
           achievementRate: 85,
           summary: "월간 목표 대부분 달성",
           growthInsight: "팀 협업 효율 향상",
@@ -204,14 +208,7 @@ export class MonthlyDashboardController extends Controller {
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
-
-      insights: [
-        {
-          journalDays: 20,
-          performanceCount: 30,
-          tagCount: 5,
-        },
-      ],
+      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5, completionRate: 85 }],
 
       kpis: [
         {
@@ -223,11 +220,14 @@ export class MonthlyDashboardController extends Controller {
       tagAnalyses: [
         {
           goal: "온보딩 전면 개선",
-          expectedOutcome: "사용자 경험 향상",
+          expectedOutcome: "이탈률 30% 감소",
           taskCount: 30,
           periodStart: "2026-06-01",
           periodEnd: "2026-06-30",
-          achievementStatus: "COMPLETED",
+          achievementStatus: "목표 초과 달성",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
+          tagName: "온보딩 리뉴얼",                          //  추가
+          color: "#10B981",                                 //  추가
         },
       ],
 
@@ -241,6 +241,7 @@ export class MonthlyDashboardController extends Controller {
 
       performances: [
         {
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
           achievementRate: 85,
           summary: "월간 목표 대부분 달성",
           growthInsight: {

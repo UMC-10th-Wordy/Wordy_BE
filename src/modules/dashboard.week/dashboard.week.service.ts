@@ -97,6 +97,19 @@ export const getDashboardDetail = async (
   if (!d) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
+  // 완료율 계산 (연결된 성과들의 완료 업무 / 전체 업무, 정수 %)
+  const totalTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.totalTaskCount,
+    0
+  );
+  const completedTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.completedTaskCount,
+    0
+  );
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     return {
     dashboardId: d.dashboardId,
@@ -106,7 +119,10 @@ export const getDashboardDetail = async (
     journalDays: d.journalDays,
     performanceCount: d.performanceCount,
     tagCount: d.tagCount,
-    insights: d.insights,
+    insights: d.insights.map((i: typeof d.insights[number]) => ({
+      ...i,
+      completionRate,
+    })),
     kpis: d.kpis,
     tagAnalyses: d.tagAnalyses.map((t: typeof d.tagAnalyses[number]) => ({
       ...t,

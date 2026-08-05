@@ -132,6 +132,9 @@ export class Insight {
 
   @Example(3)
   tagCount!: number;
+
+  @Example(75)
+  completionRate!: number;    //  추가 (완료율 %)
 }
 
 export class Kpi {
@@ -160,6 +163,15 @@ export class TagAnalysis {
 
   @Example("COMPLETED")
   achievementStatus!: string | null;
+
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  tagId!: string | null;      //  추가
+
+  @Example("백엔드")
+  tagName!: string | null;    //  추가
+
+  @Example("#4A90E2")
+  color!: string | null;      //  추가
 }
 
 export class WeeklyReflection {
@@ -201,6 +213,9 @@ export class PerformanceItemDto {
 
 // 일일 성과 요약
 export class PerformanceDto {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  dailyEntryId!: string;      // ← 추가
+  
   @Example(95)
   achievementRate!: number;
 

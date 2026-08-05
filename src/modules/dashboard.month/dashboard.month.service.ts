@@ -94,6 +94,19 @@ export const getMonthlyDashboardDetail = async (
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
 
+  const totalTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.totalTaskCount,
+    0
+  );
+  const completedTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.completedTaskCount,
+    0
+  );
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
   return {
     dashboardId: d.dashboardId,
     startDate: toDateStr(d.startDate),
@@ -102,7 +115,10 @@ export const getMonthlyDashboardDetail = async (
     journalDays: d.journalDays,
     performanceCount: d.performanceCount,
     tagCount: d.tagCount,
-    insights: d.insights,
+    insights: d.insights.map((i: typeof d.insights[number]) => ({
+      ...i,
+      completionRate,
+    })),
     kpis: d.kpis,
     tagAnalyses: d.tagAnalyses.map((t: typeof d.tagAnalyses[number]) => ({
       ...t,
