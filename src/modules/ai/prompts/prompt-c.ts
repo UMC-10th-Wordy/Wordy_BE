@@ -14,7 +14,8 @@ export const promptCInstructions = `
 - 반드시 JSON 객체 형식으로만 반환하세요.
 - JSON 외 설명 문장, 마크다운, 코드블럭을 포함하지 마세요.
 - 입력 데이터에 존재하는 KPI와 프로젝트만 사용하세요.
-
+- 각 tag 분석 결과에는 입력으로 받은 tagId를 그대로 포함하세요.
+- tagName으로 식별하지 마세요.
 반환 형식:
 {
   "summary": "주간 업무 요약",

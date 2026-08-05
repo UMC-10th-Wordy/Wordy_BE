@@ -141,7 +141,10 @@ export class DashboardService {
     };
 
     const tagInfoMap = new Map(
-      promptCInput.tagAnalyses.map((tag) => [tag.tagName, tag]),
+      promptCInput.tagAnalyses.map((tag) => [
+        tag.tagId,
+        tag,
+      ]),
     );
 
     // 3. Prompt 생성
@@ -215,7 +218,7 @@ export class DashboardService {
 
         tagAnalyses: {
           create: dashboardResult.tagAnalyses.map((tag) => {
-            const tagInfo = tagInfoMap.get(tag.tagName);
+            const tagInfo = tagInfoMap.get(tag.tagId);
 
             return {
               tagId: tagInfo?.tagId ?? "",
@@ -254,7 +257,7 @@ export class DashboardService {
         ),
       tagAnalyses:
         dashboardResult.tagAnalyses.map((analysis) => {
-          const tagInfo = tagInfoMap.get(analysis.tagName);
+          const tagInfo = tagInfoMap.get(analysis.tagId);
 
           return {
             tagId: tagInfo?.tagId ?? "",
@@ -307,7 +310,7 @@ export class DashboardService {
             const tagName = tag?.tagName ?? "기타";
             const color = tag?.color ?? "";
 
-            if (!tagMap.has(tagName)) {
+            if (!tagMap.has(tagId)) {
               tagMap.set(
                 tagName,
                 {
@@ -326,7 +329,7 @@ export class DashboardService {
               );
             }
             tagMap
-              .get(tagName)!
+              .get(tagId)!
               .performances.push({
                 output: String(item.output),
                 impact: String(item.impact),
@@ -472,8 +475,12 @@ export class DashboardService {
     const tagInfoMap = new Map(
       weeklyDashboards.flatMap((dashboard) =>
         dashboard.tagAnalyses.map((tag) => [
-          tag.tagName ?? "",
-          tag,
+          tag.tagId,
+          {
+            tagId: tag.tagId,
+            tagName: tag.tagName,
+            color: tag.color,
+          },
         ]),
       ),
     );
@@ -541,7 +548,7 @@ export class DashboardService {
 
         tagAnalyses: {
           create: monthlyResult.tagAnalyses.map((tag) => {
-            const tagInfo = tagInfoMap.get(tag.tagName);
+            const tagInfo = tagInfoMap.get(tag.tagId);
 
             return {
               tagId: tagInfo?.tagId ?? "",
@@ -578,7 +585,7 @@ export class DashboardService {
         ),
       tagAnalyses:
         monthlyResult.tagAnalyses.map((tag) => {
-          const tagInfo = tagInfoMap.get(tag.tagName);
+          const tagInfo = tagInfoMap.get(tag.tagId);
 
           return {
             tagId: tagInfo?.tagId ?? "",

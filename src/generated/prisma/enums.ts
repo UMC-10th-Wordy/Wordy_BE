@@ -125,3 +125,12 @@ export const ReflectionSnapshotStatus = {
 } as const
 
 export type ReflectionSnapshotStatus = (typeof ReflectionSnapshotStatus)[keyof typeof ReflectionSnapshotStatus]
+
+
+export const NotificationType = {
+  MARKETING_PROMOTION: 'MARKETING_PROMOTION',
+  DASHBOARD_COMPLETED: 'DASHBOARD_COMPLETED',
+  DASHBOARD_INDUCE: 'DASHBOARD_INDUCE'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
