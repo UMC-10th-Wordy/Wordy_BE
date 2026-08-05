@@ -82,6 +82,12 @@ enum PromptType {
   KPI
 }
 
+enum NotificationType {
+  MARKETING_PROMOTION
+  DASHBOARD_COMPLETED
+  DASHBOARD_INDUCE
+}
+
 model ApiLog {
   logId      Int      @id @default(autoincrement()) @map("log_id")
   userId     String?  @map("user_id") @db.Char(36)
@@ -109,6 +115,8 @@ model User {
   profile      Profile?
   plan         Plan?
   agreements   UserAgreement[]
+  notificationSettings NotificationSetting[]
+  notifications Notification[]
   tags         Tag[]
   tasks        Task[]
   dailyEntries DailyEntry[]
@@ -161,6 +169,37 @@ model UserAgreement {
 
   @@unique([userId, type])
   @@map("UserAgreement")
+}
+
+model NotificationSetting {
+  notificationSettingId String           @id @default(uuid()) @map("notification_setting_id") @db.Char(36)
+  type                  NotificationType
+  isEnabled             Boolean          @default(true) @map("is_enabled")
+  createdAt             DateTime         @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt             DateTime         @updatedAt @map("updated_at") @db.DateTime(0)
+  userId                String           @map("user_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, type])
+  @@map("NotificationSetting")
+}
+
+model Notification {
+  notificationId String           @id @default(uuid()) @map("notification_id") @db.Char(36)
+  type           NotificationType
+  title          String           @db.VarChar(100)
+  content        String           @db.Text
+  redirectUrl    String?          @map("redirect_url") @db.VarChar(500)
+  isRead         Boolean          @default(false) @map("is_read")
+  readAt         DateTime?        @map("read_at") @db.DateTime(0)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.DateTime(0)
+  userId         String           @map("user_id") @db.Char(36)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@index([userId, createdAt])
+  @@map("Notification")
 }
 
 model Tag {
@@ -218,6 +257,7 @@ model Task {
 
 model DailyEntry {
   dailyEntryId      String    @id @default(uuid()) @map("daily_entry_id") @db.Char(36)
+  title             String    @default("") @map("title") @db.VarChar(255)  // 추가
   reflectionContent String    @map("reflection_content") @db.Text
   entryDate         DateTime  @map("entry_date") @db.Date
   createdAt         DateTime  @default(now()) @map("created_at") @db.DateTime(0)
@@ -493,6 +533,9 @@ model DashboardTagAnalysis {
   periodStart            DateTime? @map("period_start") @db.Date
   periodEnd              DateTime? @map("period_end") @db.Date
   achievementStatus      String?   @map("achievement_status") @db.Text
+  tagId                  String?   @map("tag_id") @db.Char(36)      //  추가
+  tagName                String?   @map("tag_name") @db.VarChar(30) //  추가
+  color                  String?   @db.VarChar(20)                  //  추가
   dashboardId            String    @map("dashboard_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])

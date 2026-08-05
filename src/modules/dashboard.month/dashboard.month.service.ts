@@ -5,6 +5,8 @@ import {
   existsDashboard,
   createMonthlyReflection,
   createMonthlyDashboard,
+  findMonthlyReflectionById,   // 추가
+  updateMonthlyReflection,     // 추가
 } from "./dashboard.month.repository.js";
 
 import { DashboardService } from "../ai/dashboard/dashboard.service.js";
@@ -21,12 +23,8 @@ const REQUIRED_COUNT = 3; // 월간 생성에 필요한 최소 주간 대시보�
 
 // 이번 달 1일 ~ 말일 범위 구하기
 const getMonthRange = (base: Date = new Date()) => {
-  const start = new Date(base.getFullYear(), base.getMonth(), 1);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(base.getFullYear(), base.getMonth() + 1, 0); // 다음 달 0일 = 이번 달 말일
-  end.setHours(23, 59, 59, 999);
-
+  const start = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 0, 23, 59, 59, 999));
   return { start, end };
 };
 
@@ -96,6 +94,19 @@ export const getMonthlyDashboardDetail = async (
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
 
+  const totalTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.totalTaskCount,
+    0
+  );
+  const completedTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.completedTaskCount,
+    0
+  );
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
   return {
     dashboardId: d.dashboardId,
     startDate: toDateStr(d.startDate),
@@ -104,7 +115,10 @@ export const getMonthlyDashboardDetail = async (
     journalDays: d.journalDays,
     performanceCount: d.performanceCount,
     tagCount: d.tagCount,
-    insights: d.insights,
+    insights: d.insights.map((i: typeof d.insights[number]) => ({
+      ...i,
+      completionRate,
+    })),
     kpis: d.kpis,
     tagAnalyses: d.tagAnalyses.map((t: typeof d.tagAnalyses[number]) => ({
       ...t,
@@ -113,6 +127,7 @@ export const getMonthlyDashboardDetail = async (
     })),
     weeklyReflections: d.weeklyReflections,
     performances: d.performances.map((p: typeof d.performances[number]) => ({
+      dailyEntryId: p.dailyPerformance.dailyEntryId,   //추가
       achievementRate: p.dailyPerformance.achievementRate,
       summary: p.dailyPerformance.summary,
       growthInsight: p.dailyPerformance.growthInsight,
@@ -189,4 +204,34 @@ export const createMonthlyDashboardWithAI = async (
   });
 
   return { dashboardId: saved.dashboardId };
+};
+
+// 월간 회고 수정
+export const editMonthlyReflection = async (
+  dashboardId: string,
+  reflectionId: string,
+  userId: string,
+  data: { workSummary?: string; resourcesUsed?: string; learning?: string }
+) => {
+  // 대시보드가 이 유저 것인지 확인
+  const exists = await existsDashboard(dashboardId, userId);
+  if (!exists) {
+    throw new Error("해당 대시보드를 찾을 수 없습니다.");
+  }
+
+  // 회고가 이 대시보드 것인지 확인
+  const reflection = await findMonthlyReflectionById(reflectionId, dashboardId);
+  if (!reflection) {
+    throw new Error("해당 회고를 찾을 수 없습니다.");
+  }
+
+  // 수정
+  const updated = await updateMonthlyReflection(reflectionId, data);
+
+  return {
+    weeklyReflectionId: updated.weeklyReflectionId,
+    workSummary: updated.workSummary,
+    resourcesUsed: updated.resourcesUsed,
+    learning: updated.learning,
+  };
 };

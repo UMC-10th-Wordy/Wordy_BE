@@ -22,18 +22,17 @@ import { ErrorCode } from "../../common/errors/error.code.js";
 
 const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
 
-// 이번 주 월요일~일요일 범위 구하기
+// 이번 주 월요일~일요일 범위 구하기, 시간 UTC로 변경
 const getWeekRange = (base: Date = new Date()) => {
-  const day = base.getDay(); // 0(일)~6(토)
+  const day = base.getUTCDay();
   const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(base);
-  monday.setDate(base.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
-
+  const monday = new Date(Date.UTC(
+    base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate() + diffToMonday,
+    0, 0, 0, 0
+  ));
   const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  sunday.setUTCHours(23, 59, 59, 999);
   return { start: monday, end: sunday };
 };
 
@@ -98,6 +97,19 @@ export const getDashboardDetail = async (
   if (!d) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
+  // 완료율 계산 (연결된 성과들의 완료 업무 / 전체 업무, 정수 %)
+  const totalTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.totalTaskCount,
+    0
+  );
+  const completedTasks = d.performances.reduce(
+    (sum: number, p: typeof d.performances[number]) =>
+      sum + p.dailyPerformance.completedTaskCount,
+    0
+  );
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     return {
     dashboardId: d.dashboardId,
@@ -107,7 +119,10 @@ export const getDashboardDetail = async (
     journalDays: d.journalDays,
     performanceCount: d.performanceCount,
     tagCount: d.tagCount,
-    insights: d.insights,
+    insights: d.insights.map((i: typeof d.insights[number]) => ({
+      ...i,
+      completionRate,
+    })),
     kpis: d.kpis,
     tagAnalyses: d.tagAnalyses.map((t: typeof d.tagAnalyses[number]) => ({
       ...t,
@@ -116,6 +131,7 @@ export const getDashboardDetail = async (
     })),
     weeklyReflections: d.weeklyReflections,
     performances: d.performances.map((p: typeof d.performances[number]) => ({
+      dailyEntryId: p.dailyPerformance.dailyEntryId,   //추가
       achievementRate: p.dailyPerformance.achievementRate,
       summary: p.dailyPerformance.summary,
       growthInsight: p.dailyPerformance.growthInsight,

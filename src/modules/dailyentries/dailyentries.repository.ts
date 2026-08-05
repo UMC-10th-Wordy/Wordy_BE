@@ -251,21 +251,18 @@ export const searchByTitle = async (
     where: {
       userId,
       deletedAt: null,
-      reflectionTasks: {
-        some: { task: { title: { contains: keyword }, deletedAt: null } },
-      },
+      title: { contains: keyword },  //  일지 title 직접 검색
     },
     orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
     select: {
       dailyEntryId: true,
       entryDate: true,
+      title: true,  //  title 추가
       reflectionTasks: {
         select: {
           task: {
             select: {
-              title: true,
-              deletedAt: true,
-              tag: { select: { tagName: true, color: true } },
+              tag: { select: { tagName: true, color: true } },  // 태그는 표시용으로 유지
             },
           },
         },
@@ -294,13 +291,12 @@ export const searchByTag = async (
     select: {
       dailyEntryId: true,
       entryDate: true,
+      title: true,  // 추가 (표시용 일지 제목)
       reflectionTasks: {
         select: {
           task: {
             select: {
-              title: true,
-              deletedAt: true,
-              tag: { select: { tagName: true, color: true } },
+              tag: { select: { tagName: true, color: true } },  // 태그만 (표시용)
             },
           },
         },
