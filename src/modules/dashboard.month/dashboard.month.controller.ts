@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Path, Body, Query, Route, Tags, Example, Header } from "tsoa";
+import { Controller, Get, Post, Patch, Path, Body, Query, Route, Tags, Example, Header } from "tsoa";
 import {
   getMonthlyEligibility,
   getMonthlyDashboardList,
   getMonthlyDashboardDetail,
   addMonthlyReflection,
   createMonthlyDashboardWithAI,
+  editMonthlyReflection,   // 추가
 } from "./dashboard.month.service.js";
 import {
   MonthlyEligibilityResponse,
@@ -112,7 +113,7 @@ export class MonthlyDashboardController extends Controller {
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
-      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5 }],
+      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5, completionRate: 85 }],
       kpis: [{ kpiName: "월간 핵심 목표 달성률", progress: "85% 달성" }],
       tagAnalyses: [
         {
@@ -122,6 +123,9 @@ export class MonthlyDashboardController extends Controller {
           periodStart: "2026-06-01",
           periodEnd: "2026-06-30",
           achievementStatus: "목표 초과 달성",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
+          tagName: "온보딩 리뉴얼",                          //  추가
+          color: "#10B981",                                 //  추가
         },
       ],
       weeklyReflections: [
@@ -133,6 +137,7 @@ export class MonthlyDashboardController extends Controller {
       ],
       performances: [
         {
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
           achievementRate: 85,
           summary: "월간 목표 대부분 달성",
           growthInsight: "팀 협업 효율 향상",
@@ -203,14 +208,7 @@ export class MonthlyDashboardController extends Controller {
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
-
-      insights: [
-        {
-          journalDays: 20,
-          performanceCount: 30,
-          tagCount: 5,
-        },
-      ],
+      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5, completionRate: 85 }],
 
       kpis: [
         {
@@ -222,11 +220,14 @@ export class MonthlyDashboardController extends Controller {
       tagAnalyses: [
         {
           goal: "온보딩 전면 개선",
-          expectedOutcome: "사용자 경험 향상",
+          expectedOutcome: "이탈률 30% 감소",
           taskCount: 30,
           periodStart: "2026-06-01",
           periodEnd: "2026-06-30",
-          achievementStatus: "COMPLETED",
+          achievementStatus: "목표 초과 달성",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
+          tagName: "온보딩 리뉴얼",                          //  추가
+          color: "#10B981",                                 //  추가
         },
       ],
 
@@ -240,6 +241,7 @@ export class MonthlyDashboardController extends Controller {
 
       performances: [
         {
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",   //  추가
           achievementRate: 85,
           summary: "월간 목표 대부분 달성",
           growthInsight: {
@@ -269,5 +271,34 @@ export class MonthlyDashboardController extends Controller {
     const data = await createMonthlyDashboardWithAI(authorization, body.startDate, body.endDate);
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
+  }
+  /**
+   * @summary 월간 회고 수정
+   * @example body {"workSummary": "수정된 업무 정리", "learning": "수정된 배운 점"}
+   */
+  @Patch("{dashboardId}/reflection/{reflectionId}")
+  @Example<ApiResponse<MonthlyReflectionItem>>({
+    success: true,
+    code: "S200",
+    message: "수정에 성공했습니다.",
+    result: {
+      workSummary: "수정된 업무 정리",
+      resourcesUsed: "인터뷰 데이터 분석 및 개발 시간 20시간",
+      learning: "사용자 관점의 중요성 학습",
+    },
+  })
+  public async updateReflection(
+    @Header("Authorization") authorization: string | undefined,
+    @Path() dashboardId: string,
+    @Path() reflectionId: string,
+    @Body() body: CreateMonthlyReflectionRequest
+  ): Promise<ApiResponse<any>> {
+    const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    if (!token) {
+      throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
+    }
+    const userId = verifyAccessToken(token).userId;
+    const data = await editMonthlyReflection(dashboardId, reflectionId, userId, body);
+    return success(SuccessCode.UPDATED.code, SuccessCode.UPDATED.message, data);
   }
 }

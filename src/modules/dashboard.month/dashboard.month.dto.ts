@@ -151,6 +151,9 @@ export class MonthlyInsight {
 
   @Example(5)
   tagCount!: number;
+
+  @Example(75)
+  completionRate!: number;    // 추가
 }
 
 
@@ -181,6 +184,15 @@ export class MonthlyTagAnalysis {
 
   @Example("COMPLETED")
   achievementStatus!: string | null;
+
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  tagId!: string | null;      //  추가
+
+  @Example("백엔드")
+  tagName!: string | null;    //  추가
+
+  @Example("#4A90E2")
+  color!: string | null;      //  추가
 }
 
 
@@ -226,6 +238,9 @@ export class MonthlyPerformanceItemDto {
 
 // 일일 성과 요약
 export class MonthlyPerformanceDto {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  dailyEntryId!: string;      // ← 추가
+
   @Example(90)
   achievementRate!: number;
 
