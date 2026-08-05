@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Path, Body, Query, Route, Tags, Example, Header } from "tsoa";
+import { Controller, Get, Post, Patch, Path, Body, Query, Route, Tags, Example, Header } from "tsoa";
 import {
   getMonthlyEligibility,
   getMonthlyDashboardList,
   getMonthlyDashboardDetail,
   addMonthlyReflection,
   createMonthlyDashboardWithAI,
+  editMonthlyReflection,   // 추가
 } from "./dashboard.month.service.js";
 import {
   MonthlyEligibilityResponse,
@@ -269,5 +270,34 @@ export class MonthlyDashboardController extends Controller {
     const data = await createMonthlyDashboardWithAI(authorization, body.startDate, body.endDate);
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
+  }
+  /**
+   * @summary 월간 회고 수정
+   * @example body {"workSummary": "수정된 업무 정리", "learning": "수정된 배운 점"}
+   */
+  @Patch("{dashboardId}/reflection/{reflectionId}")
+  @Example<ApiResponse<MonthlyReflectionItem>>({
+    success: true,
+    code: "S200",
+    message: "수정에 성공했습니다.",
+    result: {
+      workSummary: "수정된 업무 정리",
+      resourcesUsed: "인터뷰 데이터 분석 및 개발 시간 20시간",
+      learning: "사용자 관점의 중요성 학습",
+    },
+  })
+  public async updateReflection(
+    @Header("Authorization") authorization: string | undefined,
+    @Path() dashboardId: string,
+    @Path() reflectionId: string,
+    @Body() body: CreateMonthlyReflectionRequest
+  ): Promise<ApiResponse<any>> {
+    const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    if (!token) {
+      throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
+    }
+    const userId = verifyAccessToken(token).userId;
+    const data = await editMonthlyReflection(dashboardId, reflectionId, userId, body);
+    return success(SuccessCode.UPDATED.code, SuccessCode.UPDATED.message, data);
   }
 }

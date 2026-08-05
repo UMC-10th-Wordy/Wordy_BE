@@ -139,3 +139,28 @@ export const createMonthlyDashboard = async (data: {
     },
   });
 };
+
+// 월간 회고 존재 확인 (수정 전 검증용)
+export const findMonthlyReflectionById = async (
+  weeklyReflectionId: string,
+  dashboardId: string
+) => {
+  return prisma.weeklyReflection.findFirst({
+    where: { weeklyReflectionId, dashboardId },
+  });
+};
+
+// 월간 회고 수정
+export const updateMonthlyReflection = async (
+  weeklyReflectionId: string,
+  data: { workSummary?: string; resourcesUsed?: string; learning?: string }
+) => {
+  return prisma.weeklyReflection.update({
+    where: { weeklyReflectionId },
+    data: {
+      ...(data.workSummary !== undefined && { workSummary: data.workSummary }),
+      ...(data.resourcesUsed !== undefined && { resourcesUsed: data.resourcesUsed }),
+      ...(data.learning !== undefined && { learning: data.learning }),
+    },
+  });
+};
