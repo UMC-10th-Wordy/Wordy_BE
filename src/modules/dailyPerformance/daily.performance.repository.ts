@@ -291,6 +291,36 @@ export class DailyPerformanceRepository {
     });
   }
 
+  async findReflectionSnapshotById(
+    reflectionSnapshotId: string,
+    userId: string,
+  ) {
+    return this.prisma.reflectionSnapshot.findFirst({
+      where:{
+        reflectionSnapshotId,
+        dailyEntry:{
+          userId,
+          deletedAt:null,
+        },
+      },
+      select:{
+        reflectionSnapshotId:true,
+        status:true,
+        promptBResult:true,
+        reflectionTaskSnapshots:{
+          include:{
+            resultSnapshots:true,
+            task:{
+              include:{
+                tag:true,
+              },
+            },
+          },
+        },
+      }
+    });
+  }
+
   async updateDailyPerformance(
     dailyPerformanceId: string,
     data: Prisma.DailyPerformanceUncheckedUpdateInput,

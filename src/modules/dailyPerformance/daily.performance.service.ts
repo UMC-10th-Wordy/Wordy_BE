@@ -4,7 +4,7 @@ import { ErrorCode } from "../../common/errors/error.code.js";
 import { TaskStatus } from "../../generated/prisma/enums.js";
 import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
-import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, IncompleteTaskDto, PerformanceDetailResponseDto, PerformanceListResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
+import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, IncompleteTaskDto, PerformanceDetailResponseDto, PerformanceListResponseDto, ReflectionSnapshotPreviewResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
 import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository.js";
 
 export class DailyPerformanceService {
@@ -343,6 +343,51 @@ export class DailyPerformanceService {
         await this.buildPerformanceDetail(
           performance,
           userId,
+        ),
+    };
+  }
+
+  async getReflectionSnapshotPreview(
+    authorization: string | undefined,
+    reflectionSnapshotId: string,
+  ): Promise<ReflectionSnapshotPreviewResponseDto> {
+    const userId = this.extractUserId(authorization);
+
+    const snapshot =
+      await this.repository.findReflectionSnapshotById(
+        reflectionSnapshotId,
+        userId,
+      );
+
+    if (!snapshot) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "성과 미리보기를 찾을 수 없습니다.",
+      );
+    }
+
+    return {
+      reflectionSnapshotId: snapshot.reflectionSnapshotId,
+      status: snapshot.status,
+      promptBResult:
+        snapshot.promptBResult
+          ? snapshot.promptBResult as unknown as  PromptBOutputDto
+          : null,
+
+      tasks:
+        snapshot.reflectionTaskSnapshots.map(
+          (taskSnapshot) => ({
+            reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
+            taskId: taskSnapshot.taskId,
+            title: taskSnapshot.title,
+            priority: taskSnapshot.priority,
+            memo: taskSnapshot.memo,
+            status: taskSnapshot.status,
+            completedAt: taskSnapshot.completedAt,
+            tag: taskSnapshot.task?.tag ?? null,
+            results: taskSnapshot.resultSnapshots,
+          }),
         ),
     };
   }

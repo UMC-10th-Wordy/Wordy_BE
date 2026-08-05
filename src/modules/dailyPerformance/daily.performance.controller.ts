@@ -5,6 +5,7 @@ import {
   DailyPerformancePreviewResponseDto,
   PerformanceDetailResponseDto,
   PerformanceListResponseDto,
+  ReflectionSnapshotPreviewResponseDto,
   UpdateDailyPerformanceRequestDto,
   UpdateDailyPerformanceResponseDto,
 } from "./daily.performance.dto.js";
@@ -155,6 +156,53 @@ export class DailyPerformanceController extends Controller {
     return success(
       SuccessCode.OK.code,
       "업무 성과 상세 조회에 성공했습니다.",
+      result,
+    );
+  }
+
+  /**
+   * @summary 성과 미리보기 상태 조회 (Polling)
+   */
+  @Get("/preview/{reflectionSnapshotId}")
+  @Example<ApiResponse<ReflectionSnapshotPreviewResponseDto>>({
+    success: true,
+    code: "S200",
+    message: "성과 미리보기 조회에 성공했습니다.",
+    result: {
+      reflectionSnapshotId:
+        "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+      status: "TEMP",
+      promptBResult: {
+        summary:
+          "오늘 AI 업무 변환 기능과 성과 저장 API를 구현했습니다.",
+        growthInsights: [
+          "업무 데이터를 구조화하는 능력이 향상되었습니다.",
+        ],
+        nextActions: [
+          "프롬프트 정확도 개선하기",
+        ],
+        taskPerformances: [],
+      },
+      tasks: [],
+    },
+  })
+  public async getReflectionSnapshotPreview(
+    @Header("Authorization")
+    authorization: string | undefined,
+
+    @Path()
+    reflectionSnapshotId: string,
+  ): Promise<ApiResponse<ReflectionSnapshotPreviewResponseDto>> {
+
+    const result =
+      await this.dailyPerformanceService.getReflectionSnapshotPreview(
+        authorization,
+        reflectionSnapshotId,
+      );
+
+    return success(
+      SuccessCode.OK.code,
+      "성과 미리보기 조회에 성공했습니다.",
       result,
     );
   }

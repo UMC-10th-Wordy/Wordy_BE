@@ -118,8 +118,10 @@ export type PromptType = (typeof PromptType)[keyof typeof PromptType]
 
 
 export const ReflectionSnapshotStatus = {
+  PROCESSING: 'PROCESSING',
   TEMP: 'TEMP',
-  SAVED: 'SAVED'
+  SAVED: 'SAVED',
+  FAILED: 'FAILED'
 } as const
 
 export type ReflectionSnapshotStatus = (typeof ReflectionSnapshotStatus)[keyof typeof ReflectionSnapshotStatus]

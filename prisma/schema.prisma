@@ -83,8 +83,10 @@ enum PromptType {
 }
 
 enum ReflectionSnapshotStatus {
+  PROCESSING
   TEMP
   SAVED
+  FAILED
 }
 
 model ApiLog {
