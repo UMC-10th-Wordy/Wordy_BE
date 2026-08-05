@@ -23,4 +23,9 @@ export const SuccessCode = {
     code: "S200",
     message: "삭제에 성공했습니다.",
   },
+
+  RESTORED: {
+    code: "S200",
+    message: "복원에 성공했습니다.",
+  },
 } as const;

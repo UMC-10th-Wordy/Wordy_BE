@@ -1,0 +1,89 @@
+import {
+  Controller,
+  Get,
+  Patch,
+  Path,
+  Route,
+  Tags,
+  Example,
+  Header,
+} from "tsoa";
+
+import {
+  listNotifications,
+  markNotificationRead,
+} from "./notification.service.js";
+
+import {
+  MarkNotificationReadResponse,
+  NotificationItem,
+  NotificationType,
+} from "./notification.dto.js";
+
+import { ApiResponse } from "../../common/responses/api.response.js";
+import { success } from "../../common/responses/response.js";
+import { SuccessCode } from "../../common/responses/success.code.js";
+
+@Route("notifications")
+@Tags("Notifications")
+export class NotificationController extends Controller {
+  /**
+   * @summary 알림 목록 조회 (읽음/안읽음 상태 포함)
+   */
+  @Get()
+  @Example<ApiResponse<NotificationItem[]>>({
+    success: true,
+    code: "S200",
+    message: "조회에 성공했습니다.",
+    result: [
+      {
+        notificationId: "550e8400-e29b-41d4-a716-446655440000",
+        type: NotificationType.DASHBOARD_COMPLETED,
+        title: "성과 대시보드가 완성됐어요",
+        content: "이번 주 성과 리포트를 확인해보세요.",
+        redirectUrl:
+          "/dashboard/weekly/550e8400-e29b-41d4-a716-446655440000",
+        isRead: false,
+        createdAt: new Date("2026-08-04T09:00:00.000Z"),
+      },
+    ],
+  })
+  public async getNotifications(
+    @Header("Authorization") authorization: string | undefined
+  ): Promise<ApiResponse<NotificationItem[]>> {
+    const data = await listNotifications(authorization);
+    return success(
+      SuccessCode.GET_SUCCESS.code,
+      SuccessCode.GET_SUCCESS.message,
+      data
+    );
+  }
+
+  /**
+   * @summary 알림 읽음 처리
+   */
+  @Patch("{notificationId}/read")
+  @Example<ApiResponse<MarkNotificationReadResponse>>({
+    success: true,
+    code: "S200",
+    message: "수정에 성공했습니다.",
+    result: {
+      notificationId: "550e8400-e29b-41d4-a716-446655440000",
+      isRead: true,
+      redirectUrl:
+        "/dashboard/weekly/550e8400-e29b-41d4-a716-446655440000",
+    },
+  })
+  public async markAsRead(
+    @Header("Authorization") authorization: string | undefined,
+    @Path() notificationId: string
+  ): Promise<ApiResponse<MarkNotificationReadResponse>> {
+    const data = await markNotificationRead(authorization, notificationId);
+
+    return success(
+      SuccessCode.UPDATED.code,
+      SuccessCode.UPDATED.message,
+      data
+    );
+  }
+}

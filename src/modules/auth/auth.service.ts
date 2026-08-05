@@ -27,7 +27,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class DuplicateEmailError extends ApiError {
   constructor() {
-    super(409, "E409", "이미 가입된 이메일입니다.");
+    super(ErrorCode.CONFLICT.status, ErrorCode.CONFLICT.code, '이미 가입된 이메일입니다.');
   }
 }
 
@@ -75,7 +75,11 @@ export class InvalidRefreshTokenError extends ApiError {
 
 export class LocalAccountExistsError extends ApiError {
   constructor() {
-    super(409, "E409", "이미 이메일/비밀번호로 가입된 계정입니다.");
+    super(
+      ErrorCode.CONFLICT.status,
+      ErrorCode.CONFLICT.code,
+      '이미 이메일/비밀번호로 가입된 계정입니다.',
+    );
   }
 }
 
