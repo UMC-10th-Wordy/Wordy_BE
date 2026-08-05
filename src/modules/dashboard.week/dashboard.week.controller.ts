@@ -105,11 +105,7 @@ export class DashboardController extends Controller {
       performanceCount: 8,
       tagCount: 3,
       insights: [
-        {
-          journalDays: 5,
-          performanceCount: 8,
-          tagCount: 3,
-        },
+        { journalDays: 5, performanceCount: 8, tagCount: 3, completionRate: 75 },
       ],
       kpis: [
         {
@@ -125,6 +121,9 @@ export class DashboardController extends Controller {
           periodStart: "2026-06-15",
           periodEnd: "2026-06-21",
           achievementStatus: "COMPLETED",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
+          tagName: "백엔드",
+          color: "#4A90E2",
         },
       ],
       weeklyReflections: [
@@ -136,6 +135,7 @@ export class DashboardController extends Controller {
       ],
       performances: [
         {
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
           achievementRate: 95,
           summary: "JWT 인증 기능 개발 완료",
           growthInsight: {
@@ -242,11 +242,7 @@ export class DashboardController extends Controller {
       tagCount: 3,
 
       insights: [
-        {
-          journalDays: 5,
-          performanceCount: 8,
-          tagCount: 3,
-        },
+        { journalDays: 5, performanceCount: 8, tagCount: 3, completionRate: 75 },
       ],
 
       kpis: [
@@ -264,6 +260,9 @@ export class DashboardController extends Controller {
           periodStart: "2026-06-15",
           periodEnd: "2026-06-21",
           achievementStatus: "COMPLETED",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
+          tagName: "백엔드",
+          color: "#4A90E2",
         },
       ],
 
@@ -271,6 +270,7 @@ export class DashboardController extends Controller {
 
       performances: [
         {
+          dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
           achievementRate: 95,
           summary: "JWT 인증 기능 개발 완료",
           growthInsight: {
