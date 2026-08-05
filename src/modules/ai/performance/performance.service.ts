@@ -149,6 +149,7 @@ export class PerformanceService {
         data: {
           dailyEntryId,
           promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+          status:"TEMP"
         },
       });
 
@@ -198,6 +199,7 @@ export class PerformanceService {
           dailyEntry: {
             userId,
             deletedAt: null,
+            status:"TEMP"
           },
         },
       });
@@ -386,6 +388,7 @@ export class PerformanceService {
           data: {
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
             promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
+            status:"TEMP"
           },
         });
     } 
@@ -396,6 +399,7 @@ export class PerformanceService {
             dailyEntryId: request.dailyEntryId,
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
             promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
+            status:"TEMP"
           },
         });
     }

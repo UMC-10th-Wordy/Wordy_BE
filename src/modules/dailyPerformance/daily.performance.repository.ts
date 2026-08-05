@@ -62,6 +62,7 @@ export class DailyPerformanceRepository {
     return this.prisma.reflectionSnapshot.findFirst({
       where: {
         reflectionSnapshotId,
+        status:"TEMP",
         dailyEntry: {
           userId,
           deletedAt: null,
@@ -300,6 +301,19 @@ export class DailyPerformanceRepository {
       },
       data,
     });
+  }
+
+  async confirmReflectionSnapshot(
+    id:string
+  ){
+    return this.prisma.reflectionSnapshot.update({
+      where:{
+        reflectionSnapshotId:id
+      },
+      data:{
+        status:"SAVED"
+      }
+    })
   }
 
   async deletePerformanceItems(

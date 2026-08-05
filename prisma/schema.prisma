@@ -82,6 +82,11 @@ enum PromptType {
   KPI
 }
 
+enum ReflectionSnapshotStatus {
+  TEMP
+  SAVED
+}
+
 model ApiLog {
   logId      Int      @id @default(autoincrement()) @map("log_id")
   userId     String?  @map("user_id") @db.Char(36)
@@ -282,6 +287,8 @@ model ReflectionSnapshot {
   dailyEntryId         String   @map("daily_entry_id") @db.Char(36)
   promptAResult        Json?    @map("prompt_a_result")
   promptBResult        Json?    @map("prompt_b_result")
+  status               ReflectionSnapshotStatus @default(TEMP)
+  
   createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
   dailyEntry           DailyEntry @relation(fields: [dailyEntryId], references: [dailyEntryId])
   aiQuestions             AIQuestion[]

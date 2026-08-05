@@ -176,6 +176,11 @@ export class DailyPerformanceService {
       );
     }
 
+    // 성과 저장 완료 후 Snapshot 확정
+    await this.repository.confirmReflectionSnapshot(
+      snapshot.reflectionSnapshotId,
+    );
+
     return {
       dailyPerformanceId: performance.dailyPerformanceId,
     };

@@ -115,3 +115,11 @@ export const PromptType = {
 } as const
 
 export type PromptType = (typeof PromptType)[keyof typeof PromptType]
+
+
+export const ReflectionSnapshotStatus = {
+  TEMP: 'TEMP',
+  SAVED: 'SAVED'
+} as const
+
+export type ReflectionSnapshotStatus = (typeof ReflectionSnapshotStatus)[keyof typeof ReflectionSnapshotStatus]
