@@ -3,7 +3,7 @@ import { LlmClient } from "../common/llm.client.js";
 import { ResponseParser } from "../common/response.parser.js";
 import { RuleEngine } from "../common/rule.engine.js";
 
-import { PerformanceRequestDto } from "./dto/api/performance.request.dto.js";
+import { PerformanceRequestDto, TaskDto } from "./dto/api/performance.request.dto.js";
 import { PerformanceQuestionRequestDto } from "./dto/api/performance.question.request.dto.js";
 import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/performance.response.dto.js";
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto.js";
@@ -13,6 +13,7 @@ import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyE
 import { verifyAccessToken } from "../../../auth.config.js";
 import { ApiError } from "../../../common/errors/api.error.js";
 import { ErrorCode } from "../../../common/errors/error.code.js";
+import { TaskStatus } from "../../tasks/task.dto.js";
 
 export class PerformanceService {
   constructor(
@@ -324,9 +325,23 @@ export class PerformanceService {
   ): Promise<PerformanceResponseDto> {
 
     // Prompt B 생성
+    const completedTaskIds = new Set(
+      request.tasks
+        .filter(task => task.status === TaskStatus.COMPLETED)
+        .map(task => task.taskId),
+    );
+
+    const filteredPromptATasks =
+      promptAResult.tasks.filter(task =>
+        completedTaskIds.has(task.taskId),
+      );
+
     const promptBRequest =
       this.promptManager.buildPromptB({
-        structuredData: promptAResult,
+        structuredData: {
+          ...promptAResult,
+          tasks: filteredPromptATasks,
+        },
         userJob: request.userJob,
         yearsOfService: request.yearsOfService,
         projectTag: request.projectTag,
@@ -344,9 +359,19 @@ export class PerformanceService {
         promptBResponse,
       );
 
+    const filteredTaskPerformances =
+      (promptBResult.taskPerformances ?? []).filter(
+        task => completedTaskIds.has(task.taskId),
+      );
+
+    const finalPromptBResult = {
+      ...promptBResult,
+      taskPerformances: filteredTaskPerformances,
+    };
+
     // Rule 검증
     this.ruleEngine.validatePromptB(
-      promptBResult,
+      finalPromptBResult,
     );
 
     let snapshot;
@@ -360,7 +385,7 @@ export class PerformanceService {
           },
           data: {
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            promptBResult: JSON.parse(JSON.stringify(promptBResult)),
+            promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
           },
         });
     } 
@@ -370,10 +395,24 @@ export class PerformanceService {
           data: {
             dailyEntryId: request.dailyEntryId,
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            promptBResult: JSON.parse(JSON.stringify(promptBResult)),
+            promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
           },
         });
     }
+  
+  // 기존 업무 스냅샷 제거 (재변환 대비)
+  await this.prisma.reflectionTaskSnapshot.deleteMany({
+    where: {
+      reflectionSnapshotId:
+        snapshot.reflectionSnapshotId,
+    },
+  });
+
+  // 변환 시점 업무 스냅샷 생성
+  await this.createReflectionTaskSnapshots(
+    snapshot.reflectionSnapshotId,
+    request.tasks,
+  );
 
   await this.prisma.aIRun.create({
     data: {
@@ -389,11 +428,43 @@ export class PerformanceService {
 
     return {
       status: "COMPLETED",
-      summary: promptBResult.summary,
-      growthInsights: promptBResult.growthInsights,
-      nextActions: promptBResult.nextActions,
-      taskPerformances: promptBResult.taskPerformances,
+      summary: finalPromptBResult.summary,
+      growthInsights: finalPromptBResult.growthInsights,
+      nextActions: finalPromptBResult.nextActions,
+      taskPerformances: finalPromptBResult.taskPerformances,
       reflectionSnapshotId: snapshot.reflectionSnapshotId,
     };
+  }
+
+    private async createReflectionTaskSnapshots(
+    reflectionSnapshotId: string,
+    tasks: TaskDto[],
+  ) {
+    for (const task of tasks) {
+      const taskSnapshot =
+        await this.prisma.reflectionTaskSnapshot.create({
+          data: {
+            reflectionSnapshotId,
+            taskId: task.taskId,
+            title: task.title,
+            priority: task.priority,
+            memo: task.memo ?? null,
+            status: task.status,
+            completedAt: task.completedAt
+              ? new Date(task.completedAt)
+              : null,
+          },
+        });
+
+      if (task.taskResult?.taskResultId) {
+        await this.prisma.reflectionTaskResultSnapshot.create({
+          data: {
+            reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
+            taskResultId: task.taskResult.taskResultId,
+            content: task.taskResult.content,
+          },
+        });
+      }
+    }
   }
 }

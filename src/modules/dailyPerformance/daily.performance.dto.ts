@@ -179,7 +179,6 @@ export class UpdateDailyPerformanceRequestDto {
   growthInsights!: string[];
 }
 
-
 export class UpdateDailyPerformanceResponseDto {
   @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   dailyPerformanceId!: string;

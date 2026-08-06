@@ -73,12 +73,9 @@ export class DailyPerformanceService {
     const promptB =
       snapshot.promptBResult as unknown as PromptBOutputDto;
 
-    // Task 조회
+    // ReflectionTaskSnapshot 기준 업무 조회
     const tasks =
-      await this.repository.findTasksByDailyEntry(
-        snapshot.dailyEntryId,
-        userId,
-      );
+        snapshot.reflectionTaskSnapshots ?? [];
 
     // 업무 달성률 계산
     const completedCount = tasks.filter(
@@ -102,9 +99,9 @@ export class DailyPerformanceService {
     let performance;
 
     const incompleteTasks =
-    tasks.filter(
-      task => task.status === TaskStatus.IN_PROGRESS
-    );
+      tasks.filter(
+        task => task.status === TaskStatus.IN_PROGRESS
+      );
 
     const performanceData = {
       reflectionSnapshotId: snapshot.reflectionSnapshotId,
@@ -116,10 +113,10 @@ export class DailyPerformanceService {
           incompleteTasks.map(task => ({
             taskId: task.taskId,
             title: task.title,
-            tag: task.tag
+            tag: task.task?.tag
               ? {
-                  tagName: task.tag.tagName,
-                  color: task.tag.color,
+                  tagName: task.task.tag.tagName,
+                  color: task.task.tag.color,
                 }
               : null,
           }))
@@ -156,8 +153,16 @@ export class DailyPerformanceService {
     }
 
     // PerformanceItem 저장
+    const completedTaskIds = new Set(
+      tasks
+        .filter(task => task.status === TaskStatus.COMPLETED)
+        .map(task => task.taskId),
+    );
+
     const taskPerformances =
-      promptB.taskPerformances ?? [];
+      (promptB.taskPerformances ?? []).filter(task =>
+        completedTaskIds.has(task.taskId),
+      );
 
     if (taskPerformances.length > 0) {
       await this.repository.createPerformanceItems(
@@ -206,10 +211,8 @@ export class DailyPerformanceService {
   ): Promise<PerformanceDetailResponseDto> {
 
     const tasks =
-      await this.repository.findTasksByDailyEntry(
-        performance.dailyEntryId,
-        userId,
-      );
+      performance.reflectionSnapshot.reflectionTaskSnapshots
+        .filter(task => task.status === TaskStatus.COMPLETED);
 
     const taskPerformances =
       tasks.map((task) => {
@@ -223,10 +226,10 @@ export class DailyPerformanceService {
         if (!performanceItem) {
           return {
             taskId: task.taskId,
-            tag: task.tag
+            tag: task.task?.tag
               ? {
-                  tagName: task.tag.tagName,
-                  color: task.tag.color,
+                  tagName: task.task.tag.tagName,
+                  color: task.task.tag.color,
                 }
               : null,
             title: task.title,
@@ -239,10 +242,10 @@ export class DailyPerformanceService {
 
         return {
           taskId: task.taskId,
-          tag: task.tag
+          tag: task.task?.tag
             ? {
-                tagName: task.tag.tagName,
-                color: task.tag.color,
+                tagName: task.task.tag.tagName,
+                color: task.task.tag.color,
               }
             : null,
           title: task.title,
