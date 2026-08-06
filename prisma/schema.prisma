@@ -114,6 +114,7 @@ model User {
   dailyEntries DailyEntry[]
   dashboards   Dashboard[]
   dailyPerformances DailyPerformance[]
+  reflectionDrafts ReflectionDraft[]
 
   @@map("User")
 }
@@ -517,4 +518,27 @@ model WeeklyReflection {
 
   @@index([dashboardId])
   @@map("WeeklyReflection")
+}
+
+enum DraftType {
+  WEEKLY
+  MONTHLY
+}
+
+model ReflectionDraft {
+  reflectionDraftId String    @id @default(uuid()) @map("reflection_draft_id") @db.Char(36)
+  userId            String    @map("user_id") @db.Char(36)
+  type              DraftType
+  workSummary       String?   @map("work_summary") @db.Text
+  resourcesUsed     String?   @map("resources_used") @db.Text
+  learning          String?   @db.Text
+  taskPlans         Json?     @map("task_plans")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@map("ReflectionDraft")
 }

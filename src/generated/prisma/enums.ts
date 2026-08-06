@@ -115,3 +115,11 @@ export const PromptType = {
 } as const
 
 export type PromptType = (typeof PromptType)[keyof typeof PromptType]
+
+
+export const DraftType = {
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+} as const
+
+export type DraftType = (typeof DraftType)[keyof typeof DraftType]

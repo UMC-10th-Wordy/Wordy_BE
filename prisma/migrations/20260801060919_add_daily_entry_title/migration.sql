@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `dailyentry` ADD COLUMN `title` VARCHAR(255) NOT NULL DEFAULT '';
+ALTER TABLE `Dailyentry` ADD COLUMN `title` VARCHAR(255) NOT NULL DEFAULT '';
