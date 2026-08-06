@@ -134,3 +134,11 @@ export const NotificationType = {
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const DashboardType = {
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+} as const
+
+export type DashboardType = (typeof DashboardType)[keyof typeof DashboardType]

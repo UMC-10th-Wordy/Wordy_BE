@@ -28,6 +28,7 @@ export class DailyPerformanceController extends Controller {
     this.dailyPerformanceService =
       new DailyPerformanceService(
         new DailyPerformanceRepository(prisma),
+        prisma,
       );
   }
 

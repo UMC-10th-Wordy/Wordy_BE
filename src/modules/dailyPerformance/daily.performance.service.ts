@@ -1,3 +1,4 @@
+import { Prisma, PrismaClient } from "../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../auth.config.js";
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
@@ -10,6 +11,7 @@ import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.perf
 export class DailyPerformanceService {
   constructor(
     private readonly repository: DailyPerformanceRepository,
+    private readonly prisma: PrismaClient,
   ) {}
 
   private extractUserId(
@@ -96,8 +98,6 @@ export class DailyPerformanceService {
         userId,
       );
 
-    let performance;
-
     const incompleteTasks =
       tasks.filter(
         task => task.status === TaskStatus.IN_PROGRESS
@@ -128,30 +128,6 @@ export class DailyPerformanceService {
       structuredResult: JSON.parse(JSON.stringify(promptA)),
     };
 
-    // 기존 성과 있으면 갱신
-    if (existingPerformance) {
-      performance =
-        await this.repository.updateDailyPerformance(
-          existingPerformance.dailyPerformanceId,
-          performanceData,
-        );
-
-      // 기존 Task 성과 제거
-      await this.repository.deletePerformanceItems(
-        existingPerformance.dailyPerformanceId,
-      );
-
-    } 
-    // 없으면 신규 생성
-    else {
-      performance =
-        await this.repository.createDailyPerformance({
-          userId,
-          dailyEntryId: snapshot.dailyEntryId,
-          ...performanceData,
-        });
-    }
-
     // PerformanceItem 저장
     const completedTaskIds = new Set(
       tasks
@@ -160,26 +136,81 @@ export class DailyPerformanceService {
     );
 
     const taskPerformances =
-      (promptB.taskPerformances ?? []).filter(task =>
+      (
+        promptB.taskPerformances ?? []).filter(task =>
         completedTaskIds.has(task.taskId),
       );
 
-    if (taskPerformances.length > 0) {
-      await this.repository.createPerformanceItems(
-        taskPerformances.map((task) => ({
-          dailyPerformanceId:
-            performance.dailyPerformanceId,
-          taskId: task.taskId,
-          output: (task.output ?? []).join("\n"),
-          impact: (task.impact ?? []).join("\n"),
-        })),
-      );
-    }
+    const performance =
+      await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 
-    // 성과 저장 완료 후 Snapshot 확정
-    await this.repository.confirmReflectionSnapshot(
-      snapshot.reflectionSnapshotId,
-    );
+        let savedPerformance;
+
+
+        // 기존 성과 수정
+        if (existingPerformance) {
+
+          savedPerformance =
+            await this.repository.updateDailyPerformance(
+              existingPerformance.dailyPerformanceId,
+              performanceData,
+              tx,
+            );
+
+
+          await this.repository.deletePerformanceItems(
+            existingPerformance.dailyPerformanceId,
+            tx,
+          );
+
+
+        } 
+        // 신규 생성
+        else {
+
+          savedPerformance =
+            await this.repository.createDailyPerformance(
+              {
+                userId,
+                dailyEntryId: snapshot.dailyEntryId,
+                ...performanceData,
+              },
+              tx,
+            );
+        }
+
+
+        // PerformanceItem 생성
+        if (taskPerformances.length > 0) {
+
+          await this.repository.createPerformanceItems(
+            taskPerformances.map((task)=>({
+              dailyPerformanceId:
+                savedPerformance.dailyPerformanceId,
+
+              taskId: task.taskId,
+
+              output:
+                (task.output ?? []).join("\n"),
+
+              impact:
+                (task.impact ?? []).join("\n"),
+            })),
+            tx,
+          );
+
+        }
+
+
+        // Snapshot SAVED 변경
+        await this.repository.confirmReflectionSnapshot(
+          snapshot.reflectionSnapshotId,
+          tx,
+        );
+
+
+        return savedPerformance;
+      });
 
     return {
       dailyPerformanceId: performance.dailyPerformanceId,

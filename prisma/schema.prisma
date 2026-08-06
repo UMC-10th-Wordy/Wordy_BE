@@ -95,6 +95,11 @@ enum NotificationType {
   DASHBOARD_INDUCE
 }
 
+enum DashboardType {
+  WEEKLY
+  MONTHLY
+}
+
 model ApiLog {
   logId      Int      @id @default(autoincrement()) @map("log_id")
   userId     String?  @map("user_id") @db.Char(36)
@@ -331,6 +336,8 @@ model ReflectionSnapshot {
   status               ReflectionSnapshotStatus @default(TEMP)
   
   createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt            DateTime @updatedAt @map("updated_at")  @db.DateTime(0)
+
   dailyEntry           DailyEntry @relation(fields: [dailyEntryId], references: [dailyEntryId])
   aiQuestions             AIQuestion[]
   dailyPerformances       DailyPerformance[]
@@ -481,6 +488,7 @@ model Dashboard {
   journalDays      Int       @map("journal_days")
   performanceCount Int       @map("performance_count")
   tagCount         Int       @map("tag_count")
+  type             DashboardType @default(WEEKLY)
   createdAt        DateTime  @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt        DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt        DateTime? @map("deleted_at") @db.DateTime(0)

@@ -185,6 +185,7 @@ export class DashboardService {
     const dashboard = await this.prisma.dashboard.create({
       data: {
         userId,
+        type:"WEEKLY",
 
         startDate: new Date(request.startDate),
         endDate: new Date(request.endDate),
@@ -312,7 +313,7 @@ export class DashboardService {
 
             if (!tagMap.has(tagId)) {
               tagMap.set(
-                tagName,
+                tagId,
                 {
                   tagId,
                   tagName,
@@ -405,6 +406,7 @@ export class DashboardService {
       await this.prisma.dashboard.findMany({
         where:{
           userId,
+          type:"WEEKLY",
           startDate:{
             gte:new Date(request.startDate),
           },
@@ -521,6 +523,7 @@ export class DashboardService {
     const dashboard = await this.prisma.dashboard.create({
       data: {
         userId,
+        type:"MONTHLY",
 
         startDate: new Date(request.startDate),
         endDate: new Date(request.endDate),

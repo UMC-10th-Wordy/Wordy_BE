@@ -55,6 +55,14 @@ export class DailyPerformanceRepository {
     private readonly prisma: PrismaClient,
   ) {}
 
+  async transaction<T>(
+    callback: (
+      tx: Prisma.TransactionClient
+    ) => Promise<T>,
+  ): Promise<T> {
+    return this.prisma.$transaction(callback);
+  }
+
   async findReflectionSnapshot(
     reflectionSnapshotId: string,
     userId: string,
@@ -109,16 +117,22 @@ export class DailyPerformanceRepository {
 
   async createDailyPerformance(
     data: Prisma.DailyPerformanceUncheckedCreateInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<DailyPerformance> {
-    return this.prisma.dailyPerformance.create({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.dailyPerformance.create({
       data,
     });
   }
 
   async createPerformanceItems(
     data: Prisma.PerformanceItemUncheckedCreateInput[],
+    tx?: Prisma.TransactionClient,
   ): Promise<Prisma.BatchPayload> {
-    return this.prisma.performanceItem.createMany({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.performanceItem.createMany({
       data,
     });
   }
@@ -324,8 +338,11 @@ export class DailyPerformanceRepository {
   async updateDailyPerformance(
     dailyPerformanceId: string,
     data: Prisma.DailyPerformanceUncheckedUpdateInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<DailyPerformance> {
-    return this.prisma.dailyPerformance.update({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.dailyPerformance.update({
       where: {
         dailyPerformanceId,
       },
@@ -334,9 +351,12 @@ export class DailyPerformanceRepository {
   }
 
   async confirmReflectionSnapshot(
-    id:string
+    id:string,
+    tx?: Prisma.TransactionClient,
   ){
-    return this.prisma.reflectionSnapshot.update({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.reflectionSnapshot.update({
       where:{
         reflectionSnapshotId:id
       },
@@ -348,8 +368,11 @@ export class DailyPerformanceRepository {
 
   async deletePerformanceItems(
     dailyPerformanceId: string,
+    tx?: Prisma.TransactionClient,
   ): Promise<Prisma.BatchPayload> {
-    return this.prisma.performanceItem.deleteMany({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.performanceItem.deleteMany({
       where: {
         dailyPerformanceId,
       },
