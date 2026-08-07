@@ -11,6 +11,7 @@ export interface MonthlyKpiOutputDto {
 }
 
 export interface MonthlyTagAnalysisOutputDto {
+  tagId: string;
   tagName:string;
   achievementStatus:string;
   insight:string;

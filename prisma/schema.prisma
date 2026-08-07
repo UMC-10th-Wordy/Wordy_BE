@@ -82,10 +82,22 @@ enum PromptType {
   KPI
 }
 
+enum ReflectionSnapshotStatus {
+  PROCESSING
+  TEMP
+  SAVED
+  FAILED
+}
+
 enum NotificationType {
   MARKETING_PROMOTION
   DASHBOARD_COMPLETED
   DASHBOARD_INDUCE
+}
+
+enum DashboardType {
+  WEEKLY
+  MONTHLY
 }
 
 model ApiLog {
@@ -321,7 +333,11 @@ model ReflectionSnapshot {
   dailyEntryId         String   @map("daily_entry_id") @db.Char(36)
   promptAResult        Json?    @map("prompt_a_result")
   promptBResult        Json?    @map("prompt_b_result")
+  status               ReflectionSnapshotStatus @default(TEMP)
+  
   createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt            DateTime @updatedAt @map("updated_at")  @db.DateTime(0)
+
   dailyEntry           DailyEntry @relation(fields: [dailyEntryId], references: [dailyEntryId])
   aiQuestions             AIQuestion[]
   dailyPerformances       DailyPerformance[]
@@ -472,6 +488,7 @@ model Dashboard {
   journalDays      Int       @map("journal_days")
   performanceCount Int       @map("performance_count")
   tagCount         Int       @map("tag_count")
+  type             DashboardType @default(WEEKLY)
   createdAt        DateTime  @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt        DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt        DateTime? @map("deleted_at") @db.DateTime(0)
@@ -533,6 +550,7 @@ model DashboardTagAnalysis {
   periodStart            DateTime? @map("period_start") @db.Date
   periodEnd              DateTime? @map("period_end") @db.Date
   achievementStatus      String?   @map("achievement_status") @db.Text
+  insight                String?   @map("insight") @db.Text
   tagId                  String?   @map("tag_id") @db.Char(36)      //  추가
   tagName                String?   @map("tag_name") @db.VarChar(30) //  추가
   color                  String?   @db.VarChar(20)                  //  추가
