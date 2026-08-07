@@ -416,7 +416,12 @@ export class DailyPerformanceService {
             memo: taskSnapshot.memo,
             status: taskSnapshot.status,
             completedAt: taskSnapshot.completedAt,
-            tag: taskSnapshot.task?.tag ?? null,
+            tag: taskSnapshot.task?.tag
+              ? {
+                  tagName: taskSnapshot.task.tag.tagName,
+                  color: taskSnapshot.task.tag.color,
+                }
+              : null,
             results: taskSnapshot.resultSnapshots,
           }),
         ),
