@@ -116,6 +116,17 @@ export class DashboardService {
         },
       });
 
+    // 기존 대시보드 존재 시 하위데이터 삭제
+    const existingDashboard =
+      await this.prisma.dashboard.findFirst({
+        where: {
+          userId,
+          type: "WEEKLY",
+          startDate: new Date(request.startDate),
+          endDate: new Date(request.endDate),
+        },
+      });
+
     // 2. Prompt C Input 생성
     const promptCInput: PromptCInputDto = {
       startDate: request.startDate,
@@ -182,46 +193,105 @@ export class DashboardService {
     );
 
     // 8. Dashboard 저장
-    const dashboard = await this.prisma.dashboard.create({
-      data: {
-        userId,
-        type:"WEEKLY",
+    const dashboard = await this.prisma.$transaction(
+      async (tx) => {
+        let dashboardId: string;
 
-        startDate: new Date(request.startDate),
-        endDate: new Date(request.endDate),
+        if (existingDashboard) {
+          // 기존 Dashboard의 하위 데이터 삭제
+          await tx.dashboardPerformance.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
 
-        summary: dashboardResult.summary,
+          await tx.dashboardKPI.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
 
-        journalDays: performances.length,
-        performanceCount: performances.length,
-        tagCount: dashboardResult.tagAnalyses.length,
+          await tx.dashboardInsight.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
 
-        performances: {
-          create: performances.map((performance) => ({
-            dailyPerformanceId: performance.dailyPerformanceId,
+          await tx.dashboardTagAnalysis.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
+
+          dashboardId = existingDashboard.dashboardId;
+        } else {
+          // 새 Dashboard ID 생성
+          dashboardId = crypto.randomUUID();
+        }
+
+        // 기존 Dashboard면 update,
+        // 없으면 create
+        const dashboard = existingDashboard
+          ? await tx.dashboard.update({
+              where: {
+                dashboardId,
+              },
+              data: {
+                summary: dashboardResult.summary,
+                journalDays: performances.length,
+                performanceCount: performances.length,
+                tagCount: dashboardResult.tagAnalyses.length,
+              },
+            })
+          : await tx.dashboard.create({
+              data: {
+                dashboardId,
+                userId,
+                type: "WEEKLY",
+                startDate: new Date(request.startDate),
+                endDate: new Date(request.endDate),
+
+                summary: dashboardResult.summary,
+
+                journalDays: performances.length,
+                performanceCount: performances.length,
+                tagCount: dashboardResult.tagAnalyses.length,
+              },
+            });
+
+        // 공통 하위 데이터 생성
+        await tx.dashboardPerformance.createMany({
+          data: performances.map((performance) => ({
+            dashboardId,
+            dailyPerformanceId:
+              performance.dailyPerformanceId,
           })),
-        },
+        });
 
-        kpis: {
-          create: dashboardResult.kpis.map((kpi) => ({
+        await tx.dashboardKPI.createMany({
+          data: dashboardResult.kpis.map((kpi) => ({
+            dashboardId,
             kpiName: kpi.kpiName,
             progress: kpi.progress,
           })),
-        },
+        });
 
-        insights: {
-          create: {
+        await tx.dashboardInsight.create({
+          data: {
+            dashboardId,
             journalDays: performances.length,
             performanceCount: performances.length,
             tagCount: dashboardResult.tagAnalyses.length,
           },
-        },
+        });
 
-        tagAnalyses: {
-          create: dashboardResult.tagAnalyses.map((tag) => {
+        await tx.dashboardTagAnalysis.createMany({
+          data: dashboardResult.tagAnalyses.map((tag) => {
             const tagInfo = tagInfoMap.get(tag.tagId);
 
             return {
+              dashboardId,
+
               tagId: tagInfo?.tagId ?? "",
               tagName: tagInfo?.tagName ?? "",
               color: tagInfo?.color ?? "",
@@ -236,9 +306,11 @@ export class DashboardService {
               periodEnd: new Date(request.endDate),
             };
           }),
-        },
+        });
+
+        return dashboard;
       },
-    });
+    );
 
     // 12. Response 반환
     return {
@@ -516,44 +588,103 @@ export class DashboardService {
         promptResponse,
       );
 
+    // 7. Rule 검증
     this.ruleEngine.validatePromptD(
       monthlyResult,
     );
 
-    const dashboard = await this.prisma.dashboard.create({
-      data: {
-        userId,
-        type:"MONTHLY",
+    // 기존 월간 대시보드 조회
+    const existingDashboard =
+      await this.prisma.dashboard.findFirst({
+        where: {
+          userId,
+          type: "MONTHLY",
+          startDate: new Date(request.startDate),
+          endDate: new Date(request.endDate),
+        },
+      });
 
-        startDate: new Date(request.startDate),
-        endDate: new Date(request.endDate),
+    // 8. Dashboard 저장
+    const dashboard = await this.prisma.$transaction(
+      async (tx) => {
+        let dashboard;
 
-        summary: monthlyResult.summary,
+        if (existingDashboard) {
+          // 기존 Dashboard의 하위 데이터 삭제
+          await tx.dashboardKPI.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
 
-        journalDays: 0,
-        performanceCount: weeklyDashboards.length,
-        tagCount: monthlyResult.tagAnalyses.length,
+          await tx.dashboardInsight.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
 
-        kpis: {
-          create: monthlyResult.kpis.map((kpi) => ({
+          await tx.dashboardTagAnalysis.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
+
+          // 기존 Dashboard 본체 갱신
+          dashboard = await tx.dashboard.update({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+            data: {
+              summary: monthlyResult.summary,
+              journalDays: 0,
+              performanceCount: weeklyDashboards.length,
+              tagCount: monthlyResult.tagAnalyses.length,
+            },
+          });
+        } else {
+          // 기존 Dashboard가 없으면 새로 생성
+          dashboard = await tx.dashboard.create({
+            data: {
+              userId,
+              type: "MONTHLY",
+
+              startDate: new Date(request.startDate),
+              endDate: new Date(request.endDate),
+
+              summary: monthlyResult.summary,
+
+              journalDays: 0,
+              performanceCount: weeklyDashboards.length,
+              tagCount: monthlyResult.tagAnalyses.length,
+            },
+          });
+        }
+
+        // 공통 하위 데이터 생성
+        await tx.dashboardKPI.createMany({
+          data: monthlyResult.kpis.map((kpi) => ({
+            dashboardId: dashboard.dashboardId,
             kpiName: kpi.kpiName,
             progress: kpi.progress,
           })),
-        },
+        });
 
-        insights: {
-          create: {
+        await tx.dashboardInsight.create({
+          data: {
+            dashboardId: dashboard.dashboardId,
             journalDays: 0,
             performanceCount: weeklyDashboards.length,
             tagCount: monthlyResult.tagAnalyses.length,
           },
-        },
+        });
 
-        tagAnalyses: {
-          create: monthlyResult.tagAnalyses.map((tag) => {
+        await tx.dashboardTagAnalysis.createMany({
+          data: monthlyResult.tagAnalyses.map((tag) => {
             const tagInfo = tagInfoMap.get(tag.tagId);
 
             return {
+              dashboardId: dashboard.dashboardId,
+
               tagId: tagInfo?.tagId ?? "",
               tagName: tagInfo?.tagName ?? "",
               color: tagInfo?.color ?? "",
@@ -567,27 +698,29 @@ export class DashboardService {
               periodEnd: new Date(request.endDate),
             };
           }),
-        },
-      },
-    });
+        });
 
-    return {
-      dashboardId: dashboard.dashboardId,
-      startDate: request.startDate,
-      endDate: request.endDate,
-      summary: monthlyResult.summary,
-      journalDays:0,
-      performanceCount: weeklyDashboards.length,
-      tagCount: monthlyResult.tagAnalyses.length,
-      kpis:
-        monthlyResult.kpis.map(
-          (kpi)=>({
-            kpiName:kpi.kpiName,
-            progress:kpi.progress,
+        return dashboard;
+      });
+
+      // 9. Response 반환
+      return {
+        dashboardId: dashboard.dashboardId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        summary: monthlyResult.summary,
+        journalDays: 0,
+        performanceCount: weeklyDashboards.length,
+        tagCount: monthlyResult.tagAnalyses.length,
+
+        kpis: monthlyResult.kpis.map(
+          (kpi) => ({
+            kpiName: kpi.kpiName,
+            progress: kpi.progress,
           }),
         ),
-      tagAnalyses:
-        monthlyResult.tagAnalyses.map((tag) => {
+
+        tagAnalyses: monthlyResult.tagAnalyses.map((tag) => {
           const tagInfo = tagInfoMap.get(tag.tagId);
 
           return {
@@ -601,6 +734,6 @@ export class DashboardService {
             insight: tag.insight,
           };
         }),
-    };
+      };
   }
 }
