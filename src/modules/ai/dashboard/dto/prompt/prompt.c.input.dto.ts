@@ -17,7 +17,9 @@ export interface WeeklySummaryCandidateDto {
 }
 
 export interface DashboardTagInputDto {
-  tagName:string;
+  tagId: string;
+  tagName: string;
+  color: string;
   projectName?: string;
   projectPurpose?: string;
   expectedOutcome?: string;
