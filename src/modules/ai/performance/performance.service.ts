@@ -131,12 +131,35 @@ export class PerformanceService {
       };
     }
       // 질문 필요 없으면 바로 완료
-      return this.createPerformanceResult(
+      const snapshot =
+        await this.preparePerformanceSnapshot(
+          promptAResult,
+          request,
+        );
+
+      void this.runPromptB(
+        snapshot.reflectionSnapshotId,
         promptAResult,
         request,
-        dailyEntry,
-        userId,
-      );
+      ).catch(async(error)=>{
+        console.error(error);
+
+        await this.prisma.reflectionSnapshot.update({
+          where:{
+            reflectionSnapshotId:
+              snapshot.reflectionSnapshotId,
+          },
+          data:{
+            status:"FAILED",
+          },
+        });
+      });
+
+      return {
+        status: "PROCESSING",
+        reflectionSnapshotId:
+          snapshot.reflectionSnapshotId,
+      };
     }
   
   // 질문 단계 snapshot 생성
@@ -144,44 +167,52 @@ export class PerformanceService {
     dailyEntryId: string,
     promptAResult: PromptAOutputDto,
   ) {
-    const snapshot =
-      await this.prisma.reflectionSnapshot.create({
-        data: {
-          dailyEntryId,
-          promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-        },
-      });
+    return await this.prisma.$transaction(async (tx) => {
 
-    const supplementQuestions: SupplementQuestionDto[] = [];
-
-    if (
-      promptAResult.followUpQuestions &&
-      promptAResult.followUpQuestions.length > 0
-    ) {
-      for (const [index, question] of promptAResult.followUpQuestions.entries()) {
-        const createdQuestion =
-          await this.prisma.aIQuestion.create({
-            data: {
-              reflectionSnapshotId:
-                snapshot.reflectionSnapshotId,
-              questionContent: question.question,
-              reason: question.reason ?? null,
-              order: index + 1,
-            },
-          });
-
-        supplementQuestions.push({
-          aiQuestionId: createdQuestion.aiQuestionId,
-          question: createdQuestion.questionContent,
-          reason: createdQuestion.reason ?? "",
+      const snapshot =
+        await tx.reflectionSnapshot.create({
+          data: {
+            dailyEntryId,
+            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+            status: "TEMP",
+          },
         });
-      }
-    }
 
-    return {
-      reflectionSnapshotId: snapshot.reflectionSnapshotId,
-      supplementQuestions,
-    };
+      const supplementQuestions: SupplementQuestionDto[] = [];
+
+      if (
+        promptAResult.followUpQuestions &&
+        promptAResult.followUpQuestions.length > 0
+      ) {
+
+        for (
+          const [index, question]
+          of promptAResult.followUpQuestions.entries()
+        ) {
+
+          const createdQuestion =
+            await tx.aIQuestion.create({
+              data:{
+                reflectionSnapshotId: snapshot.reflectionSnapshotId,
+                questionContent: question.question,
+                reason: question.reason ?? null,
+                order:index + 1,
+              },
+            });
+
+          supplementQuestions.push({
+            aiQuestionId: createdQuestion.aiQuestionId,
+            question: createdQuestion.questionContent,
+            reason: createdQuestion.reason ?? "",
+          });
+        }
+      }
+
+      return {
+        reflectionSnapshotId: snapshot.reflectionSnapshotId,
+        supplementQuestions,
+      };
+    });
   }
 
   // 질문 답변 후 최종 생성
@@ -306,25 +337,93 @@ export class PerformanceService {
       );
     }
 
-    return this.createPerformanceResult(
+    const updatedSnapshot =
+      await this.preparePerformanceSnapshot(
+        promptAResult,
+        request.originalRequest,
+        request.reflectionSnapshotId,
+      );
+
+    void this.runPromptB(
+      updatedSnapshot.reflectionSnapshotId,
       promptAResult,
       request.originalRequest,
-      dailyEntry,
-      userId,
-      request.reflectionSnapshotId,
-    );
+    ).catch(async (error) => {
+      console.error(error);
+
+      await this.prisma.reflectionSnapshot.update({
+        where:{
+          reflectionSnapshotId:
+            updatedSnapshot.reflectionSnapshotId,
+        },
+        data:{
+          status:"FAILED",
+        },
+      });
+    });
+
+    return {
+      status: "PROCESSING",
+      reflectionSnapshotId:
+        updatedSnapshot.reflectionSnapshotId,
+    };
   }
 
   // Prompt B 실행 + 저장
-  private async createPerformanceResult(
+  private async preparePerformanceSnapshot(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
-    dailyEntry: DailyEntry,
-    userId: string,
     reflectionSnapshotId?: string,
-  ): Promise<PerformanceResponseDto> {
+  ) {
 
-    // Prompt B 생성
+  return await this.prisma.$transaction(async(tx)=>{
+
+    let snapshot;
+
+    if(reflectionSnapshotId){
+      snapshot =
+        await tx.reflectionSnapshot.update({
+          where:{
+            reflectionSnapshotId,
+          },
+          data:{
+            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+            status:"PROCESSING",
+          },
+        });
+
+    }else{
+      snapshot =
+        await tx.reflectionSnapshot.create({
+          data:{
+            dailyEntryId: request.dailyEntryId,
+            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+            status:"PROCESSING",
+          },
+        });
+    }
+
+    await tx.reflectionTaskSnapshot.deleteMany({
+      where:{
+        reflectionSnapshotId: snapshot.reflectionSnapshotId,
+      },
+    });
+
+    await this.createReflectionTaskSnapshots(
+      tx,
+      snapshot.reflectionSnapshotId,
+      request.tasks,
+    );
+
+    return snapshot;
+    });
+  }
+
+  private async runPromptB(
+    snapshotId: string,
+    promptAResult: PromptAOutputDto,
+    request: PerformanceRequestDto,
+  ) {
     const completedTaskIds = new Set(
       request.tasks
         .filter(task => task.status === TaskStatus.COMPLETED)
@@ -347,13 +446,9 @@ export class PerformanceService {
         projectTag: request.projectTag,
       });
 
-    // LLM 호출
     const promptBResponse =
-      await this.llmClient.generate(
-        promptBRequest,
-      );
+      await this.llmClient.generate(promptBRequest);
 
-    // Parsing
     const promptBResult =
       this.responseParser.parse<PromptBOutputDto>(
         promptBResponse,
@@ -369,80 +464,42 @@ export class PerformanceService {
       taskPerformances: filteredTaskPerformances,
     };
 
-    // Rule 검증
     this.ruleEngine.validatePromptB(
       finalPromptBResult,
     );
 
-    let snapshot;
+    await this.prisma.$transaction(async(tx)=>{
+      await tx.reflectionSnapshot.update({
+        where:{
+          reflectionSnapshotId:snapshotId
+        },
+        data:{
+          promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
+          status:"TEMP",
+        },
+      });
 
-    // 질문 후 완료 → 기존 Snapshot 업데이트
-    if (reflectionSnapshotId) {
-      snapshot =
-        await this.prisma.reflectionSnapshot.update({
-          where: {
-            reflectionSnapshotId,
-          },
-          data: {
-            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
-          },
-        });
-    } 
-    else {
-      snapshot =
-        await this.prisma.reflectionSnapshot.create({
-          data: {
-            dailyEntryId: request.dailyEntryId,
-            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            promptBResult: JSON.parse(JSON.stringify(finalPromptBResult)),
-          },
-        });
-    }
-  
-  // 기존 업무 스냅샷 제거 (재변환 대비)
-  await this.prisma.reflectionTaskSnapshot.deleteMany({
-    where: {
-      reflectionSnapshotId:
-        snapshot.reflectionSnapshotId,
-    },
-  });
-
-  // 변환 시점 업무 스냅샷 생성
-  await this.createReflectionTaskSnapshots(
-    snapshot.reflectionSnapshotId,
-    request.tasks,
-  );
-
-  await this.prisma.aIRun.create({
-    data: {
-      promptType: PromptType.PROMPT_B,
-      promptVersion: "v1",
-      request: JSON.parse(JSON.stringify(promptBRequest)),
-      response: promptBResponse,
-      status: AiRunStatus.SUCCESS,
-      reflectionSnapshotId:
-        snapshot.reflectionSnapshotId,
-    },
-  });
-
-    return {
-      status: "COMPLETED",
-      summary: finalPromptBResult.summary,
-      growthInsights: finalPromptBResult.growthInsights,
-      nextActions: finalPromptBResult.nextActions,
-      taskPerformances: finalPromptBResult.taskPerformances,
-      reflectionSnapshotId: snapshot.reflectionSnapshotId,
-    };
+      await tx.aIRun.create({
+        data:{
+          promptType: PromptType.PROMPT_B,
+          promptVersion:"v1",
+          request: JSON.parse(JSON.stringify(promptBRequest)),
+          response: promptBResponse,
+          status: AiRunStatus.SUCCESS,
+          reflectionSnapshotId:snapshotId,
+        },
+      });
+    });
   }
 
-    private async createReflectionTaskSnapshots(
+  private async createReflectionTaskSnapshots(
+      tx: Prisma.TransactionClient,
     reflectionSnapshotId: string,
     tasks: TaskDto[],
   ) {
     for (const task of tasks) {
       const taskSnapshot =
-        await this.prisma.reflectionTaskSnapshot.create({
+        await tx.reflectionTaskSnapshot.create({
           data: {
             reflectionSnapshotId,
             taskId: task.taskId,
@@ -457,7 +514,7 @@ export class PerformanceService {
         });
 
       if (task.taskResult?.taskResultId) {
-        await this.prisma.reflectionTaskResultSnapshot.create({
+        await tx.reflectionTaskResultSnapshot.create({
           data: {
             reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
             taskResultId: task.taskResult.taskResultId,

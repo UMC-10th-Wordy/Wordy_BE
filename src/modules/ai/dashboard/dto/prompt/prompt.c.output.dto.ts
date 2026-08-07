@@ -11,6 +11,7 @@ export interface DashboardKpiOutputDto {
 }
 
 export interface DashboardTagAnalysisOutputDto {
+  tagId: string;
   tagName: string;
   objective: string;
   expectedOutcome: string;

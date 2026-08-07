@@ -115,3 +115,30 @@ export const PromptType = {
 } as const
 
 export type PromptType = (typeof PromptType)[keyof typeof PromptType]
+
+
+export const ReflectionSnapshotStatus = {
+  PROCESSING: 'PROCESSING',
+  TEMP: 'TEMP',
+  SAVED: 'SAVED',
+  FAILED: 'FAILED'
+} as const
+
+export type ReflectionSnapshotStatus = (typeof ReflectionSnapshotStatus)[keyof typeof ReflectionSnapshotStatus]
+
+
+export const NotificationType = {
+  MARKETING_PROMOTION: 'MARKETING_PROMOTION',
+  DASHBOARD_COMPLETED: 'DASHBOARD_COMPLETED',
+  DASHBOARD_INDUCE: 'DASHBOARD_INDUCE'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const DashboardType = {
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+} as const
+
+export type DashboardType = (typeof DashboardType)[keyof typeof DashboardType]

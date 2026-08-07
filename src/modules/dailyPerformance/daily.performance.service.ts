@@ -1,15 +1,17 @@
+import { Prisma, PrismaClient } from "../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../auth.config.js";
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { TaskStatus } from "../../generated/prisma/enums.js";
 import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
-import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, IncompleteTaskDto, PerformanceDetailResponseDto, PerformanceListResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
+import { CreateDailyPerformanceRequestDto, CreateDailyPerformanceResponseDto, DailyPerformancePreviewResponseDto, IncompleteTaskDto, PerformanceDetailResponseDto, PerformanceListResponseDto, ReflectionSnapshotPreviewResponseDto, UpdateDailyPerformanceRequestDto, UpdateDailyPerformanceResponseDto } from "./daily.performance.dto.js";
 import { DailyPerformanceRepository, DailyPerformanceDetail } from "./daily.performance.repository.js";
 
 export class DailyPerformanceService {
   constructor(
     private readonly repository: DailyPerformanceRepository,
+    private readonly prisma: PrismaClient,
   ) {}
 
   private extractUserId(
@@ -96,8 +98,6 @@ export class DailyPerformanceService {
         userId,
       );
 
-    let performance;
-
     const incompleteTasks =
       tasks.filter(
         task => task.status === TaskStatus.IN_PROGRESS
@@ -128,30 +128,6 @@ export class DailyPerformanceService {
       structuredResult: JSON.parse(JSON.stringify(promptA)),
     };
 
-    // 기존 성과 있으면 갱신
-    if (existingPerformance) {
-      performance =
-        await this.repository.updateDailyPerformance(
-          existingPerformance.dailyPerformanceId,
-          performanceData,
-        );
-
-      // 기존 Task 성과 제거
-      await this.repository.deletePerformanceItems(
-        existingPerformance.dailyPerformanceId,
-      );
-
-    } 
-    // 없으면 신규 생성
-    else {
-      performance =
-        await this.repository.createDailyPerformance({
-          userId,
-          dailyEntryId: snapshot.dailyEntryId,
-          ...performanceData,
-        });
-    }
-
     // PerformanceItem 저장
     const completedTaskIds = new Set(
       tasks
@@ -160,21 +136,81 @@ export class DailyPerformanceService {
     );
 
     const taskPerformances =
-      (promptB.taskPerformances ?? []).filter(task =>
+      (
+        promptB.taskPerformances ?? []).filter(task =>
         completedTaskIds.has(task.taskId),
       );
 
-    if (taskPerformances.length > 0) {
-      await this.repository.createPerformanceItems(
-        taskPerformances.map((task) => ({
-          dailyPerformanceId:
-            performance.dailyPerformanceId,
-          taskId: task.taskId,
-          output: (task.output ?? []).join("\n"),
-          impact: (task.impact ?? []).join("\n"),
-        })),
-      );
-    }
+    const performance =
+      await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+
+        let savedPerformance;
+
+
+        // 기존 성과 수정
+        if (existingPerformance) {
+
+          savedPerformance =
+            await this.repository.updateDailyPerformance(
+              existingPerformance.dailyPerformanceId,
+              performanceData,
+              tx,
+            );
+
+
+          await this.repository.deletePerformanceItems(
+            existingPerformance.dailyPerformanceId,
+            tx,
+          );
+
+
+        } 
+        // 신규 생성
+        else {
+
+          savedPerformance =
+            await this.repository.createDailyPerformance(
+              {
+                userId,
+                dailyEntryId: snapshot.dailyEntryId,
+                ...performanceData,
+              },
+              tx,
+            );
+        }
+
+
+        // PerformanceItem 생성
+        if (taskPerformances.length > 0) {
+
+          await this.repository.createPerformanceItems(
+            taskPerformances.map((task)=>({
+              dailyPerformanceId:
+                savedPerformance.dailyPerformanceId,
+
+              taskId: task.taskId,
+
+              output:
+                (task.output ?? []).join("\n"),
+
+              impact:
+                (task.impact ?? []).join("\n"),
+            })),
+            tx,
+          );
+
+        }
+
+
+        // Snapshot SAVED 변경
+        await this.repository.confirmReflectionSnapshot(
+          snapshot.reflectionSnapshotId,
+          tx,
+        );
+
+
+        return savedPerformance;
+      });
 
     return {
       dailyPerformanceId: performance.dailyPerformanceId,
@@ -338,6 +374,56 @@ export class DailyPerformanceService {
         await this.buildPerformanceDetail(
           performance,
           userId,
+        ),
+    };
+  }
+
+  async getReflectionSnapshotPreview(
+    authorization: string | undefined,
+    reflectionSnapshotId: string,
+  ): Promise<ReflectionSnapshotPreviewResponseDto> {
+    const userId = this.extractUserId(authorization);
+
+    const snapshot =
+      await this.repository.findReflectionSnapshotById(
+        reflectionSnapshotId,
+        userId,
+      );
+
+    if (!snapshot) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "성과 미리보기를 찾을 수 없습니다.",
+      );
+    }
+
+    return {
+      reflectionSnapshotId: snapshot.reflectionSnapshotId,
+      status: snapshot.status,
+      promptBResult:
+        snapshot.promptBResult
+          ? snapshot.promptBResult as unknown as  PromptBOutputDto
+          : null,
+
+      tasks:
+        snapshot.reflectionTaskSnapshots.map(
+          (taskSnapshot) => ({
+            reflectionTaskSnapshotId: taskSnapshot.reflectionTaskSnapshotId,
+            taskId: taskSnapshot.taskId,
+            title: taskSnapshot.title,
+            priority: taskSnapshot.priority,
+            memo: taskSnapshot.memo,
+            status: taskSnapshot.status,
+            completedAt: taskSnapshot.completedAt,
+            tag: taskSnapshot.task?.tag
+              ? {
+                  tagName: taskSnapshot.task.tag.tagName,
+                  color: taskSnapshot.task.tag.color,
+                }
+              : null,
+            results: taskSnapshot.resultSnapshots,
+          }),
         ),
     };
   }

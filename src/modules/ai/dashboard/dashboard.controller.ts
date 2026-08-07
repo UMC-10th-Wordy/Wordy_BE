@@ -64,7 +64,9 @@ export class DashboardAiController extends Controller {
 
       tagAnalyses: [
         {
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
           tagName: "AI 기능 구현",
+          color: "#4F46E5",
           objective: "업무 성과를 분석하고 시각화하는 AI 기능 개발",
           expectedOutcome: "사용자가 자신의 업무 성과를 확인할 수 있음",
           achievementStatus: "COMPLETED",
@@ -124,7 +126,9 @@ export class DashboardAiController extends Controller {
 
       tagAnalyses: [
         {
+          tagId: "550e8400-e29b-41d4-a716-446655440001",
           tagName: "AI 개발",
+          color: "#22C55E",
           objective: "AI 기반 업무 분석 시스템 구축",
           expectedOutcome:
             "사용자가 업무 성과를 정리하고 확인할 수 있음",
@@ -133,7 +137,9 @@ export class DashboardAiController extends Controller {
             "주간 성과 데이터를 기반으로 월간 성장 흐름을 분석했습니다.",
         },
         {
+          tagId: "550e8400-e29b-41d4-a716-446655440002",
           tagName: "백엔드 개발",
+          color: "#F59E0B",
           objective: "안정적인 API 구조 설계",
           expectedOutcome:
             "서비스의 원활한 API 연동",
