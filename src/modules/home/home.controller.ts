@@ -124,25 +124,39 @@ export class HomeController extends Controller {
           },
           { date: '2026-08-22', tasks: [] },
         ],
-        recentRecord: {
-          date: '2026-08-20',
-          tasks: [
-            {
-              taskId: '4c9e2b3a-1234-4562-b3fc-2c963f66afa6',
-              title: '전일 업무 정리 1',
-              priority: TaskPriority.SHOULD_DO,
-              status: TaskStatus.IN_PROGRESS,
-              tag: { tagId: '3fa85f64-5717-4562-b3fc-2c963f66afa6', tagName: '온보딩 리뉴얼', color: '#00C48C' },
-            },
-            {
-              taskId: '7d1f4c5b-5678-4562-b3fc-2c963f66afa6',
-              title: '전일 업무 정리 2',
-              priority: TaskPriority.COULD_DO,
-              status: TaskStatus.IN_PROGRESS,
-              tag: { tagId: '3fa85f64-5717-4562-b3fc-2c963f66afa6', tagName: '온보딩 리뉴얼', color: '#00C48C' },
-            },
-          ],
-        },
+        recentRecord: [
+          {
+            date: '2026-08-21',
+            tasks: [
+              {
+                taskId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                title: 'Product Strategy Alignment 회의 준비',
+                priority: TaskPriority.MUST_DO,
+                status: TaskStatus.IN_PROGRESS,
+                tag: { tagId: '3fa85f64-5717-4562-b3fc-2c963f66afa6', tagName: '온보딩 리뉴얼', color: '#00C48C' },
+              },
+            ],
+          },
+          {
+            date: '2026-08-20',
+            tasks: [
+              {
+                taskId: '4c9e2b3a-1234-4562-b3fc-2c963f66afa6',
+                title: '전일 업무 정리 1',
+                priority: TaskPriority.SHOULD_DO,
+                status: TaskStatus.IN_PROGRESS,
+                tag: { tagId: '3fa85f64-5717-4562-b3fc-2c963f66afa6', tagName: '온보딩 리뉴얼', color: '#00C48C' },
+              },
+              {
+                taskId: '7d1f4c5b-5678-4562-b3fc-2c963f66afa6',
+                title: '전일 업무 정리 2',
+                priority: TaskPriority.COULD_DO,
+                status: TaskStatus.IN_PROGRESS,
+                tag: { tagId: '3fa85f64-5717-4562-b3fc-2c963f66afa6', tagName: '온보딩 리뉴얼', color: '#00C48C' },
+              },
+            ],
+          },
+        ],
       },
     },
     '재방문 - 대시보드 화면',

@@ -29,6 +29,31 @@ export class NotificationItem {
   createdAt!: Date;
 }
 
+export enum NotificationStatusFilter {
+  ALL = "all",
+  READ = "read",
+  UNREAD = "unread",
+}
+
+export class NotificationListResponse {
+  items!: NotificationItem[];
+
+  @Example(1)
+  page!: number;
+
+  @Example(10)
+  size!: number;
+
+  @Example(23)
+  totalCount!: number;
+
+  @Example(3)
+  totalPages!: number;
+
+  @Example(true)
+  hasNext!: boolean;
+}
+
 export class MarkNotificationReadResponse {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   notificationId!: string;
