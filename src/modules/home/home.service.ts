@@ -67,14 +67,11 @@ export class HomeService {
     }));
     const streakDays = this.calculateStreak(today, distinctDates);
 
-    const todayStr = this.formatDate(today);
-    const recentDate = distinctDates.find((date) => this.formatDate(date) !== todayStr);
-    const recentTaskRows = recentDate
-      ? await this.homeRepository.findTasksForDates(userId, [recentDate])
+    const recentDates = distinctDates.slice(0, 2);
+    const recentTaskRows = recentDates.length
+      ? await this.homeRepository.findTasksForDates(userId, recentDates)
       : [];
-    const recentRecord = recentDate
-      ? this.groupTasksByDate([recentDate], recentTaskRows as TaskRow[])[0]
-      : null;
+    const recentRecord = this.groupTasksByDate(recentDates, recentTaskRows as TaskRow[]);
 
     return {
       screenType: 'dashboard',

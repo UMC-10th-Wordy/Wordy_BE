@@ -40,7 +40,7 @@ export interface DashboardHomeData {
   streakDays: number;
   weekRecords: DayRecord[];
   weekTasks: DayTasks[];
-  recentRecord: DayTasks | null;
+  recentRecord: DayTasks[];
 }
 
 export type HomeData = LandingHomeData | DashboardHomeData;

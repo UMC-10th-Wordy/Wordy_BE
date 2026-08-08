@@ -1,15 +1,27 @@
 import { prisma } from "../../db.config.js";
 
-export const findTrashedEntries = async (userId: string) => {
+export const findTrashedEntries = async (
+  userId: string,
+  skip: number,
+  take: number
+) => {
   return prisma.dailyEntry.findMany({
     where: { userId, deletedAt: { not: null } },
     orderBy: { deletedAt: "desc" },
+    skip,
+    take,
     select: {
       dailyEntryId: true,
       entryDate: true,
       reflectionContent: true,
       deletedAt: true,
     },
+  });
+};
+
+export const countTrashedEntries = async (userId: string) => {
+  return prisma.dailyEntry.count({
+    where: { userId, deletedAt: { not: null } },
   });
 };
 

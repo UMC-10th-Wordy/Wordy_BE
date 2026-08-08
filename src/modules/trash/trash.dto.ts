@@ -13,3 +13,22 @@ export class TrashDailyEntryItem {
   @Example("2026-08-01T12:34:56.000Z")
   deletedAt!: Date;
 }
+
+export class TrashDailyEntryListResponse {
+  items!: TrashDailyEntryItem[];
+
+  @Example(1)
+  page!: number;
+
+  @Example(10)
+  size!: number;
+
+  @Example(23)
+  totalCount!: number;
+
+  @Example(3)
+  totalPages!: number;
+
+  @Example(true)
+  hasNext!: boolean;
+}
