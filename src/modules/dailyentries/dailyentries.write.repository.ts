@@ -37,27 +37,39 @@ export const createDailyEntryWithTasks = async (
   reflectionContent: string,
   taskIds: string[],
 ) => {
-  return prisma.dailyEntry.create({
-    data: {
-      userId,
-      entryDate,
-      title,
-      reflectionContent,
+  return prisma.$transaction(async (tx) => {
+    if (taskIds.length > 0) {
+      await tx.reflectionTask.deleteMany({
+        where: {
+          taskId: {
+            in: taskIds,
+          },
+        },
+      });
+    }
 
-      reflectionTasks: {
-        create: taskIds.map((taskId) => ({
-          taskId,
-        })),
-      },
-    },
+    return tx.dailyEntry.create({
+      data: {
+        userId,
+        entryDate,
+        title,
+        reflectionContent,
 
-    include: {
-      reflectionTasks: {
-        select: {
-          taskId: true,
+        reflectionTasks: {
+          create: taskIds.map((taskId) => ({
+            taskId,
+          })),
         },
       },
-    },
+
+      include: {
+        reflectionTasks: {
+          select: {
+            taskId: true,
+          },
+        },
+      },
+    });
   });
 };
 
@@ -69,7 +81,20 @@ export const restoreDailyEntryWithTasks = async (
   return prisma.$transaction(async (tx) => {
     await tx.reflectionTask.deleteMany({
       where: {
-        dailyEntryId,
+        OR: [
+          {
+            dailyEntryId,
+          },
+          ...(taskIds.length > 0
+            ? [
+                {
+                  taskId: {
+                    in: taskIds,
+                  },
+                },
+              ]
+            : []),
+        ],
       },
     });
 
@@ -94,22 +119,5 @@ export const restoreDailyEntryWithTasks = async (
         },
       },
     });
-  });
-};
-
-export const updateDailyEntryReflectionContent = async (
-  dailyEntryId: string,
-  reflectionContent: string,
-) => {
-  return prisma.dailyEntry.update({
-    where: {
-      dailyEntryId,
-    },
-    data: {
-      reflectionContent,
-    },
-    include: {
-      reflectionTasks: true,
-    },
   });
 };

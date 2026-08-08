@@ -243,6 +243,7 @@ export class TaskService {
     const updatedTask =
       await this.taskRepository.update(
         taskId,
+        userId,
         body,
         nextSortOrder,
       );
