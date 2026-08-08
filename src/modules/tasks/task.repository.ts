@@ -113,6 +113,30 @@ private async syncReflectionTask(
     });
   }
 
+  public async findCalendarSummary(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    return prisma.task.groupBy({
+      by: ['taskDate', 'status'],
+      where: {
+        userId,
+        deletedAt: null,
+        taskDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      _count: {
+        _all: true,
+      },
+      orderBy: {
+        taskDate: 'asc',
+      },
+    });
+  }
+
   public async findActiveByIdAndUserId(
     taskId: string,
     userId: string,
