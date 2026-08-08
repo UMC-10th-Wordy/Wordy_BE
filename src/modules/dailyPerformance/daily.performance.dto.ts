@@ -1,4 +1,6 @@
 import { Example } from "tsoa";
+import { Prisma, ReflectionSnapshotStatus } from "../../generated/prisma/client.js";
+import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
 
 export class CreateDailyPerformanceRequestDto {
   @Example("8c2d4f6a-7e91-4b23-a567-123456789abc",)
@@ -182,4 +184,105 @@ export class UpdateDailyPerformanceRequestDto {
 export class UpdateDailyPerformanceResponseDto {
   @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   dailyPerformanceId!: string;
+}
+
+export class ReflectionTaskResultSnapshotDto {
+  @Example("a1b2c3d4-e5f6-7890-abcd-123456789012")
+  reflectionTaskResultSnapshotId!: string;
+
+  @Example("b1c2d3e4-f5a6-7890-abcd-123456789012")
+  taskResultId!: string;
+
+  @Example("AI 결과 저장 구조 구현")
+  content!: string;
+}
+
+
+export class ReflectionTaskSnapshotDto {
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  reflectionTaskSnapshotId!: string;
+
+  @Example("a1b2c3d4-e5f6-7890-abcd-123456789012")
+  taskId!: string;
+
+  @Example("성과 변환 API 구현")
+  title!: string;
+
+  @Example("HIGH")
+  priority!: string;
+
+  @Example("AI 성과 변환 관련 작업")
+  memo!: string | null;
+
+  @Example("COMPLETED")
+  status!: string;
+
+  @Example(new Date())
+  completedAt!: Date | null;
+
+  @Example({
+    tagName: "개발",
+    color: "#4A90E2",
+  })
+  tag!: TagInfoDto | null;
+
+  @Example([
+    {
+      reflectionTaskResultSnapshotId:
+        "a1b2c3d4-e5f6-7890-abcd-123456789012",
+      taskResultId:
+        "b1c2d3e4-f5a6-7890-abcd-123456789012",
+      content:
+        "API 구현 완료",
+    },
+  ])
+  results!: ReflectionTaskResultSnapshotDto[];
+}
+
+
+export class ReflectionSnapshotPreviewResponseDto {
+  @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
+  reflectionSnapshotId!: string;
+
+  @Example("PROCESSING")
+  status!: ReflectionSnapshotStatus;
+
+  @Example({
+    summary:
+      "오늘 AI 업무 변환 기능과 성과 저장 API를 구현했습니다.",
+    growthInsights: [
+      "업무 데이터를 구조화하는 능력이 향상되었습니다.",
+    ],
+    nextActions: [
+      "프롬프트 정확도 개선하기",
+    ],
+    taskPerformances: [],
+  })
+  promptBResult!: PromptBOutputDto | null;
+
+
+  @Example([
+    {
+      reflectionTaskSnapshotId:
+        "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+      taskId:
+        "a1b2c3d4-e5f6-7890-abcd-123456789012",
+      title:
+        "성과 변환 API 구현",
+      priority:
+        "HIGH",
+      memo:
+        "백엔드 작업",
+      status:
+        "COMPLETED",
+      completedAt:
+        new Date(),
+      tag:{
+        tagName:"개발",
+        color:"#4A90E2",
+      },
+      results:[],
+    },
+  ])
+  tasks!: ReflectionTaskSnapshotDto[];
 }

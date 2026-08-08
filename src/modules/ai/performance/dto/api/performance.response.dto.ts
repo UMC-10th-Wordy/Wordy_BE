@@ -2,7 +2,10 @@ import { Example } from "tsoa";
 
 export class PerformanceResponseDto {
   @Example("COMPLETED")
-  status!: "QUESTION_REQUIRED" | "COMPLETED";
+  status!:
+    | "QUESTION_REQUIRED"
+    | "PROCESSING"
+    | "COMPLETED";
 
   supplementQuestions?: SupplementQuestionDto[];
 

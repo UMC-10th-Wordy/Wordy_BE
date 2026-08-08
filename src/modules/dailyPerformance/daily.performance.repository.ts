@@ -55,6 +55,14 @@ export class DailyPerformanceRepository {
     private readonly prisma: PrismaClient,
   ) {}
 
+  async transaction<T>(
+    callback: (
+      tx: Prisma.TransactionClient
+    ) => Promise<T>,
+  ): Promise<T> {
+    return this.prisma.$transaction(callback);
+  }
+
   async findReflectionSnapshot(
     reflectionSnapshotId: string,
     userId: string,
@@ -62,6 +70,7 @@ export class DailyPerformanceRepository {
     return this.prisma.reflectionSnapshot.findFirst({
       where: {
         reflectionSnapshotId,
+        status:"TEMP",
         dailyEntry: {
           userId,
           deletedAt: null,
@@ -108,16 +117,22 @@ export class DailyPerformanceRepository {
 
   async createDailyPerformance(
     data: Prisma.DailyPerformanceUncheckedCreateInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<DailyPerformance> {
-    return this.prisma.dailyPerformance.create({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.dailyPerformance.create({
       data,
     });
   }
 
   async createPerformanceItems(
     data: Prisma.PerformanceItemUncheckedCreateInput[],
+    tx?: Prisma.TransactionClient,
   ): Promise<Prisma.BatchPayload> {
-    return this.prisma.performanceItem.createMany({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.performanceItem.createMany({
       data,
     });
   }
@@ -290,11 +305,44 @@ export class DailyPerformanceRepository {
     });
   }
 
+  async findReflectionSnapshotById(
+    reflectionSnapshotId: string,
+    userId: string,
+  ) {
+    return this.prisma.reflectionSnapshot.findFirst({
+      where:{
+        reflectionSnapshotId,
+        dailyEntry:{
+          userId,
+          deletedAt:null,
+        },
+      },
+      select:{
+        reflectionSnapshotId:true,
+        status:true,
+        promptBResult:true,
+        reflectionTaskSnapshots:{
+          include:{
+            resultSnapshots:true,
+            task:{
+              include:{
+                tag:true,
+              },
+            },
+          },
+        },
+      }
+    });
+  }
+
   async updateDailyPerformance(
     dailyPerformanceId: string,
     data: Prisma.DailyPerformanceUncheckedUpdateInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<DailyPerformance> {
-    return this.prisma.dailyPerformance.update({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.dailyPerformance.update({
       where: {
         dailyPerformanceId,
       },
@@ -302,10 +350,29 @@ export class DailyPerformanceRepository {
     });
   }
 
+  async confirmReflectionSnapshot(
+    id:string,
+    tx?: Prisma.TransactionClient,
+  ){
+    const prisma = tx ?? this.prisma;
+
+    return prisma.reflectionSnapshot.update({
+      where:{
+        reflectionSnapshotId:id
+      },
+      data:{
+        status:"SAVED"
+      }
+    })
+  }
+
   async deletePerformanceItems(
     dailyPerformanceId: string,
+    tx?: Prisma.TransactionClient,
   ): Promise<Prisma.BatchPayload> {
-    return this.prisma.performanceItem.deleteMany({
+    const prisma = tx ?? this.prisma;
+
+    return prisma.performanceItem.deleteMany({
       where: {
         dailyPerformanceId,
       },
