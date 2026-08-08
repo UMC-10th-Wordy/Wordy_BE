@@ -329,7 +329,13 @@ export const getDailyEntriesDetail = async (
     reflectionContent: entry.reflectionContent,
   };
 
-  const snapshot = entry.reflectionSnapshots[0];
+  // 유효 스냅샷입니다. status가 TEMP 또는 SAVED이고 promptBResult가 있는 것 중 최신
+  // PROCESSING·FAILED·promptBResult 없는 중간저장은 "변환 전"으로 취급
+  const snapshot = entry.reflectionSnapshots.find(
+    (s) =>
+      (s.status === "TEMP" || s.status === "SAVED") &&
+      s.promptBResult != null
+  );
 
   // 성과 미리보기 ID (변환됐고 성과가 있으면, 없으면 null)
   const dailyPerformanceId =
