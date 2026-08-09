@@ -1,3 +1,4 @@
+import type { Prisma } from '../../generated/prisma/client.js';
 import { prisma } from '../../db.config.js';
 import {
   CreateTaskRequest,
@@ -8,6 +9,62 @@ import {
 } from './task.dto.js';
 
 export class TaskRepository {
+  private async findOrCreateDailyEntry(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  entryDate: Date,
+) {
+  return tx.dailyEntry.upsert({
+    where: {
+      userId_entryDate: {
+        userId,
+        entryDate,
+      },
+    },
+    update: {},
+    create: {
+      userId,
+      entryDate,
+      title: '',
+      reflectionContent: '',
+    },
+    select: {
+      dailyEntryId: true,
+    },
+  });
+}
+
+private async syncReflectionTask(
+  tx: Prisma.TransactionClient,
+  taskId: string,
+  userId: string,
+  taskDate: Date,
+) {
+  const dailyEntry =
+    await this.findOrCreateDailyEntry(
+      tx,
+      userId,
+      taskDate,
+    );
+
+  /**
+   * 하나의 현재 Task는 현재 날짜의 DailyEntry 하나에만 연결되도록
+   * 기존 연결을 정리한 뒤 다시 연결합니다.
+   */
+  await tx.reflectionTask.deleteMany({
+    where: {
+      taskId,
+    },
+  });
+
+  await tx.reflectionTask.create({
+    data: {
+      taskId,
+      dailyEntryId: dailyEntry.dailyEntryId,
+    },
+  });
+}
+
   public async findManyByUserIdAndDate(
     userId: string,
     taskDate: Date,
@@ -148,11 +205,12 @@ export class TaskRepository {
   }
 
   public async create(
-    userId: string,
-    body: CreateTaskRequest,
-    sortOrder: number,
-  ) {
-    return prisma.task.create({
+  userId: string,
+  body: CreateTaskRequest,
+  sortOrder: number,
+) {
+  return prisma.$transaction(async (tx) => {
+    const task = await tx.task.create({
       data: {
         userId,
         title: body.title,
@@ -161,12 +219,13 @@ export class TaskRepository {
         memo: body.memo,
         taskDate: new Date(body.taskDate),
 
-        status: body.status ?? TaskStatus.IN_PROGRESS,
+        status:
+          body.status ?? TaskStatus.IN_PROGRESS,
 
         completedAt:
           body.status === TaskStatus.COMPLETED
-          ? new Date()
-          : null,
+            ? new Date()
+            : null,
 
         tagId: body.tagId ?? null,
       },
@@ -181,13 +240,25 @@ export class TaskRepository {
         },
       },
     });
-  }
+
+    await this.syncReflectionTask(
+      tx,
+      task.taskId,
+      userId,
+      task.taskDate,
+    );
+
+    return task;
+  });
+}
 
   public async update(
-    taskId: string,
-    body: UpdateTaskRequest,
-    sortOrder?: number,
-  ) {
+  taskId: string,
+  userId: string,
+  body: UpdateTaskRequest,
+  sortOrder?: number,
+) {
+  return prisma.$transaction(async (tx) => {
     const shouldComplete =
       body.status === TaskStatus.COMPLETED;
 
@@ -195,7 +266,7 @@ export class TaskRepository {
       body.status !== undefined &&
       body.status !== TaskStatus.COMPLETED;
 
-    return prisma.task.update({
+    const task = await tx.task.update({
       where: {
         taskId,
       },
@@ -247,16 +318,36 @@ export class TaskRepository {
         },
       },
     });
-  }
+
+    await this.syncReflectionTask(
+      tx,
+      task.taskId,
+      userId,
+      task.taskDate,
+    );
+
+    return task;
+  });
+}
 
   public async softDelete(taskId: string) {
-    return prisma.task.update({
-      where: {
-        taskId,
-      },
-      data: {
-        deletedAt: new Date(),
-      },
+    return prisma.$transaction(async (tx) => {
+      const task = await tx.task.update({
+        where: {
+          taskId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      await tx.reflectionTask.deleteMany({
+        where: {
+          taskId,
+        },
+      });
+
+      return task;
     });
   }
 
