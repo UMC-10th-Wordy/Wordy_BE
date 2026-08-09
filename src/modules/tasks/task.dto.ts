@@ -133,3 +133,14 @@ export class TaskReorderResponse {
   @Example(3)
   updatedCount!: number;
 }
+
+export class TaskCalendarDayResponse {
+  @Example('2026-08-05')
+  date!: string;
+
+  @Example(2)
+  completedCount!: number;
+
+  @Example(1)
+  incompleteCount!: number;
+}
