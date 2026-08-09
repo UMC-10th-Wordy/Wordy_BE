@@ -9,11 +9,12 @@ import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/perform
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto.js";
 
-import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry, TaskStatus } from "../../../generated/prisma/client.js";
+import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus } from "../../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../../auth.config.js";
 import { ApiError } from "../../../common/errors/api.error.js";
 import { ErrorCode } from "../../../common/errors/error.code.js";
-
+import { TaskStatus, TaskPriority } from "../../tasks/task.dto.js";
+import { TaskPriority as PrismaTaskPriority, TaskStatus as PrismaTaskStatus } from "../../../generated/prisma/enums.js";
 export class PerformanceService {
   constructor(
     private readonly llmClient: LlmClient,
@@ -22,6 +23,33 @@ export class PerformanceService {
     private readonly ruleEngine: RuleEngine,
     private readonly prisma: PrismaClient,
   ) {}
+
+  private toTaskPriority(
+    priority: PrismaTaskPriority,
+  ): TaskPriority {
+    switch (priority) {
+      case PrismaTaskPriority.MUST_DO:
+        return TaskPriority.MUST_DO;
+
+      case PrismaTaskPriority.SHOULD_DO:
+        return TaskPriority.SHOULD_DO;
+
+      case PrismaTaskPriority.COULD_DO:
+        return TaskPriority.COULD_DO;
+    }
+  }
+
+  private toTaskStatus(
+    status: PrismaTaskStatus,
+  ): TaskStatus {
+    switch (status) {
+      case PrismaTaskStatus.IN_PROGRESS:
+        return TaskStatus.IN_PROGRESS;
+
+      case PrismaTaskStatus.COMPLETED:
+        return TaskStatus.COMPLETED;
+    }
+  }
 
   private async findDailyEntryTasks(
     dailyEntryId: string,
@@ -52,8 +80,8 @@ export class PerformanceService {
 
     return reflectionTasks.map(({ task }) => ({
       taskId: task.taskId,
-      priority: task.priority,
-      status: task.status,
+      priority: this.toTaskPriority(task.priority),
+      status: this.toTaskStatus(task.status),
       completedAt: task.completedAt
         ? task.completedAt.toISOString()
         : undefined,
