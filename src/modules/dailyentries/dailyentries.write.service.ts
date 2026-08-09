@@ -2,7 +2,7 @@ import {
   createDailyEntryWithTasks,
   findDailyEntryByUserIdAndDate,
   findTasksByUserIdAndDate,
-  updateDailyEntryReflectionContent,
+  restoreDailyEntryWithTasks,
 } from './dailyentries.write.repository.js';
 
 import {
@@ -44,32 +44,40 @@ export const createDailyEntry = async (
 
   const entryDate = parseDate(body.entryDate);
 
+  const tasks =
+    await findTasksByUserIdAndDate(
+      userId,
+      entryDate,
+    );
+
+  const taskIds =
+    tasks.map((task) => task.taskId);
+
   const existingEntry =
-  await findDailyEntryByUserIdAndDate(userId, entryDate);
+    await findDailyEntryByUserIdAndDate(
+      userId,
+      entryDate,
+    );
 
   if (existingEntry) {
     const updatedEntry =
-      await updateDailyEntryReflectionContent(
+      await restoreDailyEntryWithTasks(
         existingEntry.dailyEntryId,
         body.reflectionContent.trim(),
+        taskIds,
       );
 
-    return {
-      dailyEntryId: updatedEntry.dailyEntryId,
-      title: updatedEntry.title,
-      entryDate: body.entryDate,
-      reflectionContent: updatedEntry.reflectionContent,
-      linkedTaskCount: updatedEntry.reflectionTasks.length,
-      createdAt: updatedEntry.createdAt,
-    };
-  }
-
-    const tasks = await findTasksByUserIdAndDate(
-    userId,
-    entryDate,
-    );
-
-    const taskIds = tasks.map((task) => task.taskId);
+  return {
+    dailyEntryId: updatedEntry.dailyEntryId,
+    title: updatedEntry.title,
+    entryDate: body.entryDate,
+    reflectionContent:
+      updatedEntry.reflectionContent,
+    linkedTaskCount:
+      updatedEntry.reflectionTasks.length,
+    createdAt: updatedEntry.createdAt,
+  };
+} 
 
     const dailyEntry = await createDailyEntryWithTasks(
     userId,
@@ -118,15 +126,7 @@ const validateRequest = (
       '일지 날짜는 필수입니다.',
     );
   }
-
-  if (
-    !body.reflectionContent ||
-    body.reflectionContent.trim().length === 0
-  ) {
-    throw new BadRequestError(
-      '회고 내용은 필수입니다.',
-    );
-  }
+  
 };
 
 const parseDate = (date: string): Date => {
