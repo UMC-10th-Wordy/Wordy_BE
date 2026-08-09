@@ -1,4 +1,5 @@
 import { Example } from "tsoa";
+import { DraftType } from "../../generated/prisma/client.js";
 
 // 업무계획 항목 (업무 내용 + 예상 시점, 예상시점은 자유 텍스트)
 export class TaskPlanItem {
