@@ -122,6 +122,9 @@ export class DailyRecordItem {
 
   @Example("인증 API 개발 및 테스트 진행")
   summary!: string | null; // 하루 한 줄 요약 (reflectionContent 기반)
+
+    @Example(false)
+  converted!: boolean; // 성과 변환 여부 (유효 스냅샷 존재 시 true, 미변환은 현재 Task 실시간)
 }
 
 // 4. 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)

@@ -73,6 +73,9 @@ export const findEntriesByMonth = async (
       dailyEntryId: true,
       entryDate: true,
       reflectionContent: true,
+      reflectionSnapshots: {
+        select: { status: true, promptBResult: true },
+      },
       reflectionTasks: {
         select: {
           task: {

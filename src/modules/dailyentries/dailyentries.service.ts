@@ -235,31 +235,48 @@ export const getMonthlyEntries = async (
   const { start, end } = getMonthRange(year, month);
   const entries = await findEntriesByMonth(userId, start, end);
 
-  return entries.map((e) => {
-    const tasks = e.reflectionTasks
-      .map((rt) => rt.task)
-      .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+  return entries
+    .filter((e) => {
+      // 노출 기준: 업무(활성 Task)가 있거나, 내용 있는 회고가 있는 날만
+      const hasTask = e.reflectionTasks.some(
+        (rt) => rt.task && !rt.task.deletedAt
+      );
+      const hasReflection = (e.reflectionContent ?? "").trim().length > 0;
+      return hasTask || hasReflection;
+    })
+    .map((e) => {
+      const tasks = e.reflectionTasks
+        .map((rt) => rt.task)
+        .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
 
-    // 대표 업무: MUST_DO 우선, 없으면 첫 업무 (기준은 팀 협의 후 조정 가능)
-    const mainTask =
-      tasks.find((t) => t.priority === "MUST_DO") ?? tasks[0] ?? null;
+      // 대표 업무: MUST_DO 우선, 없으면 첫 업무
+      const mainTask =
+        tasks.find((t) => t.priority === "MUST_DO") ?? tasks[0] ?? null;
 
-    const tagList = tasks
-      .filter((t) => t.tag)
-      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+      const tagList = tasks
+        .filter((t) => t.tag)
+        .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
 
-    const dateStr = toDateStr(e.entryDate);
+      // 유효 스냅샷(TEMP/SAVED + promptBResult) 있으면 변환됨 (상세 조회와 동일 기준)
+      const converted = e.reflectionSnapshots.some(
+        (s) =>
+          (s.status === "TEMP" || s.status === "SAVED") &&
+          s.promptBResult != null
+      );
 
-    return {
-      dailyEntryId: e.dailyEntryId,
-      entryDate: dateStr,
-      day: Number(dateStr.slice(8, 10)),
-      tags: pickTags(tagList),
-      mainTaskTitle: mainTask?.title ?? null,
-      extraTaskCount: Math.max(tasks.length - 1, 0),
-      summary: e.reflectionContent ?? null,
-    };
-  });
+      const dateStr = toDateStr(e.entryDate);
+
+      return {
+        dailyEntryId: e.dailyEntryId,
+        entryDate: dateStr,
+        day: Number(dateStr.slice(8, 10)),
+        tags: pickTags(tagList),
+        mainTaskTitle: mainTask?.title ?? null,
+        extraTaskCount: Math.max(tasks.length - 1, 0),
+        summary: e.reflectionContent ?? null,
+        converted,
+      };
+    });
 };
 
 // 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)
