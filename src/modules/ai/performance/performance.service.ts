@@ -9,11 +9,10 @@ import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/perform
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto.js";
 
-import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client.js";
+import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry, TaskStatus } from "../../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../../auth.config.js";
 import { ApiError } from "../../../common/errors/api.error.js";
 import { ErrorCode } from "../../../common/errors/error.code.js";
-import { TaskStatus } from "../../tasks/task.dto.js";
 
 export class PerformanceService {
   constructor(
@@ -23,6 +22,51 @@ export class PerformanceService {
     private readonly ruleEngine: RuleEngine,
     private readonly prisma: PrismaClient,
   ) {}
+
+  private async findDailyEntryTasks(
+    dailyEntryId: string,
+    userId: string,
+  ): Promise<TaskDto[]> {
+    const reflectionTasks =
+      await this.prisma.reflectionTask.findMany({
+        where: {
+          dailyEntryId,
+          task: {
+            userId,
+            deletedAt: null,
+          },
+        },
+        include: {
+          task: {
+            include: {
+              taskResult: true,
+            },
+          },
+        },
+        orderBy: {
+          task: {
+            sortOrder: "asc",
+          },
+        },
+      });
+
+    return reflectionTasks.map(({ task }) => ({
+      taskId: task.taskId,
+      priority: task.priority,
+      status: task.status,
+      completedAt: task.completedAt
+        ? task.completedAt.toISOString()
+        : undefined,
+      title: task.title,
+      memo: task.memo ?? undefined,
+      taskResult: task.taskResult
+        ? {
+            taskResultId: task.taskResult.taskResultId,
+            content: task.taskResult.content,
+          }
+        : undefined,
+    }));
+  }
 
   private extractUserId(
     authorization: string | undefined,
@@ -75,9 +119,15 @@ export class PerformanceService {
     }
 
     // Prompt A 생성
+    const serverTasks =
+      await this.findDailyEntryTasks(
+        request.dailyEntryId,
+        userId,
+      );
+
     const promptARequest =
       this.promptManager.buildPromptA({
-        tasks: request.tasks,
+        tasks: serverTasks,
         reflection: request.reflectionContent,
         projectTag: request.projectTag,
         userJob: request.userJob,
@@ -135,12 +185,14 @@ export class PerformanceService {
         await this.preparePerformanceSnapshot(
           promptAResult,
           request,
+          serverTasks,
         );
 
       void this.runPromptB(
         snapshot.reflectionSnapshotId,
         promptAResult,
         request,
+        serverTasks,
       ).catch(async(error)=>{
         console.error(error);
 
@@ -286,10 +338,16 @@ export class PerformanceService {
       });
     }
 
+    const serverTasks =
+    await this.findDailyEntryTasks(
+      request.originalRequest.dailyEntryId,
+      userId,
+    );
+
     // 답변 포함해서 Prompt A 재호출
     const promptARequest =
       this.promptManager.buildPromptA({
-        tasks: request.originalRequest.tasks,
+        tasks: serverTasks,
         reflection: request.originalRequest.reflectionContent,
         projectTag: request.originalRequest.projectTag,
         userJob: request.originalRequest.userJob,
@@ -341,6 +399,7 @@ export class PerformanceService {
       await this.preparePerformanceSnapshot(
         promptAResult,
         request.originalRequest,
+        serverTasks,
         request.reflectionSnapshotId,
       );
 
@@ -348,6 +407,7 @@ export class PerformanceService {
       updatedSnapshot.reflectionSnapshotId,
       promptAResult,
       request.originalRequest,
+      serverTasks,
     ).catch(async (error) => {
       console.error(error);
 
@@ -373,11 +433,11 @@ export class PerformanceService {
   private async preparePerformanceSnapshot(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
+    tasks: TaskDto[],
     reflectionSnapshotId?: string,
   ) {
 
   return await this.prisma.$transaction(async(tx)=>{
-
     let snapshot;
 
     if(reflectionSnapshotId){
@@ -403,29 +463,41 @@ export class PerformanceService {
         });
     }
 
+     // 기존 TaskResultSnapshot 삭제
+    await tx.reflectionTaskResultSnapshot.deleteMany({
+      where: {
+        reflectionTaskSnapshot: {
+          reflectionSnapshotId: snapshot.reflectionSnapshotId,
+        },
+      },
+    });
+
+    // TaskSnapshot 삭제
     await tx.reflectionTaskSnapshot.deleteMany({
-      where:{
+      where: {
         reflectionSnapshotId: snapshot.reflectionSnapshotId,
       },
     });
 
+    // 최신 요청 기준으로 Snapshot 재생성
     await this.createReflectionTaskSnapshots(
       tx,
       snapshot.reflectionSnapshotId,
-      request.tasks,
+      tasks,
     );
 
     return snapshot;
-    });
+  });
   }
 
   private async runPromptB(
     snapshotId: string,
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
+    tasks: TaskDto[],
   ) {
     const completedTaskIds = new Set(
-      request.tasks
+      tasks
         .filter(task => task.status === TaskStatus.COMPLETED)
         .map(task => task.taskId),
     );
