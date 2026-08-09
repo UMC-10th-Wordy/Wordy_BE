@@ -53,21 +53,29 @@ export class HomeService {
     const weekStart = this.getWeekStart(today);
     const weekEnd = this.addDays(weekStart, 6);
 
-    const [userName, todayTaskRows, weekTaskRows, distinctDates] = await Promise.all([
-      this.homeRepository.findUserName(userId),
-      this.homeRepository.findTasksByDate(userId, today),
-      this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
-      this.homeRepository.findDistinctTaskDatesDesc(userId),
-    ]);
+    const [userName, todayTaskRows, weekTaskRows, taskDistinctDates, entryDistinctDates] =
+      await Promise.all([
+        this.homeRepository.findUserName(userId),
+        this.homeRepository.findTasksByDate(userId, today),
+        this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
+        this.homeRepository.findDistinctTaskDatesDesc(userId),
+        this.homeRepository.findDistinctEntryDatesDesc(userId),
+      ]);
+
+    const { streakDays, streakStartStr, streakEndStr } = this.computeStreak(
+      today,
+      entryDistinctDates,
+    );
+    const entryDateSet = new Set(entryDistinctDates.map((date) => this.formatDate(date)));
 
     const weekTasks = this.buildWeekBuckets(weekStart, weekTaskRows as TaskRow[]);
     const weekRecords: DayRecord[] = weekTasks.map((day) => ({
       date: day.date,
-      hasRecord: day.tasks.length > 0,
+      hasRecord: entryDateSet.has(day.date),
+      isConnected: this.isWithinStreak(day.date, streakStartStr, streakEndStr),
     }));
-    const streakDays = this.calculateStreak(today, distinctDates);
 
-    const recentDates = distinctDates.slice(0, 2);
+    const recentDates = taskDistinctDates.slice(0, 2);
     const recentTaskRows = recentDates.length
       ? await this.homeRepository.findTasksForDates(userId, recentDates)
       : [];
@@ -131,15 +139,53 @@ export class HomeService {
     });
   }
 
-  private calculateStreak(today: Date, sortedDatesDesc: Date[]): number {
-    const dateSet = new Set(sortedDatesDesc.map((date) => this.formatDate(date)));
+  private isWithinStreak(
+    dateStr: string,
+    streakStartStr: string | null,
+    streakEndStr: string | null,
+  ): boolean {
+    if (!streakStartStr || !streakEndStr) return false;
+    return dateStr >= streakStartStr && dateStr <= streakEndStr;
+  }
 
-    let streak = 0;
-    let cursor = today;
-    while (dateSet.has(this.formatDate(cursor))) {
-      streak++;
-      cursor = this.addDays(cursor, -1);
+  /**
+   * daily-entries/summary의 calcStreaks와 동일한 기준: 마지막 기록일이 오늘이거나
+   * 어제면(오늘 아직 안 썼어도) 끊긴 것으로 보지 않고, 2일 이상 비어야 0으로 리셋한다.
+   */
+  private computeStreak(
+    today: Date,
+    sortedDatesDesc: Date[],
+  ): { streakDays: number; streakStartStr: string | null; streakEndStr: string | null } {
+    if (sortedDatesDesc.length === 0) {
+      return { streakDays: 0, streakStartStr: null, streakEndStr: null };
     }
-    return streak;
+
+    const sortedAsc = [...new Set(sortedDatesDesc.map((date) => this.formatDate(date)))].sort();
+    const todayStr = this.formatDate(today);
+    const last = sortedAsc[sortedAsc.length - 1];
+
+    if (this.daysBetween(last, todayStr) > 1) {
+      return { streakDays: 0, streakStartStr: null, streakEndStr: null };
+    }
+
+    let streakDays = 1;
+    let startIndex = sortedAsc.length - 1;
+    for (let i = sortedAsc.length - 1; i > 0; i--) {
+      if (this.daysBetween(sortedAsc[i - 1], sortedAsc[i]) === 1) {
+        streakDays++;
+        startIndex = i - 1;
+      } else {
+        break;
+      }
+    }
+
+    return { streakDays, streakStartStr: sortedAsc[startIndex], streakEndStr: last };
+  }
+
+  private daysBetween(fromStr: string, toStr: string): number {
+    return Math.round(
+      (new Date(`${toStr}T00:00:00Z`).getTime() - new Date(`${fromStr}T00:00:00Z`).getTime()) /
+        DAY_MS,
+    );
   }
 }

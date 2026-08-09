@@ -20,6 +20,7 @@ export interface TaskSummary {
 export interface DayRecord {
   date: string;
   hasRecord: boolean;
+  isConnected: boolean;
 }
 
 export interface DayTasks {

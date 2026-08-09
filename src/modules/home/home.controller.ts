@@ -45,13 +45,13 @@ export class HomeController extends Controller {
         ],
         streakDays: 4,
         weekRecords: [
-          { date: '2026-08-16', hasRecord: true },
-          { date: '2026-08-17', hasRecord: false },
-          { date: '2026-08-18', hasRecord: true },
-          { date: '2026-08-19', hasRecord: true },
-          { date: '2026-08-20', hasRecord: true },
-          { date: '2026-08-21', hasRecord: true },
-          { date: '2026-08-22', hasRecord: false },
+          { date: '2026-08-16', hasRecord: true, isConnected: false },
+          { date: '2026-08-17', hasRecord: false, isConnected: false },
+          { date: '2026-08-18', hasRecord: true, isConnected: false },
+          { date: '2026-08-19', hasRecord: true, isConnected: true },
+          { date: '2026-08-20', hasRecord: true, isConnected: true },
+          { date: '2026-08-21', hasRecord: true, isConnected: true },
+          { date: '2026-08-22', hasRecord: false, isConnected: false },
         ],
         weekTasks: [
           {

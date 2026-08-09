@@ -65,6 +65,16 @@ export class HomeRepository {
     return rows.map((row) => row.taskDate);
   }
 
+  public async findDistinctEntryDatesDesc(userId: string) {
+    const rows = await prisma.dailyEntry.findMany({
+      where: { userId, deletedAt: null },
+      distinct: ['entryDate'],
+      select: { entryDate: true },
+      orderBy: { entryDate: 'desc' },
+    });
+    return rows.map((row) => row.entryDate);
+  }
+
   public async findTasksForDates(userId: string, dates: Date[]) {
     return prisma.task.findMany({
       where: { userId, deletedAt: null, taskDate: { in: dates } },
