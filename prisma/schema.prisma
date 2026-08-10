@@ -219,6 +219,7 @@ model Notification {
 model Workspace {
   workspaceId String   @id @default(uuid()) @map("workspace_id") @db.Char(36)
   name        String   @db.VarChar(100)
+  isDefault   Boolean  @default(false) @map("is_default")
   createdAt   DateTime @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt   DateTime? @map("deleted_at") @db.DateTime(0)

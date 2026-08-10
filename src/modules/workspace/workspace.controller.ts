@@ -31,9 +31,9 @@ export class WorkspaceController extends Controller {
     code: "S200",
     message: "워크스페이스 생성에 성공했습니다.",
     result: {
-      workspaceId:
-        "8c2d4f6a-7e91-4b23-a567-123456789abc",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       name: "개발 워크스페이스",
+      isDefault: false,
       createdAt: new Date("2026-08-10T06:00:00.000Z"),
       updatedAt: new Date("2026-08-10T06:00:00.000Z"),
     },
@@ -66,11 +66,18 @@ export class WorkspaceController extends Controller {
     message: "워크스페이스 조회에 성공했습니다.",
     result: [
       {
-        workspaceId:
-          "8c2d4f6a-7e91-4b23-a567-123456789abc",
-        name: "개발 워크스페이스",
+        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
+        name: "홍길동의 워크스페이스",
+        isDefault: true,
         createdAt: new Date("2026-08-10T06:00:00.000Z"),
         updatedAt: new Date("2026-08-10T06:00:00.000Z"),
+      },
+      {
+        workspaceId: "9d3e5f7b-8f02-4c34-b678-234567890abc",
+        name: "개발 워크스페이스",
+        isDefault: false,
+        createdAt: new Date("2026-08-10T07:00:00.000Z"),
+        updatedAt: new Date("2026-08-10T07:00:00.000Z"),
       },
     ],
   })

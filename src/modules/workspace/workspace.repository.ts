@@ -13,11 +13,13 @@ export class WorkspaceRepository {
   async create(
     userId: string,
     name: string,
+    isDefault: boolean = false,
   ) {
     return prisma.workspace.create({
       data: {
         userId,
         name,
+        isDefault,
       },
     });
   }
@@ -45,6 +47,32 @@ export class WorkspaceRepository {
         deletedAt: null,
       },
     });
+  }
+
+  async findDefaultByUserId(userId: string) {
+    return prisma.workspace.findFirst({ 
+      where: { 
+        userId, 
+        isDefault: true, 
+        deletedAt: null, 
+      }, 
+    }); 
+  }
+
+  async updateName( 
+    workspaceId: string, 
+    userId: string, 
+    name: string, 
+  ) { return prisma.workspace.updateMany({ 
+    where: { 
+      workspaceId, 
+      userId, 
+      deletedAt: null, 
+    }, 
+    data: { 
+      name, 
+    }, 
+  }); 
   }
 
   async softDelete(

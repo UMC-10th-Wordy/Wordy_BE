@@ -12,6 +12,9 @@ export class WorkspaceResponseDto {
   @Example("개발팀 워크스페이스")
   name!: string;
 
+  @Example("false")
+  isDefault!: boolean;
+
   @Example("2026-08-10T06:00:00.000Z")
   createdAt!: Date;
 

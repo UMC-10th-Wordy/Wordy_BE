@@ -9,6 +9,7 @@ export class WorkspaceService {
     private readonly workspaceRepository: WorkspaceRepository,
   ) {}
 
+  // 기본 생성
   async createWorkspace(
     userId: string,
     dto: CreateWorkspaceRequestDto,
@@ -27,11 +28,34 @@ export class WorkspaceService {
     const workspace = await this.workspaceRepository.create(
       userId,
       dto.name,
+      false,
+    );
+
+    return this.toResponseDto(workspace);
+  }  
+
+  // 프로필 최초 등록 시 기본 Workspace 생성
+  async createDefaultWorkspace(
+    userId: string,
+    userName: string,
+  ): Promise<WorkspaceResponseDto> {
+    const existingDefault =
+      await this.workspaceRepository.findDefaultByUserId(userId);
+
+    if (existingDefault) {
+      return this.toResponseDto(existingDefault);
+    }
+
+    const workspace = await this.workspaceRepository.create(
+      userId,
+      `${userName}의 워크스페이스`,
+      true,
     );
 
     return this.toResponseDto(workspace);
   }
 
+  // 목록 조회
   async getWorkspaces(
     userId: string,
   ): Promise<WorkspaceResponseDto[]> {
@@ -43,6 +67,27 @@ export class WorkspaceService {
     );
   }
 
+  // 프로필 닉네임 변경 시 기본 Workspace 이름 변경
+  async updateDefaultWorkspaceName(
+    userId: string,
+    userName: string,
+  ): Promise<void> {
+    const workspace =
+      await this.workspaceRepository.findDefaultByUserId(userId);
+
+    if (!workspace) {
+      return;
+    }
+
+    await this.workspaceRepository.updateName(
+      workspace.workspaceId,
+      userId,
+      `${userName}의 워크스페이스`,
+    );
+  }
+
+
+  // 삭제
   async deleteWorkspace(
     userId: string,
     workspaceId: string,
@@ -71,6 +116,7 @@ export class WorkspaceService {
     workspace: {
       workspaceId: string;
       name: string;
+      isDefault: boolean;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -78,6 +124,7 @@ export class WorkspaceService {
     return {
       workspaceId: workspace.workspaceId,
       name: workspace.name,
+      isDefault: workspace.isDefault,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
     };
