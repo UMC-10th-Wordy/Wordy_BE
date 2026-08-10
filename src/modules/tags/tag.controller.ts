@@ -5,7 +5,7 @@ import { ApiResponse } from '../../common/responses/api.response.js';
 import { success } from '../../common/responses/response.js';
 import { SuccessCode } from '../../common/responses/success.code.js';
 
-@Route('tags')
+@Route('workspaces/{workspaceId}/tags')
 @Tags('Tags')
 export class TagController extends Controller {
   private tagService = new TagService();
@@ -21,6 +21,7 @@ export class TagController extends Controller {
     result: [
       {
         tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
+        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
         tagName: "Wordy",
         color: "#4F46E5",
         projectName: "Wordy 프로젝트",
@@ -43,8 +44,9 @@ export class TagController extends Controller {
   })
   public async getTags(
     @Header('Authorization') authorization: string | undefined,
+    @Path() workspaceId: string,
   ): Promise<ApiResponse<TagResponse[]>> {
-    const data = await this.tagService.getTags(authorization);
+    const data = await this.tagService.getTags(authorization, workspaceId);
     return success(SuccessCode.OK.code, '태그 목록 조회 성공', data);
   }
 
@@ -58,6 +60,7 @@ export class TagController extends Controller {
     message: "태그가 생성되었습니다.",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       tagName: "Wordy",
       color: "#4F46E5",
       projectName: "Wordy 프로젝트",
@@ -74,9 +77,10 @@ export class TagController extends Controller {
   })
   public async createTag(
     @Header('Authorization') authorization: string | undefined,
+    @Path() workspaceId: string,
     @Body() body: CreateTagRequest,
   ): Promise<ApiResponse<TagResponse>> {
-    const data = await this.tagService.createTag(authorization, body);
+    const data = await this.tagService.createTag(authorization, workspaceId, body);
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, '태그가 생성되었습니다.', data);
   }
@@ -91,6 +95,7 @@ export class TagController extends Controller {
     message: "태그 상세 조회 성공",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       tagName: "Wordy",
       color: "#4F46E5",
       projectName: "Wordy 프로젝트",
@@ -112,9 +117,10 @@ export class TagController extends Controller {
   })
   public async getTag(
     @Header('Authorization') authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() tagId: string,
   ): Promise<ApiResponse<TagResponse>> {
-    const data = await this.tagService.getTag(authorization, tagId);
+    const data = await this.tagService.getTag(authorization, workspaceId, tagId);
     return success(SuccessCode.OK.code, '태그 상세 조회 성공', data);
   }
 
@@ -128,6 +134,7 @@ export class TagController extends Controller {
     message: "태그가 수정되었습니다.",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       tagName: "Wordy Backend",
       color: "#22C55E",
       projectName: "Wordy 프로젝트",
@@ -149,10 +156,11 @@ export class TagController extends Controller {
   })
   public async updateTag(
     @Header('Authorization') authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() tagId: string,
     @Body() body: UpdateTagRequest,
   ): Promise<ApiResponse<TagResponse>> {
-    const data = await this.tagService.updateTag(authorization, tagId, body);
+    const data = await this.tagService.updateTag(authorization, workspaceId, tagId, body);
     return success(SuccessCode.UPDATED.code, '태그가 수정되었습니다.', data);
   }
 
@@ -168,9 +176,10 @@ export class TagController extends Controller {
   })
   public async deleteTag(
     @Header('Authorization') authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() tagId: string,
   ): Promise<ApiResponse<null>> {
-    await this.tagService.deleteTag(authorization, tagId);
+    await this.tagService.deleteTag(authorization, workspaceId, tagId);
     return success(SuccessCode.DELETED.code, '태그가 삭제되었습니다.', null);
   }
 }

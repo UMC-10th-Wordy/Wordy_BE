@@ -79,35 +79,35 @@ export class TagService {
     }
   }
 
-  public async getTags(authorization: string | undefined) {
+  public async getTags(authorization: string | undefined, workspaceId: string ) {
     const userId = this.getUserIdFromAuthorization(authorization);
-    return this.tagRepository.findManyByUserId(userId);
+    return this.tagRepository.findManyByUserId(userId, workspaceId);
   }
 
-  public async createTag(authorization: string | undefined, body: CreateTagRequest) {
+  public async createTag(authorization: string | undefined, workspaceId: string, body: CreateTagRequest) {
     const userId = this.getUserIdFromAuthorization(authorization);
     this.validateCreateBody(body);
 
-    return this.tagRepository.create(userId, {
+    return this.tagRepository.create(userId, workspaceId {
       ...body,
       tagName: body.tagName.trim(),
     });
   }
 
-  public async getTag(authorization: string | undefined, tagId: string) {
+  public async getTag(authorization: string | undefined, workspaceId: string, tagId: string) {
     const userId = this.getUserIdFromAuthorization(authorization);
-    const tag = await this.tagRepository.findActiveByIdAndUserId(tagId, userId);
+    const tag = await this.tagRepository.findActiveByIdAndUserId(tagId, userId, workspaceId);
 
     if (!tag) throw new TagNotFoundError();
 
     return tag;
   }
 
-  public async updateTag(authorization: string | undefined, tagId: string, body: UpdateTagRequest) {
+  public async updateTag(authorization: string | undefined, workspaceId: string, tagId: string, body: UpdateTagRequest) {
     const userId = this.getUserIdFromAuthorization(authorization);
     this.validateUpdateBody(body);
 
-    const tag = await this.tagRepository.findActiveByIdAndUserId(tagId, userId);
+    const tag = await this.tagRepository.findActiveByIdAndUserId(tagId, userId, workspaceId);
     if (!tag) throw new TagNotFoundError();
 
     return this.tagRepository.update(tagId, {
@@ -116,9 +116,9 @@ export class TagService {
     });
   }
 
-  public async deleteTag(authorization: string | undefined, tagId: string) {
+  public async deleteTag(authorization: string | undefined, workspaceId: string, tagId: string) {
     const userId = this.getUserIdFromAuthorization(authorization);
-    const tag = await this.tagRepository.findActiveByIdAndUserId(tagId, userId);
+    const tag = await this.tagRepository.findActiveByIdAndUserId(tagId, userId, workspaceId);
 
     if (!tag) throw new TagNotFoundError();
 
