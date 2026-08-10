@@ -8,9 +8,15 @@ import { PromptCInputDto } from "../dashboard/dto/prompt/prompt.c.input.dto.js";
 import { PromptDInputDto } from "../dashboard/dto/prompt/prompt.d.input.dto.js";
 
 export class PromptManager {
+  private readonly model: string;
+
+  constructor() {
+    this.model = process.env.LLM_MODEL ?? "claude-haiku-4-5";
+  }
+
   buildPromptA(dto: PromptAInputDto): PromptRequest {
     return {
-      model: "gpt-5-mini",
+      model: this.model,
       instructions: promptAInstructions,
       input: JSON.stringify(dto),
     };
@@ -18,7 +24,7 @@ export class PromptManager {
 
   buildPromptB(dto: PromptBInputDto): PromptRequest {
     return {
-      model: "gpt-5-mini",
+      model: this.model,
       instructions: promptBInstructions,
       input: JSON.stringify(dto),
     };
@@ -26,7 +32,7 @@ export class PromptManager {
 
   buildPromptC(dto: PromptCInputDto): PromptRequest {
     return {
-      model:"gpt-5-mini",
+      model: this.model,
       instructions: promptCInstructions,
       input: JSON.stringify(dto),
     };
@@ -34,7 +40,7 @@ export class PromptManager {
 
   buildPromptD(dto: PromptDInputDto): PromptRequest {
     return {
-      model:"gpt-5-mini",
+      model: this.model,
       instructions: promptDInstructions,
       input: JSON.stringify(dto),
     };
@@ -42,7 +48,7 @@ export class PromptManager {
 
   buildKpiPrompt(dto: KpiInputDto): PromptRequest {
     return {
-      model: "gpt-5-mini",
+      model: this.model,
       instructions: kpiInstructions,
       input: JSON.stringify(dto),
     };
