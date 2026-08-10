@@ -34,7 +34,7 @@ export class DraftResponse {
   reflectionDraftId!: string;
 
   @Example("MONTHLY")
-  type!: string;   // WEEKLY | MONTHLY
+  type!: DraftType;   // WEEKLY | MONTHLY   ← string에서 변경
 
   @Example("이번 달 온보딩 리뉴얼 진행")
   workSummary!: string | null;
@@ -46,7 +46,7 @@ export class DraftResponse {
   learning!: string | null;
 
   @Example([{ content: "리서치 일정 블록 확보", expectedTime: "7월 20일" }])
-  taskPlans!: any;   // Json (TaskPlanItem[] 형태지만 스키마상 Json)
+  taskPlans!: TaskPlanItem[];   // ← any에서 변경
 
   @Example("2026-06-29T22:10:34.000Z")
   updatedAt!: string;

@@ -3,6 +3,7 @@ import { DraftType } from "../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../auth.config.js";
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
+import { TaskPlanItem } from "./dashboard.week.draft.dto.js";
 
 // authorization → userId
 const getUserId = (authorization: string | undefined): string => {
@@ -43,7 +44,7 @@ export const saveDraft = async (
     workSummary: draft.workSummary,
     resourcesUsed: draft.resourcesUsed,
     learning: draft.learning,
-    taskPlans: draft.taskPlans ?? [],
+    taskPlans: (draft.taskPlans ?? []) as unknown as TaskPlanItem[],  
     updatedAt: draft.updatedAt.toISOString(),
   };
 };
@@ -66,7 +67,7 @@ export const getDraft = async (
     workSummary: draft.workSummary,
     resourcesUsed: draft.resourcesUsed,
     learning: draft.learning,
-    taskPlans: draft.taskPlans ?? [],
+    taskPlans: (draft.taskPlans ?? []) as unknown as TaskPlanItem[],    
     updatedAt: draft.updatedAt.toISOString(),
   };
 };
