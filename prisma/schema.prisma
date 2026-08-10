@@ -230,6 +230,7 @@ model Workspace {
   dailyEntries      DailyEntry[]
   dailyPerformances DailyPerformance[]
   dashboards        Dashboard[]
+  reflectionDrafts  ReflectionDraft[]
 
   @@index([userId])
   @@map("Workspace")
@@ -620,6 +621,7 @@ enum DraftType {
 model ReflectionDraft {
   reflectionDraftId String    @id @default(uuid()) @map("reflection_draft_id") @db.Char(36)
   userId            String    @map("user_id") @db.Char(36)
+  workspaceId       String    @map("workspace_id") @db.Char(36)
   type              DraftType
   workSummary       String?   @map("work_summary") @db.Text
   resourcesUsed     String?   @map("resources_used") @db.Text
@@ -629,8 +631,10 @@ model ReflectionDraft {
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
 
   user User @relation(fields: [userId], references: [userId])
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId])
 
-  @@unique([userId, type])
+  @@unique([userId, workspaceId, type])
   @@index([userId])
+  @@index([workspaceId])
   @@map("ReflectionDraft")
 }

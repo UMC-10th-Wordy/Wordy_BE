@@ -4,6 +4,7 @@ import { DraftType, Prisma } from "../../generated/prisma/client.js";
 // draft 저장 (있으면 덮어쓰기, 없으면 생성)
 export const upsertDraft = async (
   userId: string,
+  workspaceId: string,
   type: DraftType,
   data: {
     workSummary?: string | null;
@@ -16,7 +17,7 @@ export const upsertDraft = async (
   const taskPlansValue = (data.taskPlans ?? []) as Prisma.InputJsonValue;
 
   return prisma.reflectionDraft.upsert({
-    where: { userId_type: { userId, type } },   // @@unique([userId, type])
+    where: { userId_workspaceId_type: { userId, workspaceId, type } },   // @@unique([userId, type])
     update: {
       workSummary: data.workSummary ?? null,
       resourcesUsed: data.resourcesUsed ?? null,
@@ -25,6 +26,7 @@ export const upsertDraft = async (
     },
     create: {
       userId,
+      workspaceId,
       type,
       workSummary: data.workSummary ?? null,
       resourcesUsed: data.resourcesUsed ?? null,
@@ -35,8 +37,8 @@ export const upsertDraft = async (
 };
 
 // draft 조회 (유저 + type 기준, 없으면 null)
-export const findDraft = async (userId: string, type: DraftType) => {
+export const findDraft = async (userId: string, workspaceId: string, type: DraftType) => {
   return prisma.reflectionDraft.findUnique({
-    where: { userId_type: { userId, type } },
+    where: { userId_workspaceId_type: { userId, workspaceId, type } },
   });
 };

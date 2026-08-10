@@ -4,12 +4,14 @@ import { prisma } from "../../db.config.js";
 // 특정 기간 내 해당 유저의 일지 개수 세기 
 export const countDailyEntries = async (
   userId: string,
+  workspaceId: string,
   startDate: Date,
   endDate: Date
 ): Promise<number> => {
   return prisma.dailyEntry.count({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       entryDate: {
         gte: startDate,
@@ -20,9 +22,9 @@ export const countDailyEntries = async (
 };
 
 // 유저의 대시보드 목록 조회
-export const findDashboards = async (userId: string) => {
+export const findDashboards = async (userId: string, workspaceId: string) => {
   return prisma.dashboard.findMany({
-    where: { userId, deletedAt: null },
+    where: { userId, workspaceId, deletedAt: null },
     orderBy: { startDate: "desc" },
   });
 };
@@ -30,10 +32,11 @@ export const findDashboards = async (userId: string) => {
 // 대시보드 상세 조회
 export const findDashboardById = async (
   dashboardId: string,
-  userId: string
+  userId: string,
+  workspaceId: string,
 ) => {
   return prisma.dashboard.findFirst({
-    where: { dashboardId, userId, deletedAt: null },
+    where: { dashboardId, userId, workspaceId, deletedAt: null },
     include: {
       insights: true,
       kpis: true,
@@ -55,10 +58,11 @@ export const findDashboardById = async (
 // 대시보드 존재 확인 (회고 작성 전 검증용)
 export const existsDashboard = async (
   dashboardId: string,
-  userId: string
+  userId: string,
+  workspaceId: string,
 ): Promise<boolean> => {
   const found = await prisma.dashboard.findFirst({
-    where: { dashboardId, userId, deletedAt: null },
+    where: { dashboardId, userId, workspaceId, deletedAt: null },
     select: { dashboardId: true },
   });
   return found !== null;
@@ -115,12 +119,14 @@ export const updateWeeklyReflection = async (
 //일지 목록 조회
 export const findDailyEntries = async (
   userId: string,
+  workspaceId: string,
   startDate: Date,
   endDate: Date
 ) => {
   return prisma.dailyEntry.findMany({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       entryDate: {
         gte: startDate,
@@ -138,6 +144,7 @@ export const findDailyEntries = async (
 // AI 결과로 대시보드 생성
 export const createDashboard = async (data: {
   userId: string;
+  workspaceId: string,
   startDate: Date;
   endDate: Date;
   summary: string;
@@ -161,6 +168,7 @@ export const createDashboard = async (data: {
   return prisma.dashboard.create({
     data: {
       userId: data.userId,
+      workspaceId: data.workspaceId,
       startDate: data.startDate,
       endDate: data.endDate,
       summary: data.summary,

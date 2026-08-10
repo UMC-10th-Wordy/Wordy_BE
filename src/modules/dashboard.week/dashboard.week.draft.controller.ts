@@ -1,18 +1,16 @@
-import { Controller, Get, Post, Body, Query, Route, Tags, Example, Header } from "tsoa";
+import { Controller, Get, Post, Body, Query, Route, Tags, Example, Header, Path } from "tsoa";
 import { saveDraft, getDraft } from "./dashboard.week.draft.service.js";
 import { DraftType } from "../../generated/prisma/client.js";
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
-import { ApiError } from "../../common/errors/api.error.js";
-import { ErrorCode } from "../../common/errors/error.code.js";
-import { verifyAccessToken } from "../../auth.config.js";
+
 import {
   SaveDraftRequest,
   DraftResponse,
 } from "./dashboard.week.draft.dto.js";
 
-@Route("dashboards/drafts")
+@Route("workspaces/{workspaceId}/dashboards/drafts")
 @Tags("DashboardDraft")
 export class DashboardDraftController extends Controller {
   /**
@@ -26,6 +24,7 @@ export class DashboardDraftController extends Controller {
     message: "임시 저장되었습니다.",
     result: {
       reflectionDraftId: "550e8400-e29b-41d4-a716-446655440000",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       type: "MONTHLY",
       workSummary: "이번 달 온보딩 리뉴얼 진행",
       resourcesUsed: "사용자 인터뷰, 로그 분석",
@@ -39,10 +38,11 @@ export class DashboardDraftController extends Controller {
   })
   public async save(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() type: DraftType,
     @Body() body: SaveDraftRequest
   ): Promise<ApiResponse<DraftResponse>> {
-    const data = await saveDraft(authorization, type, body);
+    const data = await saveDraft(authorization, workspaceId, type, body);
     return success(SuccessCode.OK.code, "임시 저장되었습니다.", data);
   }
 
@@ -57,6 +57,7 @@ export class DashboardDraftController extends Controller {
     message: "조회에 성공했습니다.",
     result: {
       reflectionDraftId: "550e8400-e29b-41d4-a716-446655440000",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       type: "MONTHLY",
       workSummary: "이번 달 온보딩 리뉴얼 진행",
       resourcesUsed: "사용자 인터뷰, 로그 분석",
@@ -69,9 +70,10 @@ export class DashboardDraftController extends Controller {
   })
   public async get(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() type: DraftType
   ): Promise<ApiResponse<DraftResponse | null>> {
-    const data = await getDraft(authorization, type);
+    const data = await getDraft(authorization, workspaceId, type);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 }
