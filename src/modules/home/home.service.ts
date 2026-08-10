@@ -35,11 +35,6 @@ export class HomeService {
     }
   }
 
-  /**
-   * 홈 화면 조회
-   * - 요금제가 없는 경우(첫 방문) 랜딩 화면을 반환하고 FREE 요금제를 생성
-   * - 요금제가 있는 경우 오늘의 업무/이번 주 기록/스트릭/최근 기록을 담은 대시보드를 반환
-   */
   public async getHome(authorization: string | undefined): Promise<HomeData> {
     const userId = this.extractUserId(authorization);
 
@@ -53,27 +48,22 @@ export class HomeService {
     const weekStart = this.getWeekStart(today);
     const weekEnd = this.addDays(weekStart, 6);
 
-    const [
-      userName,
-      todayTaskRows,
-      weekTaskRows,
-      taskDistinctDates,
-      entryDistinctDates,
-      meaningfulEntryDistinctDates,
-    ] = await Promise.all([
-      this.homeRepository.findUserName(userId),
-      this.homeRepository.findTasksByDate(userId, today),
-      this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
-      this.homeRepository.findDistinctTaskDatesDesc(userId),
-      this.homeRepository.findDistinctEntryDatesDesc(userId),
-      this.homeRepository.findDistinctMeaningfulEntryDatesDesc(userId),
-    ]);
+    const [userName, todayTaskRows, weekTaskRows, taskDistinctDates, meaningfulEntryDistinctDates] =
+      await Promise.all([
+        this.homeRepository.findUserName(userId),
+        this.homeRepository.findTasksByDate(userId, today),
+        this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
+        this.homeRepository.findDistinctTaskDatesDesc(userId),
+        this.homeRepository.findDistinctMeaningfulEntryDatesDesc(userId),
+      ]);
 
     const { streakDays, streakStartStr, streakEndStr } = this.computeStreak(
       today,
-      entryDistinctDates,
+      meaningfulEntryDistinctDates,
     );
-    const entryDateSet = new Set(entryDistinctDates.map((date) => this.formatDate(date)));
+    const entryDateSet = new Set(
+      meaningfulEntryDistinctDates.map((date) => this.formatDate(date)),
+    );
 
     const weekTasks = this.buildWeekBuckets(weekStart, weekTaskRows as TaskRow[]);
     const weekRecords: DayRecord[] = weekTasks.map((day) => ({
@@ -170,10 +160,7 @@ export class HomeService {
     return dateStr >= streakStartStr && dateStr <= streakEndStr;
   }
 
-  /**
-   * daily-entries/summary의 calcStreaks와 동일한 기준: 마지막 기록일이 오늘이거나
-   * 어제면(오늘 아직 안 썼어도) 끊긴 것으로 보지 않고, 2일 이상 비어야 0으로 리셋한다.
-   */
+
   private computeStreak(
     today: Date,
     sortedDatesDesc: Date[],
