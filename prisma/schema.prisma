@@ -311,7 +311,7 @@ model DailyEntry {
   dailyPerformances   DailyPerformance[]
   reflectionSnapshots ReflectionSnapshot[]
 
-  @@unique([userId, entryDate])
+  @@unique([userId, workspaceId, entryDate])
   @@index([userId])
   @@index([workspaceId, entryDate])
   @@map("DailyEntry")

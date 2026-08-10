@@ -29,7 +29,7 @@ import { ApiResponse } from '../../common/responses/api.response.js';
 import { success } from '../../common/responses/response.js';
 import { SuccessCode } from '../../common/responses/success.code.js';
 
-@Route('tasks')
+@Route('workspaces/{workspaceId}/tasks')
 @Tags('Tasks')
 export class TaskController extends Controller {
   private readonly taskService = new TaskService();
@@ -49,6 +49,8 @@ export class TaskController extends Controller {
       {
         taskId:
           '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
+        workspaceId: 
+          '8c2d4f6a-7e91-4b23-a567-123456789abc',
         title: '백엔드 API 구현',
         priority: TaskPriority.MUST_DO,
         sortOrder: 0,
@@ -95,6 +97,8 @@ export class TaskController extends Controller {
       {
         taskId:
           '1a6d55f5-48c0-4a6d-8f43-9ef5c41d2e6b',
+        workspaceId: 
+          '8c2d4f6a-7e91-4b23-a567-123456789abc',
         title: '프론트 연동 테스트',
         priority: TaskPriority.SHOULD_DO,
         sortOrder: 0,
@@ -128,6 +132,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Query()
     date: string,
   ): Promise<
@@ -136,6 +142,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.getTasksByDate(
         authorization,
+        workspaceId,
         date,
       );
 
@@ -183,6 +190,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Query()
     startDate: string,
 
@@ -194,6 +203,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.getCalendarSummary(
         authorization,
+        workspaceId,
         startDate,
         endDate,
       );
@@ -222,6 +232,8 @@ export class TaskController extends Controller {
     result: {
       taskId:
         '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
+      workspaceId: 
+        '8c2d4f6a-7e91-4b23-a567-123456789abc',
       title: '백엔드 API 구현',
       priority: TaskPriority.MUST_DO,
       sortOrder: 0,
@@ -253,12 +265,15 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Body()
     body: CreateTaskRequest,
   ): Promise<ApiResponse<TaskResponse>> {
     const data =
       await this.taskService.createTask(
         authorization,
+        workspaceId,
         body,
       );
 
@@ -292,6 +307,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Body()
     body: TaskReorderRequest,
   ): Promise<
@@ -300,6 +317,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.reorderTasks(
         authorization,
+        workspaceId,
         body,
       );
 
@@ -323,6 +341,8 @@ export class TaskController extends Controller {
     result: {
       taskId:
         '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
+      workspaceId: 
+        '8c2d4f6a-7e91-4b23-a567-123456789abc',
       title: '백엔드 API 구현',
       priority: TaskPriority.MUST_DO,
       sortOrder: 0,
@@ -369,6 +389,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Path()
     taskId: string,
   ): Promise<
@@ -377,6 +399,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.getTask(
         authorization,
+        workspaceId,
         taskId,
       );
 
@@ -398,6 +421,8 @@ export class TaskController extends Controller {
     result: {
       taskId:
         '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
+      workspaceId: 
+        '8c2d4f6a-7e91-4b23-a567-123456789abc',
       title: '백엔드 API 수정',
       priority: TaskPriority.SHOULD_DO,
       sortOrder: 0,
@@ -431,6 +456,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Path()
     taskId: string,
 
@@ -440,6 +467,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.updateTask(
         authorization,
+        workspaceId,
         taskId,
         body,
       );
@@ -465,11 +493,14 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Path()
     taskId: string,
   ): Promise<ApiResponse<null>> {
     await this.taskService.deleteTask(
       authorization,
+      workspaceId,
       taskId,
     );
 
