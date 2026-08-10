@@ -37,9 +37,6 @@ export class LlmClient {
         `[LLM] model=${request.model} | elapsed=${(elapsedTime / 1000).toFixed(2)}s`,
       );
 
-      console.log("[LLM RESPONSE]");
-      console.log(response.output_text);
-
       return response.output_text;
     } catch (error) {
       const elapsedTime = performance.now() - startTime;
