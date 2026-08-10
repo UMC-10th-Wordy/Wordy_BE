@@ -236,7 +236,7 @@ export const createDashboardWithAI = async (
   );
 
   // 2. AI로 대시보드 내용 생성 (authorization 그대로 전달)
-  const aiResult = await aiService.generateWeeklyDashboard(authorization, {
+  const aiResult = await aiService.generateWeeklyDashboard(authorization, workspaceId, {
     startDate,
     endDate,
   });
