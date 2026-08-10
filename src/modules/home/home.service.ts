@@ -53,14 +53,21 @@ export class HomeService {
     const weekStart = this.getWeekStart(today);
     const weekEnd = this.addDays(weekStart, 6);
 
-    const [userName, todayTaskRows, weekTaskRows, taskDistinctDates, entryDistinctDates] =
-      await Promise.all([
-        this.homeRepository.findUserName(userId),
-        this.homeRepository.findTasksByDate(userId, today),
-        this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
-        this.homeRepository.findDistinctTaskDatesDesc(userId),
-        this.homeRepository.findDistinctEntryDatesDesc(userId),
-      ]);
+    const [
+      userName,
+      todayTaskRows,
+      weekTaskRows,
+      taskDistinctDates,
+      entryDistinctDates,
+      meaningfulEntryDistinctDates,
+    ] = await Promise.all([
+      this.homeRepository.findUserName(userId),
+      this.homeRepository.findTasksByDate(userId, today),
+      this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
+      this.homeRepository.findDistinctTaskDatesDesc(userId),
+      this.homeRepository.findDistinctEntryDatesDesc(userId),
+      this.homeRepository.findDistinctMeaningfulEntryDatesDesc(userId),
+    ]);
 
     const { streakDays, streakStartStr, streakEndStr } = this.computeStreak(
       today,
@@ -75,7 +82,10 @@ export class HomeService {
       isConnected: this.isWithinStreak(day.date, streakStartStr, streakEndStr),
     }));
 
-    const recentDates = taskDistinctDates.slice(0, 2);
+    const recentDates = this.mergeDatesDesc(taskDistinctDates, meaningfulEntryDistinctDates).slice(
+      0,
+      2,
+    );
     const recentTaskRows = recentDates.length
       ? await this.homeRepository.findTasksForDates(userId, recentDates)
       : [];
@@ -137,6 +147,18 @@ export class HomeService {
       const tasksForDay = rows.filter((row) => this.formatDate(row.taskDate) === dateStr);
       return { date: dateStr, tasks: this.mapTasks(tasksForDay) };
     });
+  }
+
+  /**
+   * Task 날짜와 의미 있는 회고가 있는 DailyEntry 날짜를 합쳐 중복 없이 최신순으로 정렬한다.
+   * "기록"은 Task 존재 또는 meaningful reflection 존재 중 하나만 만족해도 되기 때문.
+   */
+  private mergeDatesDesc(a: Date[], b: Date[]): Date[] {
+    const byDateStr = new Map<string, Date>();
+    for (const date of [...a, ...b]) {
+      byDateStr.set(this.formatDate(date), date);
+    }
+    return [...byDateStr.values()].sort((x, y) => (x < y ? 1 : x > y ? -1 : 0));
   }
 
   private isWithinStreak(

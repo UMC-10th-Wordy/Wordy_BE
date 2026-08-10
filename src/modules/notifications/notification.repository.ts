@@ -11,7 +11,7 @@ export const findNotificationsByUserId = async (
       userId,
       ...(options.isRead !== undefined ? { isRead: options.isRead } : {}),
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { notificationId: "desc" }],
     skip: options.skip,
     take: options.take,
   });
