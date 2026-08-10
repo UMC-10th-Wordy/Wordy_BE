@@ -9,12 +9,12 @@ import { PerformanceResponseDto, SupplementQuestionDto } from "./dto/api/perform
 import { PromptAOutputDto } from "./dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "./dto/prompt/prompt.b.output.dto.js";
 
-import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus, DailyEntry } from "../../../generated/prisma/client.js";
+import { PrismaClient, Prisma, PromptType, AiRunStatus, AIQuestionStatus } from "../../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../../auth.config.js";
 import { ApiError } from "../../../common/errors/api.error.js";
 import { ErrorCode } from "../../../common/errors/error.code.js";
-import { TaskStatus } from "../../tasks/task.dto.js";
-
+import { TaskStatus, TaskPriority } from "../../tasks/task.dto.js";
+import { TaskPriority as PrismaTaskPriority, TaskStatus as PrismaTaskStatus } from "../../../generated/prisma/enums.js";
 export class PerformanceService {
   constructor(
     private readonly llmClient: LlmClient,
@@ -23,6 +23,78 @@ export class PerformanceService {
     private readonly ruleEngine: RuleEngine,
     private readonly prisma: PrismaClient,
   ) {}
+
+  private toTaskPriority(
+    priority: PrismaTaskPriority,
+  ): TaskPriority {
+    switch (priority) {
+      case PrismaTaskPriority.MUST_DO:
+        return TaskPriority.MUST_DO;
+
+      case PrismaTaskPriority.SHOULD_DO:
+        return TaskPriority.SHOULD_DO;
+
+      case PrismaTaskPriority.COULD_DO:
+        return TaskPriority.COULD_DO;
+    }
+  }
+
+  private toTaskStatus(
+    status: PrismaTaskStatus,
+  ): TaskStatus {
+    switch (status) {
+      case PrismaTaskStatus.IN_PROGRESS:
+        return TaskStatus.IN_PROGRESS;
+
+      case PrismaTaskStatus.COMPLETED:
+        return TaskStatus.COMPLETED;
+    }
+  }
+
+  private async findDailyEntryTasks(
+    dailyEntryId: string,
+    userId: string,
+  ): Promise<TaskDto[]> {
+    const reflectionTasks =
+      await this.prisma.reflectionTask.findMany({
+        where: {
+          dailyEntryId,
+          task: {
+            userId,
+            deletedAt: null,
+          },
+        },
+        include: {
+          task: {
+            include: {
+              taskResult: true,
+            },
+          },
+        },
+        orderBy: {
+          task: {
+            sortOrder: "asc",
+          },
+        },
+      });
+
+    return reflectionTasks.map(({ task }) => ({
+      taskId: task.taskId,
+      priority: this.toTaskPriority(task.priority),
+      status: this.toTaskStatus(task.status),
+      completedAt: task.completedAt
+        ? task.completedAt.toISOString()
+        : undefined,
+      title: task.title,
+      memo: task.memo ?? undefined,
+      taskResult: task.taskResult
+        ? {
+            taskResultId: task.taskResult.taskResultId,
+            content: task.taskResult.content,
+          }
+        : undefined,
+    }));
+  }
 
   private extractUserId(
     authorization: string | undefined,
@@ -75,9 +147,15 @@ export class PerformanceService {
     }
 
     // Prompt A 생성
+    const serverTasks =
+      await this.findDailyEntryTasks(
+        request.dailyEntryId,
+        userId,
+      );
+
     const promptARequest =
       this.promptManager.buildPromptA({
-        tasks: request.tasks,
+        tasks: serverTasks,
         reflection: request.reflectionContent,
         projectTag: request.projectTag,
         userJob: request.userJob,
@@ -135,12 +213,14 @@ export class PerformanceService {
         await this.preparePerformanceSnapshot(
           promptAResult,
           request,
+          serverTasks,
         );
 
       void this.runPromptB(
         snapshot.reflectionSnapshotId,
         promptAResult,
         request,
+        serverTasks,
       ).catch(async(error)=>{
         console.error(error);
 
@@ -286,10 +366,16 @@ export class PerformanceService {
       });
     }
 
+    const serverTasks =
+    await this.findDailyEntryTasks(
+      request.originalRequest.dailyEntryId,
+      userId,
+    );
+
     // 답변 포함해서 Prompt A 재호출
     const promptARequest =
       this.promptManager.buildPromptA({
-        tasks: request.originalRequest.tasks,
+        tasks: serverTasks,
         reflection: request.originalRequest.reflectionContent,
         projectTag: request.originalRequest.projectTag,
         userJob: request.originalRequest.userJob,
@@ -341,6 +427,7 @@ export class PerformanceService {
       await this.preparePerformanceSnapshot(
         promptAResult,
         request.originalRequest,
+        serverTasks,
         request.reflectionSnapshotId,
       );
 
@@ -348,6 +435,7 @@ export class PerformanceService {
       updatedSnapshot.reflectionSnapshotId,
       promptAResult,
       request.originalRequest,
+      serverTasks,
     ).catch(async (error) => {
       console.error(error);
 
@@ -373,49 +461,56 @@ export class PerformanceService {
   private async preparePerformanceSnapshot(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
+    serverTasks: TaskDto[],
     reflectionSnapshotId?: string,
   ) {
+    return await this.prisma.$transaction(async (tx) => {
+      let snapshot;
 
-  return await this.prisma.$transaction(async(tx)=>{
-
-    let snapshot;
-
-    if(reflectionSnapshotId){
-      snapshot =
-        await tx.reflectionSnapshot.update({
-          where:{
+      if (reflectionSnapshotId) {
+        snapshot = await tx.reflectionSnapshot.update({
+          where: {
             reflectionSnapshotId,
           },
-          data:{
+          data: {
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            status:"PROCESSING",
+            status: "PROCESSING",
           },
         });
-
-    }else{
-      snapshot =
-        await tx.reflectionSnapshot.create({
-          data:{
+      } else {
+        snapshot = await tx.reflectionSnapshot.create({
+          data: {
             dailyEntryId: request.dailyEntryId,
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            status:"PROCESSING",
+            status: "PROCESSING",
           },
         });
-    }
+      }
 
-    await tx.reflectionTaskSnapshot.deleteMany({
-      where:{
-        reflectionSnapshotId: snapshot.reflectionSnapshotId,
-      },
-    });
+      // 기존 Task Result Snapshot 삭제
+      await tx.reflectionTaskResultSnapshot.deleteMany({
+        where: {
+          reflectionTaskSnapshot: {
+            reflectionSnapshotId: snapshot.reflectionSnapshotId,
+          },
+        },
+      });
 
-    await this.createReflectionTaskSnapshots(
-      tx,
-      snapshot.reflectionSnapshotId,
-      request.tasks,
-    );
+      // 기존 Task Snapshot 삭제
+      await tx.reflectionTaskSnapshot.deleteMany({
+        where: {
+          reflectionSnapshotId: snapshot.reflectionSnapshotId,
+        },
+      });
 
-    return snapshot;
+      // 최신 Task Snapshot 생성
+      await this.createReflectionTaskSnapshots(
+        tx,
+        snapshot.reflectionSnapshotId,
+        serverTasks,
+      );
+
+      return snapshot;
     });
   }
 
@@ -423,9 +518,10 @@ export class PerformanceService {
     snapshotId: string,
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
+    tasks: TaskDto[],
   ) {
     const completedTaskIds = new Set(
-      request.tasks
+      tasks
         .filter(task => task.status === TaskStatus.COMPLETED)
         .map(task => task.taskId),
     );

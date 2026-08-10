@@ -105,6 +105,7 @@ export class DailyEntriesController extends Controller {
         mainTaskTitle: "Product Strategy Alignment 회의 준비",
         extraTaskCount: 7,
         summary: "회의 준비와 디자인 시스템 V2 정리를 병행한 날이에요.",
+        converted: false,
       },
     ],
   })

@@ -92,14 +92,19 @@ export class DashboardService {
     const userId = this.extractUserId(authorization);
 
     // 1. 주간 성과 조회
+    const startDate = new Date(request.startDate);
+
+    const endDate = new Date(request.endDate);
+    endDate.setDate(endDate.getDate() + 1);
+
     const performances =
       await this.prisma.dailyPerformance.findMany({
         where: {
           userId,
           dailyEntry: {
             entryDate: {
-              gte: new Date(request.startDate),
-              lte: new Date(request.endDate),
+              gte: startDate,
+              lt: endDate,
             },
           },
         },

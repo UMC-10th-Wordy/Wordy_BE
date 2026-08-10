@@ -65,6 +65,30 @@ export class HomeRepository {
     return rows.map((row) => row.taskDate);
   }
 
+  public async findDistinctMeaningfulEntryDatesDesc(userId: string) {
+    const rows = await prisma.dailyEntry.findMany({
+      where: { userId, deletedAt: null },
+      distinct: ['entryDate'],
+      select: {
+        entryDate: true,
+        reflectionContent: true,
+        reflectionSnapshots: {
+          select: { status: true, promptBResult: true },
+        },
+      },
+      orderBy: { entryDate: 'desc' },
+    });
+    return rows
+      .filter((row) => {
+        const hasReflection = row.reflectionContent.trim().length > 0;
+        const converted = row.reflectionSnapshots.some(
+          (s) => (s.status === 'TEMP' || s.status === 'SAVED') && s.promptBResult != null,
+        );
+        return hasReflection || converted;
+      })
+      .map((row) => row.entryDate);
+  }
+
   public async findTasksForDates(userId: string, dates: Date[]) {
     return prisma.task.findMany({
       where: { userId, deletedAt: null, taskDate: { in: dates } },

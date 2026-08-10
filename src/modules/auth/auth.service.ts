@@ -171,7 +171,10 @@ export class AuthService {
     if (!hasAllRequiredAgreements) throw new InvalidAgreementError();
 
     const existing = await this.authRepository.findByEmail(email);
-    if (existing) throw new DuplicateEmailError();
+    if (existing) {
+      if (existing.deletedAt) throw new WithdrawnAccountError();
+      throw new DuplicateEmailError();
+    }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const token = generateEmailVerificationToken({ email, passwordHash, agreements });
@@ -193,7 +196,10 @@ export class AuthService {
     }
 
     const existing = await this.authRepository.findByEmail(payload.email);
-    if (existing) throw new DuplicateEmailError();
+    if (existing) {
+      if (existing.deletedAt) throw new WithdrawnAccountError();
+      throw new DuplicateEmailError();
+    }
 
     const user = await this.authRepository.createUser(
       payload.email,
@@ -382,7 +388,10 @@ export class AuthService {
     if (!hasAllRequiredAgreements) throw new InvalidAgreementError();
 
     const existing = await this.authRepository.findByEmail(payload.email);
-    if (existing) throw new DuplicateEmailError();
+    if (existing) {
+      if (existing.deletedAt) throw new WithdrawnAccountError();
+      throw new DuplicateEmailError();
+    }
 
     const user = await this.authRepository.createUser(
       payload.email,

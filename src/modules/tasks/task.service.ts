@@ -1,10 +1,12 @@
 import { TaskRepository } from './task.repository.js';
 import {
   CreateTaskRequest,
+  TaskCalendarDayResponse,
   TaskPriority,
   TaskReorderRequest,
   TaskReorderResponse,
   TaskResponse,
+  TaskStatus,
   TaskWithResultResponse,
   UpdateTaskRequest,
 } from './task.dto.js';
@@ -61,6 +63,64 @@ export class TaskService {
       );
 
     return tasks as unknown as TaskWithResultResponse[];
+  }
+
+    public async getCalendarSummary(
+    authorization: string | undefined,
+    startDate: string,
+    endDate: string,
+  ): Promise<TaskCalendarDayResponse[]> {
+    const userId =
+      this.getUserIdFromAuthorization(authorization);
+
+    this.validateDate(startDate);
+    this.validateDate(endDate);
+
+    const start =
+      new Date(`${startDate}T00:00:00.000Z`);
+
+    const end =
+      new Date(`${endDate}T00:00:00.000Z`);
+
+    if (start.getTime() > end.getTime()) {
+      throw new BadRequestError(
+        '시작 날짜는 종료 날짜보다 이후일 수 없습니다.',
+      );
+    }
+
+    const groupedTasks =
+      await this.taskRepository.findCalendarSummary(
+        userId,
+        start,
+        end,
+      );
+
+    const summaryMap =
+      new Map<string, TaskCalendarDayResponse>();
+
+    for (const group of groupedTasks) {
+      const date =
+        group.taskDate.toISOString().slice(0, 10);
+
+      const existing =
+        summaryMap.get(date) ?? {
+          date,
+          completedCount: 0,
+          incompleteCount: 0,
+        };
+
+      if (group.status === TaskStatus.COMPLETED) {
+        existing.completedCount +=
+          group._count._all;
+      } else {
+        existing.incompleteCount +=
+          group._count._all;
+      }
+
+      summaryMap.set(date, existing);
+    }
+
+    return Array.from(summaryMap.values());
   }
 
   public async createTask(
@@ -243,6 +303,7 @@ export class TaskService {
     const updatedTask =
       await this.taskRepository.update(
         taskId,
+        userId,
         body,
         nextSortOrder,
       );

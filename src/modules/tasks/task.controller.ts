@@ -16,6 +16,7 @@ import {
 import { TaskService } from './task.service.js';
 import {
   CreateTaskRequest,
+  TaskCalendarDayResponse,
   TaskPriority,
   TaskReorderRequest,
   TaskReorderResponse,
@@ -146,6 +147,65 @@ export class TaskController extends Controller {
   }
 
   /**
+   * 업무 캘린더에서 날짜별 완료/미완료 업무 수를 조회합니다.
+   *
+   * 화면에 표시되는 날짜 범위를 startDate와 endDate로 전달합니다.
+   * 업무가 존재하지 않는 날짜는 응답에 포함되지 않습니다.
+   *
+   * @summary 업무 캘린더 날짜별 현황 조회
+   * @param startDate 조회 시작 날짜 (YYYY-MM-DD)
+   * @param endDate 조회 종료 날짜 (YYYY-MM-DD)
+   */
+  @Get('calendar')
+  @Example<ApiResponse<TaskCalendarDayResponse[]>>({
+    success: true,
+    code: 'S200',
+    message: '업무 캘린더 현황 조회가 완료되었습니다.',
+    result: [
+      {
+        date: '2026-07-31',
+        completedCount: 2,
+        incompleteCount: 1,
+      },
+      {
+        date: '2026-08-05',
+        completedCount: 0,
+        incompleteCount: 3,
+      },
+      {
+        date: '2026-08-06',
+        completedCount: 4,
+        incompleteCount: 0,
+      },
+    ],
+  })
+  public async getCalendarSummary(
+    @Header('authorization')
+    authorization: string,
+
+    @Query()
+    startDate: string,
+
+    @Query()
+    endDate: string,
+  ): Promise<
+    ApiResponse<TaskCalendarDayResponse[]>
+  > {
+    const data =
+      await this.taskService.getCalendarSummary(
+        authorization,
+        startDate,
+        endDate,
+      );
+
+    return success(
+      SuccessCode.GET_SUCCESS.code,
+      '업무 캘린더 현황 조회가 완료되었습니다.',
+      data,
+    );
+  }
+
+  /**
    * 업무카드를 생성합니다.
    *
    * status를 생략하면 IN_PROGRESS로 생성됩니다.
@@ -249,6 +309,8 @@ export class TaskController extends Controller {
       data,
     );
   }
+
+
 
   /**
    * @summary 업무카드 상세 조회

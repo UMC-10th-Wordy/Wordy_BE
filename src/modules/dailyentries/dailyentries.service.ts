@@ -179,7 +179,18 @@ export const getMonthlyList = async (
   >();
 
   for (const e of entries) {
-    const ym = toDateStr(e.entryDate).slice(0, 7); // "2026-08"
+    // 노출 기준: 업무 있거나, 내용 있는 회고 있거나, 변환됨 (펼친 목록과 동일)
+    const hasTask = e.reflectionTasks.some(
+      (rt) => rt.task && !rt.task.deletedAt
+    );
+    const hasReflection = (e.reflectionContent ?? "").trim().length > 0;
+    const converted = e.reflectionSnapshots.some(
+      (s) =>
+        (s.status === "TEMP" || s.status === "SAVED") && s.promptBResult != null
+    );
+    if (!hasTask && !hasReflection && !converted) continue; // 빈 날 제외
+
+    const ym = toDateStr(e.entryDate).slice(0, 7);
     if (!groups.has(ym)) groups.set(ym, { dates: new Set(), tags: [] });
     const g = groups.get(ym)!;
     g.dates.add(toDateStr(e.entryDate));
@@ -229,37 +240,77 @@ export const getMonthlyEntries = async (
 ): Promise<DailyRecordItem[]> => {
   const [year, month] = yearMonth.split("-").map(Number);
   if (!year || !month) {
-    throw new Error("yearMonth 형식이 올바르지 않습니다. (예: 2026-08)");
+    throw new ApiError(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      "yearMonth 형식이 올바르지 않습니다. (예: 2026-08)"
+    );
   }
 
   const { start, end } = getMonthRange(year, month);
   const entries = await findEntriesByMonth(userId, start, end);
 
-  return entries.map((e) => {
-    const tasks = e.reflectionTasks
-      .map((rt) => rt.task)
-      .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+  return entries
+    .map((e) => {
+      // 유효 스냅샷(TEMP/SAVED + promptBResult) 중 최신 (상세 조회와 동일 기준)
+      const snapshot = e.reflectionSnapshots.find(
+        (s) =>
+          (s.status === "TEMP" || s.status === "SAVED") &&
+          s.promptBResult != null
+      );
+      const converted = !!snapshot;
 
-    // 대표 업무: MUST_DO 우선, 없으면 첫 업무 (기준은 팀 협의 후 조정 가능)
-    const mainTask =
-      tasks.find((t) => t.priority === "MUST_DO") ?? tasks[0] ?? null;
+      // 현재 활성 Task (미변환용)
+      const currentTasks = e.reflectionTasks
+        .map((rt) => rt.task)
+        .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
 
-    const tagList = tasks
-      .filter((t) => t.tag)
-      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+      // 카드 정보: 변환됨이면 스냅샷 기준, 아니면 현재 Task 기준
+      let cardTasks: { title: string; priority: string; tag: { tagName: string; color: string | null } | null }[];
+      if (converted && snapshot) {
+        cardTasks = snapshot.reflectionTaskSnapshots.map((ts) => ({
+          title: ts.title,
+          priority: ts.priority,
+          tag: ts.task?.tag ?? null,
+        }));
+      } else {
+        cardTasks = currentTasks.map((t) => ({
+          title: t.title,
+          priority: t.priority,
+          tag: t.tag ?? null,
+        }));
+      }
 
-    const dateStr = toDateStr(e.entryDate);
+      // 대표 업무: MUST_DO 우선, 없으면 첫 업무
+      const mainTask =
+        cardTasks.find((t) => t.priority === "MUST_DO") ?? cardTasks[0] ?? null;
 
-    return {
-      dailyEntryId: e.dailyEntryId,
-      entryDate: dateStr,
-      day: Number(dateStr.slice(8, 10)),
-      tags: pickTags(tagList),
-      mainTaskTitle: mainTask?.title ?? null,
-      extraTaskCount: Math.max(tasks.length - 1, 0),
-      summary: e.reflectionContent ?? null,
-    };
-  });
+      const tagList = cardTasks
+        .filter((t) => t.tag)
+        .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+
+      const dateStr = toDateStr(e.entryDate);
+
+      return {
+        dailyEntryId: e.dailyEntryId,
+        entryDate: dateStr,
+        day: Number(dateStr.slice(8, 10)),
+        tags: pickTags(tagList),
+        mainTaskTitle: mainTask?.title ?? null,
+        extraTaskCount: Math.max(cardTasks.length - 1, 0),
+        summary: e.reflectionContent ?? null,
+        converted,
+        // 노출 필터용 (아래 filter에서 사용)
+        _hasCard: cardTasks.length > 0,
+      };
+    })
+    // 노출 기준: 카드(업무/스냅샷) 있거나, 내용 있는 회고 있거나, 변환됨
+    .filter((item) => {
+      const hasReflection = (item.summary ?? "").trim().length > 0;
+      return item._hasCard || hasReflection || item.converted;
+    })
+    // 내부 필드 제거
+    .map(({ _hasCard, ...rest }) => rest);
 };
 
 // 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)
@@ -319,7 +370,11 @@ export const getDailyEntriesDetail = async (
 ): Promise<DailyEntriesDetailResponse> => {
   const entry = await findEntryDetail(userId, dailyEntryId);
   if (!entry) {
-    throw new Error("해당 일지를 찾을 수 없습니다.");
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "해당 일지를 찾을 수 없습니다."
+    );
   }
 
   // 회고는 변환 여부와 무관하게 항상 노출
@@ -329,7 +384,13 @@ export const getDailyEntriesDetail = async (
     reflectionContent: entry.reflectionContent,
   };
 
-  const snapshot = entry.reflectionSnapshots[0];
+  // 유효 스냅샷입니다. status가 TEMP 또는 SAVED이고 promptBResult가 있는 것 중 최신
+  // PROCESSING·FAILED·promptBResult 없는 중간저장은 "변환 전"으로 취급
+  const snapshot = entry.reflectionSnapshots.find(
+    (s) =>
+      (s.status === "TEMP" || s.status === "SAVED") &&
+      s.promptBResult != null
+  );
 
   // 성과 미리보기 ID (변환됐고 성과가 있으면, 없으면 null)
   const dailyPerformanceId =
@@ -416,7 +477,11 @@ export const getDailyEntriesDetail = async (
 export const removeDailyEntry = async (userId: string, dailyEntryId: string) => {
   const found = await findEntryById(userId, dailyEntryId);
   if (!found) {
-    throw new Error("해당 일지를 찾을 수 없습니다.");
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "해당 일지를 찾을 수 없습니다."
+    );
   }
 
   await softDeleteEntry(dailyEntryId);
