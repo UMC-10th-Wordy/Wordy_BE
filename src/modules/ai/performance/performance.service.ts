@@ -507,7 +507,7 @@ export class PerformanceService {
       await this.createReflectionTaskSnapshots(
         tx,
         snapshot.reflectionSnapshotId,
-        request.tasks,
+        serverTasks,
       );
 
       return snapshot;
