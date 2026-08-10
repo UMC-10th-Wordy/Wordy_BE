@@ -461,61 +461,57 @@ export class PerformanceService {
   private async preparePerformanceSnapshot(
     promptAResult: PromptAOutputDto,
     request: PerformanceRequestDto,
-    tasks: TaskDto[],
+    serverTasks: TaskDto[],
     reflectionSnapshotId?: string,
   ) {
+    return await this.prisma.$transaction(async (tx) => {
+      let snapshot;
 
-  return await this.prisma.$transaction(async(tx)=>{
-    let snapshot;
-
-    if(reflectionSnapshotId){
-      snapshot =
-        await tx.reflectionSnapshot.update({
-          where:{
+      if (reflectionSnapshotId) {
+        snapshot = await tx.reflectionSnapshot.update({
+          where: {
             reflectionSnapshotId,
           },
-          data:{
+          data: {
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            status:"PROCESSING",
+            status: "PROCESSING",
           },
         });
-
-    }else{
-      snapshot =
-        await tx.reflectionSnapshot.create({
-          data:{
+      } else {
+        snapshot = await tx.reflectionSnapshot.create({
+          data: {
             dailyEntryId: request.dailyEntryId,
             promptAResult: JSON.parse(JSON.stringify(promptAResult)),
-            status:"PROCESSING",
+            status: "PROCESSING",
           },
         });
-    }
+      }
 
-     // 기존 TaskResultSnapshot 삭제
-    await tx.reflectionTaskResultSnapshot.deleteMany({
-      where: {
-        reflectionTaskSnapshot: {
+      // 기존 Task Result Snapshot 삭제
+      await tx.reflectionTaskResultSnapshot.deleteMany({
+        where: {
+          reflectionTaskSnapshot: {
+            reflectionSnapshotId: snapshot.reflectionSnapshotId,
+          },
+        },
+      });
+
+      // 기존 Task Snapshot 삭제
+      await tx.reflectionTaskSnapshot.deleteMany({
+        where: {
           reflectionSnapshotId: snapshot.reflectionSnapshotId,
         },
-      },
+      });
+
+      // 최신 Task Snapshot 생성
+      await this.createReflectionTaskSnapshots(
+        tx,
+        snapshot.reflectionSnapshotId,
+        request.tasks,
+      );
+
+      return snapshot;
     });
-
-    // TaskSnapshot 삭제
-    await tx.reflectionTaskSnapshot.deleteMany({
-      where: {
-        reflectionSnapshotId: snapshot.reflectionSnapshotId,
-      },
-    });
-
-    // 최신 요청 기준으로 Snapshot 재생성
-    await this.createReflectionTaskSnapshots(
-      tx,
-      snapshot.reflectionSnapshotId,
-      tasks,
-    );
-
-    return snapshot;
-  });
   }
 
   private async runPromptB(
