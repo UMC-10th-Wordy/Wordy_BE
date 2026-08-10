@@ -229,7 +229,11 @@ export const getMonthlyEntries = async (
 ): Promise<DailyRecordItem[]> => {
   const [year, month] = yearMonth.split("-").map(Number);
   if (!year || !month) {
-    throw new Error("yearMonth 형식이 올바르지 않습니다. (예: 2026-08)");
+    throw new ApiError(
+      ErrorCode.BAD_REQUEST.status,
+      ErrorCode.BAD_REQUEST.code,
+      "yearMonth 형식이 올바르지 않습니다. (예: 2026-08)"
+    );
   }
 
   const { start, end } = getMonthRange(year, month);
@@ -319,7 +323,11 @@ export const getDailyEntriesDetail = async (
 ): Promise<DailyEntriesDetailResponse> => {
   const entry = await findEntryDetail(userId, dailyEntryId);
   if (!entry) {
-    throw new Error("해당 일지를 찾을 수 없습니다.");
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "해당 일지를 찾을 수 없습니다."
+    );
   }
 
   // 회고는 변환 여부와 무관하게 항상 노출
@@ -422,7 +430,11 @@ export const getDailyEntriesDetail = async (
 export const removeDailyEntry = async (userId: string, dailyEntryId: string) => {
   const found = await findEntryById(userId, dailyEntryId);
   if (!found) {
-    throw new Error("해당 일지를 찾을 수 없습니다.");
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "해당 일지를 찾을 수 없습니다."
+    );
   }
 
   await softDeleteEntry(dailyEntryId);
