@@ -1,5 +1,5 @@
 import { Example } from "tsoa";
-import { Prisma, ReflectionSnapshotStatus } from "../../generated/prisma/client.js";
+import { Prisma, ReflectionSnapshotStatus,  } from "../../generated/prisma/client.js";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
 
 export class CreateDailyPerformanceRequestDto {

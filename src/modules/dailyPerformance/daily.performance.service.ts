@@ -2,7 +2,6 @@ import { Prisma, PrismaClient } from "../../generated/prisma/client.js";
 import { verifyAccessToken } from "../../auth.config.js";
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
-import { TaskStatus } from "../../generated/prisma/enums.js";
 import { PromptAOutputDto } from "../ai/performance/dto/prompt/prompt.a.output.dto.js";
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
 import {
@@ -20,6 +19,7 @@ import {
   DailyPerformanceRepository,
   DailyPerformanceDetail,
 } from "./daily.performance.repository.js";
+import { TaskStatus } from "../tasks/task.dto.js";
 
 export class DailyPerformanceService {
   constructor(

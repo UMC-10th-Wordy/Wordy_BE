@@ -88,7 +88,7 @@ export class TagService {
     const userId = this.getUserIdFromAuthorization(authorization);
     this.validateCreateBody(body);
 
-    return this.tagRepository.create(userId, workspaceId {
+    return this.tagRepository.create(userId, workspaceId, {
       ...body,
       tagName: body.tagName.trim(),
     });
