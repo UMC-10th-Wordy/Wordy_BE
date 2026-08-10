@@ -179,7 +179,18 @@ export const getMonthlyList = async (
   >();
 
   for (const e of entries) {
-    const ym = toDateStr(e.entryDate).slice(0, 7); // "2026-08"
+    // 노출 기준: 업무 있거나, 내용 있는 회고 있거나, 변환됨 (펼친 목록과 동일)
+    const hasTask = e.reflectionTasks.some(
+      (rt) => rt.task && !rt.task.deletedAt
+    );
+    const hasReflection = (e.reflectionContent ?? "").trim().length > 0;
+    const converted = e.reflectionSnapshots.some(
+      (s) =>
+        (s.status === "TEMP" || s.status === "SAVED") && s.promptBResult != null
+    );
+    if (!hasTask && !hasReflection && !converted) continue; // 빈 날 제외
+
+    const ym = toDateStr(e.entryDate).slice(0, 7);
     if (!groups.has(ym)) groups.set(ym, { dates: new Set(), tags: [] });
     const g = groups.get(ym)!;
     g.dates.add(toDateStr(e.entryDate));

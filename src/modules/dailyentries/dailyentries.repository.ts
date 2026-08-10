@@ -40,6 +40,9 @@ export const findEntriesWithTags = async (userId: string) => {
       dailyEntryId: true,
       entryDate: true,
       reflectionContent: true,
+      reflectionSnapshots: {
+        select: { status: true, promptBResult: true },
+      },
       reflectionTasks: {
         select: {
           task: {
