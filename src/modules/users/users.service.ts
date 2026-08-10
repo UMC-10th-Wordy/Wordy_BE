@@ -63,7 +63,7 @@ export class UsersService {
    */
   public async completeProfile(authorization: string | undefined, body: CompleteProfileRequest): Promise<{ userId: string; email: string }> {
     const userId = this.extractUserId(authorization);
-    if (body.userName.length > 5) throw new InvalidUserNameError();
+    if (body.userName.length > 10) throw new InvalidUserNameError();
 
     const profile = await this.usersRepository.upsertProfile(userId, body);
     return { userId: profile.userId, email: profile.user.email };
