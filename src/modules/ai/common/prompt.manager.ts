@@ -11,7 +11,7 @@ export class PromptManager {
   private readonly model: string;
 
   constructor() {
-    this.model = process.env.LLM_MODEL ?? "claude-haiku-4-5";
+    this.model = process.env.OPENAI_MODEL ?? "gpt-5.6-luna";
   }
 
   buildPromptA(dto: PromptAInputDto): PromptRequest {
