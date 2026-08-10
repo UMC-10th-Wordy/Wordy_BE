@@ -38,6 +38,7 @@ const toDateStr = (d: Date) => {
 // 월간 생성 조건 충족 여부 확인
 export const getMonthlyEligibility = async (
   userId: string,
+  workspaceId: string,
   baseDate?: string
 ) => {
   // baseDate가 있으면 그 날짜 기준, 없으면 오늘 기준
@@ -56,9 +57,10 @@ export const getMonthlyEligibility = async (
 
   const { start, end } = getMonthRange(base);
 
-  const weeklyDashboards = await findWeeklyDashboards(userId, start, end);
+  const weeklyDashboards = await findWeeklyDashboards(userId, workspaceId, start, end);
 
   return {
+    workspaceId,
     eligible: weeklyDashboards.length >= REQUIRED_COUNT,
     weeklyDashboardCount: weeklyDashboards.length,
     requiredCount: REQUIRED_COUNT,
@@ -73,10 +75,11 @@ export const getMonthlyEligibility = async (
   };
 };
 // 월간 대시보드 목록 조회
-export const getMonthlyDashboardList = async (userId: string) => {
-  const dashboards = await findMonthlyDashboards(userId);
+export const getMonthlyDashboardList = async (userId: string, workspaceId: string,) => {
+  const dashboards = await findMonthlyDashboards(userId, workspaceId);
   return dashboards.map((d: typeof dashboards[number]) => ({
     dashboardId: d.dashboardId,
+    workspaceId: d.workspaceId,
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
     summary: d.summary,
@@ -87,9 +90,10 @@ export const getMonthlyDashboardList = async (userId: string) => {
 // 월간 대시보드 상세 조회
 export const getMonthlyDashboardDetail = async (
   dashboardId: string,
-  userId: string
+  userId: string,
+  workspaceId: string,
 ) => {
-  const d = await findMonthlyDashboardById(dashboardId, userId);
+  const d = await findMonthlyDashboardById(dashboardId, userId, workspaceId);
   if (!d) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
@@ -109,6 +113,7 @@ export const getMonthlyDashboardDetail = async (
 
   return {
     dashboardId: d.dashboardId,
+    workspaceId: d.workspaceId,
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
     summary: d.summary,
@@ -144,9 +149,10 @@ export const getMonthlyDashboardDetail = async (
 export const addMonthlyReflection = async (
   dashboardId: string,
   userId: string,
+  workspaceId: string,
   data: { workSummary?: string; resourcesUsed?: string; learning?: string }
 ) => {
-  const exists = await existsDashboard(dashboardId, userId);
+  const exists = await existsDashboard(dashboardId, userId, workspaceId);
   if (!exists) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
@@ -165,6 +171,7 @@ export const addMonthlyReflection = async (
 // 월간 대시보드 생성 (AI 호출 → DB 저장)
 export const createMonthlyDashboardWithAI = async (
   authorization: string | undefined,
+  workspaceId: string,
   startDate: string,
   endDate: string
 ) => {
@@ -193,6 +200,7 @@ export const createMonthlyDashboardWithAI = async (
   // 3. DB 저장 (위에서 뽑은 userId 사용)
   const saved = await createMonthlyDashboard({
     userId,
+    workspaceId,
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     summary: aiResult.summary,
@@ -211,10 +219,11 @@ export const editMonthlyReflection = async (
   dashboardId: string,
   reflectionId: string,
   userId: string,
+  workspaceId: string,
   data: { workSummary?: string; resourcesUsed?: string; learning?: string }
 ) => {
   // 대시보드가 이 유저 것인지 확인
-  const exists = await existsDashboard(dashboardId, userId);
+  const exists = await existsDashboard(dashboardId, userId, workspaceId);
   if (!exists) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }

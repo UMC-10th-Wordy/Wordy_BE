@@ -2,6 +2,9 @@ import { Example } from "tsoa";
 
 // 월간 생성 조건 충족 여부
 export class MonthlyEligibilityResponse {
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
+
   @Example(true)
   eligible!: boolean; // 생성 가능 여부
 
@@ -50,6 +53,9 @@ export class MonthlyDashboardListItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dashboardId!: string;
 
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
+
   @Example("2026-06-01")
   startDate!: string;
 
@@ -68,6 +74,9 @@ export class MonthlyDashboardListItem {
 export class MonthlyDashboardDetail {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dashboardId!: string;
+
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
 
   @Example("2026-06-01")
   startDate!: string;

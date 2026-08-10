@@ -6,12 +6,14 @@ import { prisma } from "../../db.config.js";
 // 특정 기간 내 주간 대시보드 목록 조회 (월간 생성 재료)
 export const findWeeklyDashboards = async (
   userId:string,
+  workspaceId: string,
   startDate:Date,
   endDate:Date
 )=>{
   return prisma.dashboard.findMany({
     where:{
     userId,
+    workspaceId,
     deletedAt:null,
     startDate:{
       gte:startDate,
@@ -32,9 +34,9 @@ export const findWeeklyDashboards = async (
 };
 
 // 월간 대시보드 목록 조회
-export const findMonthlyDashboards = async (userId: string) => {
+export const findMonthlyDashboards = async (userId: string, workspaceId: string,) => {
   return prisma.dashboard.findMany({
-    where: { userId, deletedAt: null },
+    where: { userId, workspaceId, deletedAt: null },
     // TODO: type: "MONTHLY" 조건 추가
     orderBy: { startDate: "desc" },
   });
@@ -43,10 +45,11 @@ export const findMonthlyDashboards = async (userId: string) => {
 // 월간 대시보드 상세 조회
 export const findMonthlyDashboardById = async (
   dashboardId: string,
-  userId: string
+  userId: string,
+  workspaceId: string,
 ) => {
   return prisma.dashboard.findFirst({
-    where: { dashboardId, userId, deletedAt: null },
+    where: { dashboardId, userId, workspaceId, deletedAt: null },
     include: {
       insights: true,
       kpis: true,
@@ -66,10 +69,11 @@ export const findMonthlyDashboardById = async (
 // 대시보드 존재 확인
 export const existsDashboard = async (
   dashboardId: string,
-  userId: string
+  userId: string,
+  workspaceId: string,
 ): Promise<boolean> => {
   const found = await prisma.dashboard.findFirst({
-    where: { dashboardId, userId, deletedAt: null },
+    where: { dashboardId, userId, workspaceId, deletedAt: null },
     select: { dashboardId: true },
   });
   return found !== null;
@@ -92,6 +96,7 @@ export const createMonthlyReflection = async (
 // AI 결과로 월간 대시보드 생성 (하위 데이터까지 한 번에 저장)
 export const createMonthlyDashboard = async (data: {
   userId: string;
+  workspaceId: string,
   startDate: Date;
   endDate: Date;
   summary: string;
@@ -108,6 +113,7 @@ export const createMonthlyDashboard = async (data: {
   return prisma.dashboard.create({
     data: {
       userId: data.userId,
+      workspaceId: data.workspaceId,
       startDate: data.startDate,
       endDate: data.endDate,
       summary: data.summary,
