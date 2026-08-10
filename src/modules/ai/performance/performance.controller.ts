@@ -1,4 +1,4 @@
-import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Path, Post, Route, Tags } from "tsoa";
 
 import { LlmClient } from "../common/llm.client.js";
 import { PromptManager } from "../common/prompt.manager.js";
@@ -14,7 +14,7 @@ import { success } from "../../../common/responses/response.js";
 import { SuccessCode } from "../../../common/responses/success.code.js";
 import { ApiResponse } from "../../../common/responses/api.response.js";
 
-@Route("ai")
+@Route("ai/workspaces/{workspaceId}")
 @Tags("AI")
 export class PerformanceController extends Controller {
   private readonly performanceService: PerformanceService;
@@ -90,11 +90,13 @@ export class PerformanceController extends Controller {
   })
   public async createPerformancePreview(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Body() request: PerformanceRequestDto,
   ): Promise<ApiResponse<PerformanceResponseDto>> {
     const result =
       await this.performanceService.generatePerformancePreview(
         authorization,
+        workspaceId,
         request,
       );
 
@@ -151,11 +153,13 @@ export class PerformanceController extends Controller {
   })
   public async completePerformancePreview(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Body() request: PerformanceQuestionRequestDto,
   ): Promise<ApiResponse<PerformanceResponseDto>> {
     const result =
       await this.performanceService.completePerformancePreview(
         authorization,
+        workspaceId,
         request,
       );
 

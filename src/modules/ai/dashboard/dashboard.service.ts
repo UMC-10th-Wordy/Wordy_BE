@@ -5,7 +5,7 @@ import { LlmClient } from "../common/llm.client.js";
 import { ResponseParser } from "../common/response.parser.js";
 import { RuleEngine } from "../common/rule.engine.js";
 
-import { PrismaClient, DailyPerformance, PromptType, AiRunStatus } from "../../../generated/prisma/client.js";
+import { PrismaClient, PromptType, AiRunStatus } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../../common/errors/api.error.js";
 import { ErrorCode } from "../../../common/errors/error.code.js";
 import { verifyAccessToken } from "../../../auth.config.js";
@@ -86,6 +86,7 @@ export class DashboardService {
   // 주간 대시보드 AI 생성
   async generateWeeklyDashboard(
     authorization: string | undefined,
+    workspaceId: string,
     request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
 
@@ -247,6 +248,7 @@ export class DashboardService {
               data: {
                 dashboardId,
                 userId,
+                workspaceId,
                 type: "WEEKLY",
                 startDate: new Date(request.startDate),
                 endDate: new Date(request.endDate),
@@ -468,6 +470,7 @@ export class DashboardService {
   // 월간 대시보드 AI 생성
   async generateMonthlyDashboard(
     authorization: string | undefined,
+    workspaceId: string,
     request: DashboardRequestDto,
   ): Promise<DashboardResponseDto> {
 
@@ -646,6 +649,7 @@ export class DashboardService {
           dashboard = await tx.dashboard.create({
             data: {
               userId,
+              workspaceId,
               type: "MONTHLY",
 
               startDate: new Date(request.startDate),

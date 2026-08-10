@@ -53,6 +53,7 @@ export class PerformanceService {
   // 첫 번째 호출
   async generatePerformancePreview(
     authorization: string | undefined,
+    workspaceId: string,
     request: PerformanceRequestDto,
   ): Promise<PerformanceResponseDto> {
 
@@ -62,6 +63,7 @@ export class PerformanceService {
       where: {
         dailyEntryId: request.dailyEntryId,
         userId,
+        workspaceId,
         deletedAt: null,
       },
     });
@@ -218,6 +220,7 @@ export class PerformanceService {
   // 질문 답변 후 최종 생성
   async completePerformancePreview(
     authorization: string | undefined,
+    workspaceId: string,
     request: PerformanceQuestionRequestDto,
   ): Promise<PerformanceResponseDto> {
 
@@ -228,6 +231,7 @@ export class PerformanceService {
           reflectionSnapshotId: request.reflectionSnapshotId,
           dailyEntry: {
             userId,
+            workspaceId,
             deletedAt: null,
           },
         },
@@ -325,6 +329,7 @@ export class PerformanceService {
       where: {
         dailyEntryId: request.originalRequest.dailyEntryId,
         userId,
+        workspaceId,
         deletedAt: null,
       },
     });
