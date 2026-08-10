@@ -108,7 +108,4 @@ export class TagResponse {
 
   @Example('5d90d6f3-ef0d-4ef2-9d77-f7a67b2b2d2a')
   userId!: string;
-
-  @Example('8c2d4f6a-7e91-4b23-a567-123456789abc')
-  workspaceId!: string;
 }

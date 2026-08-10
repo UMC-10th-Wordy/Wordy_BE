@@ -337,7 +337,6 @@ export const getDailyEntryByDate = async (
 
   return {
     dailyEntryId: entry.dailyEntryId,
-    workspaceId: entry.workspaceId,
     entryDate: date,
     reflectionContent: entry.reflectionContent,
   };

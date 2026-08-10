@@ -21,7 +21,6 @@ export class TagController extends Controller {
     result: [
       {
         tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
-        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
         tagName: "Wordy",
         color: "#4F46E5",
         projectName: "Wordy 프로젝트",
@@ -60,7 +59,6 @@ export class TagController extends Controller {
     message: "태그가 생성되었습니다.",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       tagName: "Wordy",
       color: "#4F46E5",
       projectName: "Wordy 프로젝트",
@@ -95,7 +93,6 @@ export class TagController extends Controller {
     message: "태그 상세 조회 성공",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       tagName: "Wordy",
       color: "#4F46E5",
       projectName: "Wordy 프로젝트",
@@ -134,7 +131,6 @@ export class TagController extends Controller {
     message: "태그가 수정되었습니다.",
     result: {
       tagId: "7f7d2c74-9d8d-4b48-9c44-7d1b63f2f9b2",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       tagName: "Wordy Backend",
       color: "#22C55E",
       projectName: "Wordy 프로젝트",

@@ -34,7 +34,6 @@ export class DashboardController extends Controller {
     code: "S200",
     message: "조회에 성공했습니다.",
     result: {
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       eligible: true,
       journalDays: 4,
       requiredDays: 3,
@@ -71,7 +70,6 @@ export class DashboardController extends Controller {
     result: [
       {
         dashboardId: "550e8400-e29b-41d4-a716-446655440000",
-        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
         startDate: "2026-06-15",
         endDate: "2026-06-21",
         summary: "이번 주는 온보딩 리뉴얼에 집중했습니다.",
@@ -102,7 +100,6 @@ export class DashboardController extends Controller {
     message: "조회에 성공했습니다.",
     result: {
       dashboardId: "550e8400-e29b-41d4-a716-446655440000",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       startDate: "2026-06-15",
       endDate: "2026-06-21",
       summary: "이번 주 업무 성과 및 회고 요약",
@@ -241,7 +238,6 @@ export class DashboardController extends Controller {
     message: "생성에 성공했습니다.",
     result: {
       dashboardId: "550e8400-e29b-41d4-a716-446655440000",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       startDate: "2026-06-15",
       endDate: "2026-06-21",
       summary: "AI가 생성한 이번 주 업무 성과 요약",

@@ -3,9 +3,6 @@ import { Prisma, ReflectionSnapshotStatus,  } from "../../generated/prisma/clien
 import { PromptBOutputDto } from "../ai/performance/dto/prompt/prompt.b.output.dto.js";
 
 export class CreateDailyPerformanceRequestDto {
-  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
-  workspaceId!: string;
-  
   @Example("8c2d4f6a-7e91-4b23-a567-123456789abc",)
   reflectionSnapshotId!: string;
 

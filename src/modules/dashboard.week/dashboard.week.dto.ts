@@ -2,9 +2,6 @@ import { Example } from "tsoa";
 
 // 생성 조건 충족 여부
 export class EligibilityResponse {
-  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
-  workspaceId!: string;
-  
   @Example(true)
   eligible!: boolean; // 생성 가능 여부
 
@@ -35,9 +32,6 @@ export class DashboardListItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dashboardId!: string;
 
-  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
-  workspaceId!: string;
-
   @Example("2026-07-20")
   startDate!: string;
 
@@ -55,9 +49,6 @@ export class DashboardListItem {
 export class DashboardDetail {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dashboardId!: string;
-
-  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
-  workspaceId!: string;
 
   @Example("2026-07-20")
   startDate!: string;

@@ -101,7 +101,6 @@ export class DailyEntriesController extends Controller {
     result: [
       {
         dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
-        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
         entryDate: "2026-08-21",
         day: 21,
         tags: [{ tagName: "회의", color: "#3B82F6" }],
@@ -143,7 +142,6 @@ export class DailyEntriesController extends Controller {
       results: [
         {
           dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
-          workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
           entryDate: "2026-06-21",
           tags: [{ tagName: "온보딩 리뉴얼", color: "#10B981" }],
           title: "Product Strategy Alignment 회의 준비",
@@ -155,7 +153,6 @@ export class DailyEntriesController extends Controller {
       results: [
         {
           dailyEntryId: "660e8400-e29b-41d4-a716-446655440001",
-          workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
           entryDate: "2026-06-20",
           tags: [{ tagName: "회의", color: "#3B82F6" }],
           title: "주간 회의록 정리",
@@ -193,7 +190,6 @@ export class DailyEntriesController extends Controller {
   message: "날짜별 일지 조회가 완료되었습니다.",
   result: {
     dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
-    workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
     entryDate: "2026-07-31",
     reflectionContent:
       "오늘 업무에서 잘한 점과 아쉬운 점을 정리했다.",
@@ -249,7 +245,6 @@ public async getByDate(
     message: "조회에 성공했습니다.",
     result: {
       dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       dailyPerformanceId: "550e8400-e29b-41d4-a716-446655440000",
       entryDate: "2026-08-21",
       reflectionContent: "오늘은 JWT 인증 기능 구현을 완료했다.",

@@ -49,8 +49,6 @@ export class TaskController extends Controller {
       {
         taskId:
           '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
-        workspaceId: 
-          '8c2d4f6a-7e91-4b23-a567-123456789abc',
         title: '백엔드 API 구현',
         priority: TaskPriority.MUST_DO,
         sortOrder: 0,
@@ -97,8 +95,6 @@ export class TaskController extends Controller {
       {
         taskId:
           '1a6d55f5-48c0-4a6d-8f43-9ef5c41d2e6b',
-        workspaceId: 
-          '8c2d4f6a-7e91-4b23-a567-123456789abc',
         title: '프론트 연동 테스트',
         priority: TaskPriority.SHOULD_DO,
         sortOrder: 0,
@@ -232,8 +228,6 @@ export class TaskController extends Controller {
     result: {
       taskId:
         '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
-      workspaceId: 
-        '8c2d4f6a-7e91-4b23-a567-123456789abc',
       title: '백엔드 API 구현',
       priority: TaskPriority.MUST_DO,
       sortOrder: 0,
@@ -341,8 +335,6 @@ export class TaskController extends Controller {
     result: {
       taskId:
         '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
-      workspaceId: 
-        '8c2d4f6a-7e91-4b23-a567-123456789abc',
       title: '백엔드 API 구현',
       priority: TaskPriority.MUST_DO,
       sortOrder: 0,
@@ -421,8 +413,6 @@ export class TaskController extends Controller {
     result: {
       taskId:
         '0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a',
-      workspaceId: 
-        '8c2d4f6a-7e91-4b23-a567-123456789abc',
       title: '백엔드 API 수정',
       priority: TaskPriority.SHOULD_DO,
       sortOrder: 0,

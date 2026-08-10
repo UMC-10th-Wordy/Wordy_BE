@@ -15,7 +15,7 @@ import { ApiResponse } from '../../common/responses/api.response.js';
 import { success } from '../../common/responses/response.js';
 import { SuccessCode } from '../../common/responses/success.code.js';
 
-@Route('tasks')
+@Route('workspaces/{workspaceId}/tasks')
 @Tags('Task Results')
 export class TaskResultController extends Controller {
   private readonly taskResultService = new TaskResultService();
@@ -53,6 +53,7 @@ export class TaskResultController extends Controller {
   })
   public async upsertTaskResult(
     @Header('authorization') authorization: string,
+    @Path() workspaceId: string,
     @Path() taskId: string,
     @FormField() content: string,
     @FormField() removedAttachmentIds?: string,
@@ -60,6 +61,7 @@ export class TaskResultController extends Controller {
   ): Promise<ApiResponse<TaskResultResponse>> {
     const data = await this.taskResultService.upsertTaskResult(
       authorization,
+      workspaceId,
       taskId,
       content,
       removedAttachmentIds,

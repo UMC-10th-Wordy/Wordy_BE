@@ -34,7 +34,6 @@ export class MonthlyDashboardController extends Controller {
     code: "S200",
     message: "조회에 성공했습니다.",
     result: {
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       eligible: true,
       weeklyDashboardCount: 4,
       requiredCount: 3,
@@ -80,7 +79,6 @@ export class MonthlyDashboardController extends Controller {
     result: [
       {
         dashboardId: "uuid-month-1",
-        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
         startDate: "2026-06-01",
         endDate: "2026-06-30",
         summary: "6월은 온보딩 개선에 집중한 달이었습니다.",
@@ -111,7 +109,6 @@ export class MonthlyDashboardController extends Controller {
     message: "조회에 성공했습니다.",
     result: {
       dashboardId: "uuid-month-1",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       startDate: "2026-06-01",
       endDate: "2026-06-30",
       summary: "6월은 온보딩 개선에 집중한 달이었습니다.",
@@ -208,7 +205,6 @@ export class MonthlyDashboardController extends Controller {
     message: "생성에 성공했습니다.",
     result: {
       dashboardId: "550e8400-e29b-41d4-a716-446655440000",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       startDate: "2026-06-01",
       endDate: "2026-06-30",
       summary: "AI가 생성한 6월 월간 업무 성과 요약",

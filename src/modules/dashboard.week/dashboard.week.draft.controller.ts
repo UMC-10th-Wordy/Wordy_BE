@@ -24,7 +24,6 @@ export class DashboardDraftController extends Controller {
     message: "임시 저장되었습니다.",
     result: {
       reflectionDraftId: "550e8400-e29b-41d4-a716-446655440000",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       type: "MONTHLY",
       workSummary: "이번 달 온보딩 리뉴얼 진행",
       resourcesUsed: "사용자 인터뷰, 로그 분석",
@@ -57,7 +56,6 @@ export class DashboardDraftController extends Controller {
     message: "조회에 성공했습니다.",
     result: {
       reflectionDraftId: "550e8400-e29b-41d4-a716-446655440000",
-      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       type: "MONTHLY",
       workSummary: "이번 달 온보딩 리뉴얼 진행",
       resourcesUsed: "사용자 인터뷰, 로그 분석",

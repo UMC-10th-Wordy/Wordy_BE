@@ -73,7 +73,6 @@ export const createDailyEntry = async (
 
   return {
     dailyEntryId: updatedEntry.dailyEntryId,
-    workspaceId: updatedEntry.workspaceId,
     title: updatedEntry.title,
     entryDate: body.entryDate,
     reflectionContent:
@@ -95,7 +94,6 @@ export const createDailyEntry = async (
 
     return {
     dailyEntryId: dailyEntry.dailyEntryId,
-    workspaceId: dailyEntry.workspaceId,
     title: dailyEntry.title,
     entryDate: body.entryDate,
     reflectionContent: dailyEntry.reflectionContent,

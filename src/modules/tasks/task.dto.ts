@@ -70,9 +70,6 @@ export class TaskResponse {
   @Example('0c5d55f5-48c0-4a6d-8f43-9ef5c41d2e6a')
   taskId!: string;
 
-  @Example('8c2d4f6a-7e91-4b23-a567-123456789abc')
-  workspaceId!: string;
-
   @Example('백엔드 API 구현')
   title!: string;
 
