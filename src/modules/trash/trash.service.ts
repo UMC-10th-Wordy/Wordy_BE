@@ -1,11 +1,16 @@
 import {
   findTrashedEntries,
+  countTrashedEntries,
   findTrashedEntryById,
   restoreEntry,
   permanentlyDeleteEntry,
 } from "./trash.repository.js";
 
-import type { TrashDailyEntryItem } from "./trash.dto.js";
+import type { TrashDailyEntryListResponse } from "./trash.dto.js";
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 10;
+const MAX_SIZE = 50;
 
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
@@ -47,18 +52,36 @@ const toDateStr = (d: Date) => {
 
 //  목록 조회
 export const getTrashedDailyEntries = async (
-  authorization: string | undefined
-): Promise<TrashDailyEntryItem[]> => {
+  authorization: string | undefined,
+  page: number = DEFAULT_PAGE,
+  size: number = DEFAULT_SIZE
+): Promise<TrashDailyEntryListResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
 
-  const entries = await findTrashedEntries(userId);
+  const safePage = Math.max(1, Math.floor(page));
+  const safeSize = Math.min(MAX_SIZE, Math.max(1, Math.floor(size)));
+  const skip = (safePage - 1) * safeSize;
 
-  return entries.map((e) => ({
-    dailyEntryId: e.dailyEntryId,
-    entryDate: toDateStr(e.entryDate),
-    reflectionContent: e.reflectionContent,
-    deletedAt: e.deletedAt as Date,
-  }));
+  const [entries, totalCount] = await Promise.all([
+    findTrashedEntries(userId, skip, safeSize),
+    countTrashedEntries(userId),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / safeSize);
+
+  return {
+    items: entries.map((e) => ({
+      dailyEntryId: e.dailyEntryId,
+      entryDate: toDateStr(e.entryDate),
+      reflectionContent: e.reflectionContent,
+      deletedAt: e.deletedAt as Date,
+    })),
+    page: safePage,
+    size: safeSize,
+    totalCount,
+    totalPages,
+    hasNext: safePage < totalPages,
+  };
 };
 
 export const restoreDailyEntry = async (

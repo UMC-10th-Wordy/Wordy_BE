@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Path,
+  Query,
   Route,
   Tags,
   Example,
@@ -16,7 +17,8 @@ import {
 
 import {
   MarkNotificationReadResponse,
-  NotificationItem,
+  NotificationListResponse,
+  NotificationStatusFilter,
   NotificationType,
 } from "./notification.dto.js";
 
@@ -28,30 +30,43 @@ import { SuccessCode } from "../../common/responses/success.code.js";
 @Tags("Notifications")
 export class NotificationController extends Controller {
   /**
-   * @summary 알림 목록 조회 (읽음/안읽음 상태 포함)
+   * @summary 알림 목록 조회 (읽음/안읽음 상태 포함, 페이지네이션)
+   * @param status 조회 범위. all(기본값) / read / unread
+   * @param page 페이지 번호 (1부터 시작, 기본값 1)
+   * @param size 페이지당 항목 수 (기본값 10, 최대 50)
    */
   @Get()
-  @Example<ApiResponse<NotificationItem[]>>({
+  @Example<ApiResponse<NotificationListResponse>>({
     success: true,
     code: "S200",
     message: "조회에 성공했습니다.",
-    result: [
-      {
-        notificationId: "550e8400-e29b-41d4-a716-446655440000",
-        type: NotificationType.DASHBOARD_COMPLETED,
-        title: "성과 대시보드가 완성됐어요",
-        content: "이번 주 성과 리포트를 확인해보세요.",
-        redirectUrl:
-          "/dashboard/weekly/550e8400-e29b-41d4-a716-446655440000",
-        isRead: false,
-        createdAt: new Date("2026-08-04T09:00:00.000Z"),
-      },
-    ],
+    result: {
+      items: [
+        {
+          notificationId: "550e8400-e29b-41d4-a716-446655440000",
+          type: NotificationType.DASHBOARD_COMPLETED,
+          title: "성과 대시보드가 완성됐어요",
+          content: "이번 주 성과 리포트를 확인해보세요.",
+          redirectUrl:
+            "/dashboard/weekly/550e8400-e29b-41d4-a716-446655440000",
+          isRead: false,
+          createdAt: new Date("2026-08-04T09:00:00.000Z"),
+        },
+      ],
+      page: 1,
+      size: 10,
+      totalCount: 23,
+      totalPages: 3,
+      hasNext: true,
+    },
   })
   public async getNotifications(
-    @Header("Authorization") authorization: string | undefined
-  ): Promise<ApiResponse<NotificationItem[]>> {
-    const data = await listNotifications(authorization);
+    @Header("Authorization") authorization: string | undefined,
+    @Query() status?: NotificationStatusFilter,
+    @Query() page?: number,
+    @Query() size?: number
+  ): Promise<ApiResponse<NotificationListResponse>> {
+    const data = await listNotifications(authorization, status, page, size);
     return success(
       SuccessCode.GET_SUCCESS.code,
       SuccessCode.GET_SUCCESS.message,

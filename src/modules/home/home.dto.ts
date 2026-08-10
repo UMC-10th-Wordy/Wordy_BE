@@ -20,6 +20,7 @@ export interface TaskSummary {
 export interface DayRecord {
   date: string;
   hasRecord: boolean;
+  isConnected: boolean;
 }
 
 export interface DayTasks {
@@ -40,7 +41,7 @@ export interface DashboardHomeData {
   streakDays: number;
   weekRecords: DayRecord[];
   weekTasks: DayTasks[];
-  recentRecord: DayTasks | null;
+  recentRecord: DayTasks[];
 }
 
 export type HomeData = LandingHomeData | DashboardHomeData;

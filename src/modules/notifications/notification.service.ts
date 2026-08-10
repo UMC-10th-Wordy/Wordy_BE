@@ -1,5 +1,6 @@
 import {
   findNotificationsByUserId,
+  countNotificationsByUserId,
   findNotificationById,
   markNotificationAsRead,
   createNotificationRecord,
@@ -10,12 +11,26 @@ import {
   CreateNotificationParams,
   MarkNotificationReadResponse,
   NotificationItem,
+  NotificationListResponse,
+  NotificationStatusFilter,
   NotificationType,
 } from "./notification.dto.js";
 
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { verifyAccessToken } from "../../auth.config.js";
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 10;
+const MAX_SIZE = 50;
+
+const statusToIsRead = (
+  status: NotificationStatusFilter
+): boolean | undefined => {
+  if (status === NotificationStatusFilter.READ) return true;
+  if (status === NotificationStatusFilter.UNREAD) return false;
+  return undefined;
+};
 
 class UnauthorizedError extends ApiError {
   constructor() {
@@ -44,21 +59,41 @@ const getUserIdFromAuthorization = (
 };
 
 export const listNotifications = async (
-  authorization: string | undefined
-): Promise<NotificationItem[]> => {
+  authorization: string | undefined,
+  status: NotificationStatusFilter = NotificationStatusFilter.ALL,
+  page: number = DEFAULT_PAGE,
+  size: number = DEFAULT_SIZE
+): Promise<NotificationListResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
 
-  const notifications = await findNotificationsByUserId(userId);
+  const isRead = statusToIsRead(status);
+  const safePage = Math.max(1, Math.floor(page));
+  const safeSize = Math.min(MAX_SIZE, Math.max(1, Math.floor(size)));
+  const skip = (safePage - 1) * safeSize;
 
-  return notifications.map((notification) => ({
-    notificationId: notification.notificationId,
-    type: notification.type as unknown as NotificationType,
-    title: notification.title,
-    content: notification.content,
-    redirectUrl: notification.redirectUrl,
-    isRead: notification.isRead,
-    createdAt: notification.createdAt,
-  }));
+  const [notifications, totalCount] = await Promise.all([
+    findNotificationsByUserId(userId, { isRead, skip, take: safeSize }),
+    countNotificationsByUserId(userId, isRead),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / safeSize);
+
+  return {
+    items: notifications.map((notification) => ({
+      notificationId: notification.notificationId,
+      type: notification.type as unknown as NotificationType,
+      title: notification.title,
+      content: notification.content,
+      redirectUrl: notification.redirectUrl,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+    })),
+    page: safePage,
+    size: safeSize,
+    totalCount,
+    totalPages,
+    hasNext: safePage < totalPages,
+  };
 };
 
 export const markNotificationRead = async (
