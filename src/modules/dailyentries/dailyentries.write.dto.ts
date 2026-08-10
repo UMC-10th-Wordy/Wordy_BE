@@ -18,6 +18,9 @@ export class CreateDailyEntryResponse {
   @Example('550e8400-e29b-41d4-a716-446655440000')
   dailyEntryId!: string;
 
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
+
   @Example('2026-07-24')
   entryDate!: string;
 

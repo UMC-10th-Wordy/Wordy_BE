@@ -100,6 +100,9 @@ export class DailyRecordItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
 
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
+
   @Example("2026-08-21")
   entryDate!: string; // YYYY-MM-DD
 
@@ -132,6 +135,9 @@ export class DailyEntryByDateResponse {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
 
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
+
   @Example("2026-07-31")
   entryDate!: string;
 
@@ -143,6 +149,9 @@ export class DailyEntryByDateResponse {
 export class DailyEntriesDetailResponse {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
+
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
 
   @Example("f3a1e4c2-31b5-46f4-b134-a0e238a1ad01")
   dailyPerformanceId!: string | null;
@@ -253,6 +262,9 @@ export class AttachmentItem {
 export class SearchResultItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
+
+  @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
+  workspaceId!: string;
 
   @Example("2026-06-21")
   entryDate!: string;

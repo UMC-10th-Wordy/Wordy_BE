@@ -23,7 +23,7 @@ import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { verifyAccessToken } from "../../auth.config.js";
 
-@Route("daily-entries")
+@Route("workspaces/{workspaceId}/daily-entries")
 @Tags("DailyEntries")
 export class DailyEntriesController extends Controller {
   /**
@@ -41,14 +41,15 @@ export class DailyEntriesController extends Controller {
     },
   })
   public async getSummary(
-    @Header("Authorization") authorization: string | undefined
-    ): Promise<ApiResponse<DailyEntriesSummaryResponse>> {
+    @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
+  ): Promise<ApiResponse<DailyEntriesSummaryResponse>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
     if (!token) {
     throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await getDailyEntriesSummary(userId);
+    const data = await getDailyEntriesSummary(userId, workspaceId);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 
@@ -76,14 +77,15 @@ export class DailyEntriesController extends Controller {
     ],
   })
   public async getMonthly(
-    @Header("Authorization") authorization: string | undefined
-    ): Promise<ApiResponse<MonthlyRecordItem[]>> {
+    @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
+  ): Promise<ApiResponse<MonthlyRecordItem[]>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
     if (!token) {
     throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await getMonthlyList(userId);
+    const data = await getMonthlyList(userId, workspaceId);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 
@@ -99,6 +101,7 @@ export class DailyEntriesController extends Controller {
     result: [
       {
         dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+        workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
         entryDate: "2026-08-21",
         day: 21,
         tags: [{ tagName: "회의", color: "#3B82F6" }],
@@ -111,6 +114,7 @@ export class DailyEntriesController extends Controller {
   })
   public async getMonthlyEntries(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() yearMonth: string
     ): Promise<ApiResponse<DailyRecordItem[]>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
@@ -118,7 +122,7 @@ export class DailyEntriesController extends Controller {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await getMonthlyEntries(userId, yearMonth);
+    const data = await getMonthlyEntries(userId, workspaceId, yearMonth);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 
@@ -139,6 +143,7 @@ export class DailyEntriesController extends Controller {
       results: [
         {
           dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+          workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
           entryDate: "2026-06-21",
           tags: [{ tagName: "온보딩 리뉴얼", color: "#10B981" }],
           title: "Product Strategy Alignment 회의 준비",
@@ -150,6 +155,7 @@ export class DailyEntriesController extends Controller {
       results: [
         {
           dailyEntryId: "660e8400-e29b-41d4-a716-446655440001",
+          workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
           entryDate: "2026-06-20",
           tags: [{ tagName: "회의", color: "#3B82F6" }],
           title: "주간 회의록 정리",
@@ -160,6 +166,7 @@ export class DailyEntriesController extends Controller {
   })
   public async search(
   @Header("Authorization") authorization: string | undefined,
+  @Path() workspaceId: string,
   @Query() query: string,
   @Query() sort: "latest" | "oldest" = "latest"
 ): Promise<ApiResponse<DailyEntriesSearchResponse>> {
@@ -168,7 +175,7 @@ export class DailyEntriesController extends Controller {
     throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
   }
   const userId = verifyAccessToken(token).userId;
-  const data = await searchDailyEntries(userId, query, sort);
+  const data = await searchDailyEntries(userId, workspaceId, query, sort);
   return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
 }
 
@@ -185,8 +192,8 @@ export class DailyEntriesController extends Controller {
   code: "S200",
   message: "날짜별 일지 조회가 완료되었습니다.",
   result: {
-    dailyEntryId:
-      "550e8400-e29b-41d4-a716-446655440000",
+    dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+    workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
     entryDate: "2026-07-31",
     reflectionContent:
       "오늘 업무에서 잘한 점과 아쉬운 점을 정리했다.",
@@ -195,6 +202,8 @@ export class DailyEntriesController extends Controller {
 public async getByDate(
   @Header("Authorization")
   authorization: string | undefined,
+
+  @Path() workspaceId: string,
 
   @Query()
   date: string,
@@ -219,6 +228,7 @@ public async getByDate(
 
   const data = await getDailyEntryByDate(
     userId,
+    workspaceId,
     date,
   );
 
@@ -239,6 +249,7 @@ public async getByDate(
     message: "조회에 성공했습니다.",
     result: {
       dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+      workspaceId: "8c2d4f6a-7e91-4b23-a567-123456789abc",
       dailyPerformanceId: "550e8400-e29b-41d4-a716-446655440000",
       entryDate: "2026-08-21",
       reflectionContent: "오늘은 JWT 인증 기능 구현을 완료했다.",
@@ -275,6 +286,7 @@ public async getByDate(
   })
   public async getDetail(
   @Header("Authorization") authorization: string | undefined,
+  @Path() workspaceId: string,
   @Path() dailyEntryId: string
 ): Promise<ApiResponse<DailyEntriesDetailResponse>> {
   const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
@@ -282,7 +294,7 @@ public async getByDate(
     throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
   }
   const userId = verifyAccessToken(token).userId;
-  const data = await getDailyEntriesDetail(userId, dailyEntryId);
+  const data = await getDailyEntriesDetail(userId, workspaceId, dailyEntryId);
   return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
 }
 
@@ -300,14 +312,15 @@ public async getByDate(
   })
   public async deleteDailyEntry(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
-    ): Promise<ApiResponse<{ dailyEntryId: string }>> {
+  ): Promise<ApiResponse<{ dailyEntryId: string }>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
     if (!token) {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await removeDailyEntry(userId, dailyEntryId);
+    const data = await removeDailyEntry(userId, workspaceId, dailyEntryId);
     return success(SuccessCode.DELETED.code, SuccessCode.DELETED.message, data);
   }
 }
