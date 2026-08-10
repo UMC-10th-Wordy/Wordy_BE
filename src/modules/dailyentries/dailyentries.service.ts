@@ -236,33 +236,43 @@ export const getMonthlyEntries = async (
   const entries = await findEntriesByMonth(userId, start, end);
 
   return entries
-    .filter((e) => {
-      // 노출 기준: 업무(활성 Task)가 있거나, 내용 있는 회고가 있는 날만
-      const hasTask = e.reflectionTasks.some(
-        (rt) => rt.task && !rt.task.deletedAt
-      );
-      const hasReflection = (e.reflectionContent ?? "").trim().length > 0;
-      return hasTask || hasReflection;
-    })
     .map((e) => {
-      const tasks = e.reflectionTasks
-        .map((rt) => rt.task)
-        .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
-
-      // 대표 업무: MUST_DO 우선, 없으면 첫 업무
-      const mainTask =
-        tasks.find((t) => t.priority === "MUST_DO") ?? tasks[0] ?? null;
-
-      const tagList = tasks
-        .filter((t) => t.tag)
-        .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
-
-      // 유효 스냅샷(TEMP/SAVED + promptBResult) 있으면 변환됨 (상세 조회와 동일 기준)
-      const converted = e.reflectionSnapshots.some(
+      // 유효 스냅샷(TEMP/SAVED + promptBResult) 중 최신 (상세 조회와 동일 기준)
+      const snapshot = e.reflectionSnapshots.find(
         (s) =>
           (s.status === "TEMP" || s.status === "SAVED") &&
           s.promptBResult != null
       );
+      const converted = !!snapshot;
+
+      // 현재 활성 Task (미변환용)
+      const currentTasks = e.reflectionTasks
+        .map((rt) => rt.task)
+        .filter((t): t is NonNullable<typeof t> => !!t && !t.deletedAt);
+
+      // 카드 정보: 변환됨이면 스냅샷 기준, 아니면 현재 Task 기준
+      let cardTasks: { title: string; priority: string; tag: { tagName: string; color: string | null } | null }[];
+      if (converted && snapshot) {
+        cardTasks = snapshot.reflectionTaskSnapshots.map((ts) => ({
+          title: ts.title,
+          priority: ts.priority,
+          tag: ts.task?.tag ?? null,
+        }));
+      } else {
+        cardTasks = currentTasks.map((t) => ({
+          title: t.title,
+          priority: t.priority,
+          tag: t.tag ?? null,
+        }));
+      }
+
+      // 대표 업무: MUST_DO 우선, 없으면 첫 업무
+      const mainTask =
+        cardTasks.find((t) => t.priority === "MUST_DO") ?? cardTasks[0] ?? null;
+
+      const tagList = cardTasks
+        .filter((t) => t.tag)
+        .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
 
       const dateStr = toDateStr(e.entryDate);
 
@@ -272,11 +282,20 @@ export const getMonthlyEntries = async (
         day: Number(dateStr.slice(8, 10)),
         tags: pickTags(tagList),
         mainTaskTitle: mainTask?.title ?? null,
-        extraTaskCount: Math.max(tasks.length - 1, 0),
+        extraTaskCount: Math.max(cardTasks.length - 1, 0),
         summary: e.reflectionContent ?? null,
         converted,
+        // 노출 필터용 (아래 filter에서 사용)
+        _hasCard: cardTasks.length > 0,
       };
-    });
+    })
+    // 노출 기준: 카드(업무/스냅샷) 있거나, 내용 있는 회고 있거나, 변환됨
+    .filter((item) => {
+      const hasReflection = (item.summary ?? "").trim().length > 0;
+      return item._hasCard || hasReflection || item.converted;
+    })
+    // 내부 필드 제거
+    .map(({ _hasCard, ...rest }) => rest);
 };
 
 // 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)

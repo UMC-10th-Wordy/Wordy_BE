@@ -68,13 +68,28 @@ export const findEntriesByMonth = async (
       deletedAt: null,
       entryDate: { gte: start, lte: end },
     },
-    orderBy: { entryDate: "desc" },
+    orderBy: { entryDate: "desc" }, // orderBy: createdAt desc + reflectionTaskSnapshots
     select: {
       dailyEntryId: true,
       entryDate: true,
       reflectionContent: true,
       reflectionSnapshots: {
-        select: { status: true, promptBResult: true },
+        orderBy: { createdAt: "desc" },
+        select: {
+          status: true,
+          promptBResult: true,
+          reflectionTaskSnapshots: {
+            select: {
+              title: true,
+              priority: true,
+              task: {
+                select: {
+                  tag: { select: { tagName: true, color: true } },
+                },
+              },
+            },
+          },
+        },
       },
       reflectionTasks: {
         select: {
