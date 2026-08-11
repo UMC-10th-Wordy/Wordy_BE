@@ -1,64 +1,70 @@
-INSERT INTO Workspace (
-    workspace_id,
-    name,
-    is_default,
-    created_at,
-    updated_at,
-    user_id
-)
-SELECT
-    UUID(),
-    CONCAT(p.user_name, '의 워크스페이스'),
-    true,
-    NOW(),
-    NOW(),
-    u.user_id
-FROM User u
-JOIN Profile p ON p.user_id = u.user_id
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM Workspace w
-    WHERE w.user_id = u.user_id
-);
+/*
+  Warnings:
 
-UPDATE Tag t
-JOIN Workspace w
-  ON w.user_id = t.user_id
- AND w.is_default = true
-SET t.workspace_id = w.workspace_id
-WHERE t.workspace_id IS NULL;
+  - Made the column `workspace_id` on table `dailyentry` required. This step will fail if there are existing NULL values in that column.
+  - Made the column `workspace_id` on table `dailyperformance` required. This step will fail if there are existing NULL values in that column.
+  - Made the column `workspace_id` on table `dashboard` required. This step will fail if there are existing NULL values in that column.
+  - Made the column `workspace_id` on table `reflectiondraft` required. This step will fail if there are existing NULL values in that column.
+  - Made the column `workspace_id` on table `tag` required. This step will fail if there are existing NULL values in that column.
+  - Made the column `workspace_id` on table `task` required. This step will fail if there are existing NULL values in that column.
 
-UPDATE Task t
-JOIN Workspace w
-  ON w.user_id = t.user_id
- AND w.is_default = true
-SET t.workspace_id = w.workspace_id
-WHERE t.workspace_id IS NULL;
+*/
+-- DropForeignKey
+ALTER TABLE `DailyEntry` DROP FOREIGN KEY `DailyEntry_workspace_id_fkey`;
 
-UPDATE DailyEntry d
-JOIN Workspace w
-  ON w.user_id = d.user_id
- AND w.is_default = true
-SET d.workspace_id = w.workspace_id
-WHERE d.workspace_id IS NULL;
+-- DropForeignKey
+ALTER TABLE `DailyPerformance` DROP FOREIGN KEY `DailyPerformance_workspace_id_fkey`;
 
-UPDATE DailyPerformance d
-JOIN Workspace w
-  ON w.user_id = d.user_id
- AND w.is_default = true
-SET d.workspace_id = w.workspace_id
-WHERE d.workspace_id IS NULL;
+-- DropForeignKey
+ALTER TABLE `Dashboard` DROP FOREIGN KEY `Dashboard_workspace_id_fkey`;
 
-UPDATE Dashboard d
-JOIN Workspace w
-  ON w.user_id = d.user_id
- AND w.is_default = true
-SET d.workspace_id = w.workspace_id
-WHERE d.workspace_id IS NULL;
+-- DropForeignKey
+ALTER TABLE `ReflectionDraft` DROP FOREIGN KEY `ReflectionDraft_workspace_id_fkey`;
 
-UPDATE ReflectionDraft r
-JOIN Workspace w
-  ON w.user_id = r.user_id
- AND w.is_default = true
-SET r.workspace_id = w.workspace_id
-WHERE r.workspace_id IS NULL;
+-- DropForeignKey
+ALTER TABLE `Tag` DROP FOREIGN KEY `Tag_workspace_id_fkey`;
+
+-- DropForeignKey
+ALTER TABLE `Task` DROP FOREIGN KEY `Task_workspace_id_fkey`;
+
+-- AlterTable
+ALTER TABLE `DailyEntry` MODIFY `workspace_id` CHAR(36) NOT NULL;
+
+-- AlterTable
+ALTER TABLE `DailyPerformance` MODIFY `workspace_id` CHAR(36) NOT NULL;
+
+-- AlterTable
+ALTER TABLE `Dashboard` MODIFY `workspace_id` CHAR(36) NOT NULL;
+
+-- AlterTable
+ALTER TABLE `ReflectionDraft` MODIFY `workspace_id` CHAR(36) NOT NULL;
+
+-- AlterTable
+ALTER TABLE `Tag` MODIFY `workspace_id` CHAR(36) NOT NULL;
+
+-- AlterTable
+ALTER TABLE `Task` MODIFY `workspace_id` CHAR(36) NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE `Tag` ADD CONSTRAINT `Tag_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Task` ADD CONSTRAINT `Task_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DailyEntry` ADD CONSTRAINT `DailyEntry_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DailyEntry` ADD CONSTRAINT `DailyEntry_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DailyPerformance` ADD CONSTRAINT `DailyPerformance_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Dashboard` ADD CONSTRAINT `Dashboard_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ReflectionDraft` ADD CONSTRAINT `ReflectionDraft_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ReflectionDraft` ADD CONSTRAINT `ReflectionDraft_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
