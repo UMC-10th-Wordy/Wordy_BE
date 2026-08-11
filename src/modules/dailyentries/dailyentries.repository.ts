@@ -272,7 +272,19 @@ export const searchByTitle = async (
     where: {
       userId,
       deletedAt: null,
-      title: { contains: keyword },  //  일지 title 직접 검색
+      OR: [
+        { title: { contains: keyword } },
+        {
+          reflectionTasks: {
+            some: {
+              task: {
+                deletedAt: null,
+                title: { contains: keyword },
+              },
+            },
+          },
+        },
+      ],
     },
     orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
     select: {
