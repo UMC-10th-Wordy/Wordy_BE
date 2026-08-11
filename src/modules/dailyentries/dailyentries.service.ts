@@ -526,29 +526,58 @@ export const searchDailyEntries = async (
     countMatchingTags(userId, workspaceId, trimmed),
   ]);
 
-  const toResults = (entries: typeof titleEntries) =>
-  entries.map((e) => {
-    const tags = e.reflectionTasks
-      .map((rt) => rt.task)
-      .filter((t): t is NonNullable<typeof t> => !!t)
-      .filter((t) => t.tag)
-      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+  // journalTab: 매칭된 업무(Task) 단위
+  const journalResults = titleEntries.map((rt) => ({
+    dailyEntryId: rt.dailyEntry.dailyEntryId,
+    workspaceId: rt.dailyEntry.workspaceId,
+    entryDate: toDateStr(rt.dailyEntry.entryDate),
+    tags: rt.task.tag
+      ? pickTags([{ tagName: rt.task.tag.tagName, color: rt.task.tag.color }])
+      : [],
+    title: rt.task.title,
+  }));
+
+  // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
+// tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
+  const tagResults = tagEntries.map((tag) => {
+    const diaryMap = new Map<string, {
+      dailyEntryId: string;
+      workspaceId: string | null;
+      entryDate: string;
+      title: string;
+    }>();
+
+    for (const task of tag.tasks) {
+      for (const rt of task.reflectionTasks) {
+        const d = rt.dailyEntry;
+        if (!diaryMap.has(d.dailyEntryId)) {
+          diaryMap.set(d.dailyEntryId, {
+            dailyEntryId: d.dailyEntryId,
+            workspaceId: d.workspaceId,
+            entryDate: toDateStr(d.entryDate),
+            title: d.title,
+          });
+        }
+      }
+    }
+
+    // diaries를 entryDate 기준 정렬 (sort 파라미터 반영)
+    const diaries = Array.from(diaryMap.values()).sort((a, b) =>
+      sort === "oldest"
+        ? a.entryDate.localeCompare(b.entryDate)
+        : b.entryDate.localeCompare(a.entryDate)
+    );
 
     return {
-      dailyEntryId: e.dailyEntryId,
-      workspaceId: e.workspaceId,
-      entryDate: toDateStr(e.entryDate),
-      tags: pickTags(tags),
-      title: e.title,  // ← 일지 title (task 아님)
+      tagName: tag.tagName,
+      color: tag.color,
+      diaries,
     };
   });
-
-  const journalResults = toResults(titleEntries);
-  const tagResults = toResults(tagEntries);
 
   return {
     keyword: trimmed,
     journalTab: { count: journalResults.length, results: journalResults },
-    tagTab: { count: tagCount, results: tagResults },
+    tagTab: { count: tagResults.length, results: tagResults },
   };
 };
