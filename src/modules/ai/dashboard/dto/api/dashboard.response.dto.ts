@@ -75,4 +75,7 @@ export class DashboardTagAnalysisDto {
 
   @Example("AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다.")
   insight!: string;
+
+  @Example(3)
+  taskCount!: number;
 }

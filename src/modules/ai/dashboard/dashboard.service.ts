@@ -123,6 +123,47 @@ export class DashboardService {
         },
       });
 
+    // 실제 사용된 태그 + 태그별 task 수집
+    const usedTags = new Map<
+      string,
+      {
+        tagId: string;
+        tagName: string;
+        color: string | null;
+        projectName: string | null;
+        projectPurpose: string | null;
+        expectedOutcome: string | null;
+        kpis: unknown;
+      }
+    >();
+
+    const tagTaskCountMap = new Map<string, number>();
+
+    for (const performance of performances) {
+      for (const item of performance.performanceItems) {
+        const tag = item.task.tag;
+
+        if (!tag) continue;
+
+        // 실제 사용된 태그만 저장
+        usedTags.set(tag.tagId, {
+          tagId: tag.tagId,
+          tagName: tag.tagName,
+          color: tag.color,
+          projectName: tag.projectName,
+          projectPurpose: tag.projectPurpose,
+          expectedOutcome: tag.expectedOutcome,
+          kpis: tag.kpis,
+        });
+
+        // 태그별 실제 task 수
+        tagTaskCountMap.set(
+          tag.tagId,
+          (tagTaskCountMap.get(tag.tagId) ?? 0) + 1,
+        );
+      }
+    }
+
     // 기존 대시보드 존재 시 하위데이터 삭제
     const existingDashboard =
       await this.prisma.dashboard.findFirst({
@@ -159,12 +200,7 @@ export class DashboardService {
         ),
     };
 
-    const tagInfoMap = new Map(
-      promptCInput.tagAnalyses.map((tag) => [
-        tag.tagId,
-        tag,
-      ]),
-    );
+    const tagInfoMap = usedTags;
 
     // 3. Prompt 생성
     const promptRequest =
@@ -248,7 +284,7 @@ export class DashboardService {
                 summary: dashboardResult.summary,
                 journalDays: performances.length,
                 performanceCount: performances.length,
-                tagCount: dashboardResult.tagAnalyses.length,
+                tagCount: usedTags.size,
               },
             })
           : await tx.dashboard.create({
@@ -264,7 +300,7 @@ export class DashboardService {
 
                 journalDays: performances.length,
                 performanceCount: performances.length,
-                tagCount: dashboardResult.tagAnalyses.length,
+                tagCount: usedTags.size,
               },
             });
 
@@ -290,27 +326,32 @@ export class DashboardService {
             dashboardId,
             journalDays: performances.length,
             performanceCount: performances.length,
-            tagCount: dashboardResult.tagAnalyses.length,
+            tagCount: usedTags.size,
           },
         });
 
         await tx.dashboardTagAnalysis.createMany({
-          data: dashboardResult.tagAnalyses.map((tag) => {
-            const tagInfo = tagInfoMap.get(tag.tagId);
+          data: Array.from(usedTags.values()).map((tag) => {
+            const analysis = dashboardResult.tagAnalyses.find(
+              (item) => item.tagId === tag.tagId,
+            );
 
             return {
               dashboardId,
 
-              tagId: tagInfo?.tagId ?? "",
-              tagName: tagInfo?.tagName ?? "",
-              color: tagInfo?.color ?? "",
+              tagId: tag.tagId,
+              tagName: tag.tagName,
+              color: tag.color ?? "",
 
-              goal: tag.objective,
-              expectedOutcome: tag.expectedOutcome,
-              achievementStatus: tag.achievementStatus,
-              insight: tag.insight,
+              goal: analysis?.objective ?? tag.projectPurpose ?? "",
+              expectedOutcome:
+                analysis?.expectedOutcome ?? tag.expectedOutcome ?? "",
+              achievementStatus:
+                analysis?.achievementStatus ?? "",
+              insight: analysis?.insight ?? "",
 
-              taskCount: null,
+              taskCount: tagTaskCountMap.get(tag.tagId) ?? 0,
+
               periodStart: new Date(request.startDate),
               periodEnd: new Date(request.endDate),
             };
@@ -329,7 +370,7 @@ export class DashboardService {
       summary: dashboardResult.summary,
       journalDays: performances.length,
       performanceCount: performances.length,
-      tagCount: dashboardResult.tagAnalyses.length,
+      tagCount: usedTags.size,
       kpis:
         dashboardResult.kpis.map(
           (kpi) => ({
@@ -337,21 +378,25 @@ export class DashboardService {
             progress: kpi.progress,
           }),
         ),
-      tagAnalyses:
-        dashboardResult.tagAnalyses.map((analysis) => {
-          const tagInfo = tagInfoMap.get(analysis.tagId);
+      tagAnalyses: Array.from(usedTags.values()).map((tag) => {
+        const analysis = dashboardResult.tagAnalyses.find(
+          (item) => item.tagId === tag.tagId,
+        );
 
-          return {
-            tagId: tagInfo?.tagId ?? "",
-            tagName: analysis.tagName,
-            color: tagInfo?.color ?? "",
+        return {
+          tagId: tag.tagId,
+          tagName: tag.tagName,
+          color: tag.color ?? "",
+          taskCount: tagTaskCountMap.get(tag.tagId) ?? 0,
 
-            objective: analysis.objective,
-            expectedOutcome: analysis.expectedOutcome,
-            achievementStatus: analysis.achievementStatus,
-            insight: analysis.insight,
-          };
-        }),
+          objective: analysis?.objective ?? tag.projectPurpose ?? "",
+          expectedOutcome:
+            analysis?.expectedOutcome ?? tag.expectedOutcome ?? "",
+          achievementStatus:
+            analysis?.achievementStatus ?? "",
+          insight: analysis?.insight ?? "",
+        };
+      }),
     };
   }
 
@@ -512,6 +557,16 @@ export class DashboardService {
       );
     }
 
+    const journalDays = weeklyDashboards.reduce(
+      (sum, dashboard) => sum + dashboard.journalDays,
+      0,
+    );
+
+    const performanceCount = weeklyDashboards.reduce(
+      (sum, dashboard) => sum + dashboard.performanceCount,
+      0,
+    );
+
     // 2. Prompt D Input 생성
     const promptDInput:PromptDInputDto = {
       startDate: request.startDate,
@@ -557,18 +612,45 @@ export class DashboardService {
         ),
     };
 
-    const tagInfoMap = new Map(
-      weeklyDashboards.flatMap((dashboard) =>
-        dashboard.tagAnalyses.map((tag) => [
+    const tagTaskCountMap = new Map<string, number>();
+
+    for (const dashboard of weeklyDashboards) {
+      for (const tag of dashboard.tagAnalyses) {
+        if (!tag.tagId) continue;
+
+        tagTaskCountMap.set(
           tag.tagId,
-          {
-            tagId: tag.tagId,
-            tagName: tag.tagName,
-            color: tag.color,
-          },
-        ]),
-      ),
-    );
+          (tagTaskCountMap.get(tag.tagId) ?? 0) + (tag.taskCount ?? 0),
+        );
+      }
+    }
+
+    const tagInfoMap = new Map<
+      string,
+      {
+        tagId: string;
+        tagName: string;
+        color: string;
+        goal: string;
+        expectedOutcome: string;
+      }
+    >();
+
+    for (const dashboard of weeklyDashboards) {
+      for (const tag of dashboard.tagAnalyses) {
+        if (!tag.tagId) continue;
+
+        tagInfoMap.set(tag.tagId, {
+          tagId: tag.tagId,
+          tagName: tag.tagName ?? "",
+          color: tag.color ?? "",
+          goal: tag.goal ?? "",
+          expectedOutcome: tag.expectedOutcome ?? "",
+        });
+      }
+    }
+
+    const tagCount = tagInfoMap.size;
 
     // 3. Prompt 생성
     const promptRequest =
@@ -648,9 +730,9 @@ export class DashboardService {
             },
             data: {
               summary: monthlyResult.summary,
-              journalDays: 0,
-              performanceCount: weeklyDashboards.length,
-              tagCount: monthlyResult.tagAnalyses.length,
+              journalDays,
+              performanceCount,
+              tagCount,
             },
           });
         } else {
@@ -666,9 +748,9 @@ export class DashboardService {
 
               summary: monthlyResult.summary,
 
-              journalDays: 0,
-              performanceCount: weeklyDashboards.length,
-              tagCount: monthlyResult.tagAnalyses.length,
+              journalDays,
+              performanceCount,
+              tagCount,
             },
           });
         }
@@ -685,27 +767,31 @@ export class DashboardService {
         await tx.dashboardInsight.create({
           data: {
             dashboardId: dashboard.dashboardId,
-            journalDays: 0,
-            performanceCount: weeklyDashboards.length,
-            tagCount: monthlyResult.tagAnalyses.length,
+            journalDays,
+            performanceCount,
+            tagCount,
           },
         });
 
         await tx.dashboardTagAnalysis.createMany({
-          data: monthlyResult.tagAnalyses.map((tag) => {
-            const tagInfo = tagInfoMap.get(tag.tagId);
+          data: Array.from(tagInfoMap.values()).map((tagInfo) => {
+            const analysis = monthlyResult.tagAnalyses.find(
+              (tag) => tag.tagId === tagInfo.tagId,
+            );
 
             return {
               dashboardId: dashboard.dashboardId,
 
-              tagId: tagInfo?.tagId ?? "",
-              tagName: tagInfo?.tagName ?? "",
-              color: tagInfo?.color ?? "",
+              tagId: tagInfo.tagId,
+              tagName: tagInfo.tagName,
+              color: tagInfo.color,
 
-              goal: null,
-              expectedOutcome: null,
-              achievementStatus: tag.achievementStatus,
-              insight: tag.insight,
+              goal: tagInfo.goal,
+              expectedOutcome: tagInfo.expectedOutcome,
+              achievementStatus: analysis?.achievementStatus ?? "",
+              insight: analysis?.insight ?? "",
+
+              taskCount: tagTaskCountMap.get(tagInfo.tagId) ?? 0,
 
               periodStart: new Date(request.startDate),
               periodEnd: new Date(request.endDate),
@@ -716,37 +802,42 @@ export class DashboardService {
         return dashboard;
       });
 
-      // 9. Response 반환
-      return {
-        dashboardId: dashboard.dashboardId,
-        startDate: request.startDate,
-        endDate: request.endDate,
-        summary: monthlyResult.summary,
-        journalDays: 0,
-        performanceCount: weeklyDashboards.length,
-        tagCount: monthlyResult.tagAnalyses.length,
+    // 9. Response 반환
+    return {
+      dashboardId: dashboard.dashboardId,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      summary: monthlyResult.summary,
 
-        kpis: monthlyResult.kpis.map(
-          (kpi) => ({
-            kpiName: kpi.kpiName,
-            progress: kpi.progress,
-          }),
-        ),
+      journalDays,
+      performanceCount,
+      tagCount,
 
-        tagAnalyses: monthlyResult.tagAnalyses.map((tag) => {
-          const tagInfo = tagInfoMap.get(tag.tagId);
-
-          return {
-            tagId: tagInfo?.tagId ?? "",
-            tagName: tag.tagName,
-            color: tagInfo?.color ?? "",
-
-            objective: "",
-            expectedOutcome: "",
-            achievementStatus: tag.achievementStatus,
-            insight: tag.insight,
-          };
+      kpis: monthlyResult.kpis.map(
+        (kpi) => ({
+          kpiName: kpi.kpiName,
+          progress: kpi.progress,
         }),
-      };
+      ),
+
+      tagAnalyses: Array.from(tagInfoMap.values()).map((tagInfo) => {
+        const analysis = monthlyResult.tagAnalyses.find(
+          (tag) => tag.tagId === tagInfo.tagId,
+        );
+
+        return {
+          tagId: tagInfo.tagId,
+          tagName: tagInfo.tagName,
+          color: tagInfo.color,
+
+          objective: tagInfo.goal,
+          expectedOutcome: tagInfo.expectedOutcome,
+          achievementStatus: analysis?.achievementStatus ?? "",
+          insight: analysis?.insight ?? "",
+
+          taskCount: tagTaskCountMap.get(tagInfo.tagId) ?? 0,
+        };
+      }),
+    };
   }
 }
