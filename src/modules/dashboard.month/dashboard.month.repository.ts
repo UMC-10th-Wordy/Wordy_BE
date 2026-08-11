@@ -164,3 +164,19 @@ export const updateMonthlyReflection = async (
     },
   });
 };
+export const softDeleteMonthlyDashboardByPeriod = async (
+  userId: string,
+  startDate: Date,
+  endDate: Date
+) => {
+  return prisma.dashboard.updateMany({
+    where: {
+      userId,
+      startDate,
+      endDate,
+      type: "MONTHLY",
+      deletedAt: null,
+    },
+    data: { deletedAt: new Date() },
+  });
+};
