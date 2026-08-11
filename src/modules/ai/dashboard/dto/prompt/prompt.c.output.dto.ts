@@ -5,6 +5,7 @@ export interface PromptCOutputDto {
 }
 
 export interface DashboardKpiOutputDto {
+  tagId: string;
   kpiName: string;
   progress: string;
   relatedAchievement: string;

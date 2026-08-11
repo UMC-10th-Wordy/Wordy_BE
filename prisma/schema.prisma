@@ -559,7 +559,9 @@ model DashboardKPI {
   dashboardKpiId String  @id @default(uuid()) @map("dashboard_kpi_id") @db.Char(36)
   kpiName        String? @map("kpi_name") @db.VarChar(100)
   progress       String? @db.Text
+  relatedAchievement String? @map("related_achievement") @db.Text
   dashboardId    String  @map("dashboard_id") @db.Char(36)
+  tagId          String?
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 

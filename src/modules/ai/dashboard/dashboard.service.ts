@@ -200,8 +200,6 @@ export class DashboardService {
         ),
     };
 
-    const tagInfoMap = usedTags;
-
     // 3. Prompt 생성
     const promptRequest =
       this.promptManager.buildPromptC(
@@ -316,8 +314,10 @@ export class DashboardService {
         await tx.dashboardKPI.createMany({
           data: dashboardResult.kpis.map((kpi) => ({
             dashboardId,
+            tagId: kpi.tagId,
             kpiName: kpi.kpiName,
             progress: kpi.progress,
+            relatedAchievement: kpi.relatedAchievement,
           })),
         });
 
@@ -371,13 +371,11 @@ export class DashboardService {
       journalDays: performances.length,
       performanceCount: performances.length,
       tagCount: usedTags.size,
-      kpis:
-        dashboardResult.kpis.map(
-          (kpi) => ({
-            kpiName: kpi.kpiName,
-            progress: kpi.progress,
-          }),
-        ),
+      kpis: dashboardResult.kpis.map((kpi) => ({
+        tagId: kpi.tagId,
+        kpiName: kpi.kpiName,
+        progress: kpi.progress,
+      })),
       tagAnalyses: Array.from(usedTags.values()).map((tag) => {
         const analysis = dashboardResult.tagAnalyses.find(
           (item) => item.tagId === tag.tagId,
@@ -472,49 +470,44 @@ export class DashboardService {
   private createKpiInput(
     performances: DailyPerformanceWithItems[],
   ): DashboardKpiInputDto[] {
+    const kpiMap = new Map<string, DashboardKpiInputDto>();
 
-    const kpiMap =
-      new Map<string, DashboardKpiInputDto>();
+    performances.forEach((performance) => {
+      performance.performanceItems.forEach(
+        (item: PerformanceItem) => {
+          const tag = item.task.tag;
 
-    performances.forEach(
-      (performance) => {
-        performance.performanceItems.forEach(
-          (item: PerformanceItem) => {
-            const tag = item.task.tag;
+          if (!tag) return;
 
-            const kpis =
-              Array.isArray(tag?.kpis)
-                ? tag.kpis as {
-                    name:string;
-                    target:string;
-                  }[]
-                : [];
+          const kpis =
+            Array.isArray(tag.kpis)
+              ? tag.kpis as {
+                  name: string;
+                  target: string;
+                }[]
+              : [];
 
-            kpis.forEach(
-              (kpi) => {
-                if (!kpiMap.has(kpi.name)) {
-                  kpiMap.set(
-                    kpi.name,
-                    {
-                      kpiName: kpi.name,
-                      target: kpi.target,
-                      relatedPerformances: [],
-                    },
-                  );
-                }
-                kpiMap
-                  .get(kpi.name)!
-                  .relatedPerformances
-                  .push({
-                    output: String(item.output),
-                    impact: String(item.impact),
-                  });
-              },
-            );
-          },
-        );
-      },
-    );
+          kpis.forEach((kpi) => {
+            // 태그 + KPI 이름으로 구분
+            const key = `${tag.tagId}:${kpi.name}`;
+
+            if (!kpiMap.has(key)) {
+              kpiMap.set(key, {
+                tagId: tag.tagId,
+                kpiName: kpi.name,
+                target: kpi.target,
+                relatedPerformances: [],
+              });
+            }
+
+            kpiMap.get(key)!.relatedPerformances.push({
+              output: String(item.output),
+              impact: String(item.impact),
+            });
+          });
+        },
+      );
+    });
 
     return Array.from(kpiMap.values());
   }
@@ -581,8 +574,10 @@ export class DashboardService {
             kpis:
               dashboard.kpis.map(
                 (kpi) => ({
+                  tagId: kpi.tagId ?? "",
                   kpiName: kpi.kpiName ?? "",
                   progress: kpi.progress ?? "",
+                  relatedAchievement: kpi.relatedAchievement ?? "",
                 }),
               ),
             tagAnalyses:
@@ -759,8 +754,10 @@ export class DashboardService {
         await tx.dashboardKPI.createMany({
           data: monthlyResult.kpis.map((kpi) => ({
             dashboardId: dashboard.dashboardId,
+            tagId: kpi.tagId,
             kpiName: kpi.kpiName,
             progress: kpi.progress,
+            relatedAchievement: kpi.relatedAchievement,
           })),
         });
 
@@ -815,8 +812,10 @@ export class DashboardService {
 
       kpis: monthlyResult.kpis.map(
         (kpi) => ({
+          tagId: kpi.tagId,
           kpiName: kpi.kpiName,
           progress: kpi.progress,
+          relatedAchievement: kpi.relatedAchievement,
         }),
       ),
 

@@ -5,6 +5,7 @@ export interface PromptDOutputDto {
 }
 
 export interface MonthlyKpiOutputDto {
+  tagId: string;
   kpiName:string;
   progress:string;
   relatedAchievement:string;
