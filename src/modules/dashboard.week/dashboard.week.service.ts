@@ -72,6 +72,11 @@ export const getEligibility = async (userId: string, baseDate?: string) => {
     entries: entries.map((e: typeof entries[number]) => ({
       dailyEntryId: e.dailyEntryId,
       entryDate: toDateStr(e.entryDate),
+      converted: e.reflectionSnapshots.some(
+        (s) =>
+          (s.status === "TEMP" || s.status === "SAVED") &&
+          s.promptBResult != null
+      ),
     })),
   };
 };

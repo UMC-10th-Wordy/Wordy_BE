@@ -131,6 +131,9 @@ export const findDailyEntries = async (
     select: {
       dailyEntryId: true,
       entryDate: true,
+      reflectionSnapshots: {
+        select: { status: true, promptBResult: true },
+      },
     },
   });
 };
