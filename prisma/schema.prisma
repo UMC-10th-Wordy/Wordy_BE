@@ -528,7 +528,7 @@ model Dashboard {
   updatedAt        DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt        DateTime? @map("deleted_at") @db.DateTime(0)
   userId           String    @map("user_id") @db.Char(36)
-  workspaceId      String         @map("workspace_id") @db.Char(36)
+  workspaceId      String    @map("workspace_id") @db.Char(36)
 
   user              User                   @relation(fields: [userId], references: [userId])
   workspace         Workspace              @relation(fields: [workspaceId], references: [workspaceId])
