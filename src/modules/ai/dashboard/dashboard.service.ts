@@ -280,6 +280,11 @@ export class DashboardService {
               },
               data: {
                 summary: dashboardResult.summary,
+                keyAchievement: dashboardResult.keyAchievement,
+                focusedTags: dashboardResult.focusedTags.map((tag) => ({
+                  tagId: tag.tagId,
+                  tagName: tag.tagName,
+                })) as Prisma.InputJsonValue,
                 journalDays: performances.length,
                 performanceCount: performances.length,
                 tagCount: usedTags.size,
@@ -295,6 +300,11 @@ export class DashboardService {
                 endDate: new Date(request.endDate),
 
                 summary: dashboardResult.summary,
+                keyAchievement: dashboardResult.keyAchievement,
+                focusedTags: dashboardResult.focusedTags.map((tag) => ({
+                  tagId: tag.tagId,
+                  tagName: tag.tagName,
+                })) as Prisma.InputJsonValue,
 
                 journalDays: performances.length,
                 performanceCount: performances.length,
@@ -368,6 +378,8 @@ export class DashboardService {
       startDate: request.startDate,
       endDate: request.endDate,
       summary: dashboardResult.summary,
+      keyAchievement: dashboardResult.keyAchievement,
+      focusedTags: dashboardResult.focusedTags,
       journalDays: performances.length,
       performanceCount: performances.length,
       tagCount: usedTags.size,
@@ -725,6 +737,12 @@ export class DashboardService {
             },
             data: {
               summary: monthlyResult.summary,
+              keyAchievement: monthlyResult.keyAchievement,
+              focusedTags: monthlyResult.focusedTags.map((tag) => ({
+                tagId: tag.tagId,
+                tagName: tag.tagName,
+              })) as Prisma.InputJsonValue,
+
               journalDays,
               performanceCount,
               tagCount,
@@ -742,6 +760,11 @@ export class DashboardService {
               endDate: new Date(request.endDate),
 
               summary: monthlyResult.summary,
+              keyAchievement: monthlyResult.keyAchievement,
+              focusedTags: monthlyResult.focusedTags.map((tag) => ({
+                tagId: tag.tagId,
+                tagName: tag.tagName,
+              })) as Prisma.InputJsonValue,
 
               journalDays,
               performanceCount,
@@ -805,6 +828,8 @@ export class DashboardService {
       startDate: request.startDate,
       endDate: request.endDate,
       summary: monthlyResult.summary,
+      keyAchievement: monthlyResult.keyAchievement,
+      focusedTags: monthlyResult.focusedTags,
 
       journalDays,
       performanceCount,

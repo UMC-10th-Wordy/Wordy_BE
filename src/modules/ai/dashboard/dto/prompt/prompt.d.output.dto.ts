@@ -1,7 +1,14 @@
 export interface PromptDOutputDto {
   summary: string;
+  keyAchievement: string;
+  focusedTags: FocusedTagOutputDto[];
   kpis: MonthlyKpiOutputDto[];
   tagAnalyses: MonthlyTagAnalysisOutputDto[];
+}
+
+export interface FocusedTagOutputDto {
+  tagId: string;
+  tagName: string;
 }
 
 export interface MonthlyKpiOutputDto {

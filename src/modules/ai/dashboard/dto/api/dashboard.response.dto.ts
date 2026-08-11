@@ -13,6 +13,21 @@ export class DashboardResponseDto {
   @Example("이번 주에는 Swagger 문서화와 AI 성과 미리보기 기능을 구현했습니다.")
   summary!: string;
 
+  @Example("AI 성과 미리보기 기능을 구현하고 실제 데이터 기반 분석 흐름을 완성했습니다.")
+  keyAchievement!: string;
+
+  @Example([
+    {
+      tagId: "550e8400-e29b-41d4-a716-446655440000",
+      tagName: "AI 업무 관리",
+    },
+    {
+      tagId: "660e8400-e29b-41d4-a716-446655440000",
+      tagName: "백엔드 개발",
+    },
+  ])
+  focusedTags!: FocusedTagDto[];
+
   @Example(7)
   journalDays!: number;
 
@@ -44,6 +59,14 @@ export class DashboardResponseDto {
     }
   ])
   tagAnalyses!: DashboardTagAnalysisDto[];
+}
+
+export class FocusedTagDto {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  tagId!: string;
+
+  @Example("AI 업무 관리")
+  tagName!: string;
 }
 
 export class DashboardKpiDto {
