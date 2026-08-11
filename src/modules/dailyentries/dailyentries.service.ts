@@ -555,7 +555,7 @@ export const searchDailyEntries = async (
             dailyEntryId: d.dailyEntryId,
             workspaceId: d.workspaceId,
             entryDate: toDateStr(d.entryDate),
-            title: d.title,
+            title: task.title,  // ← 일지 title이 아니라 그 태그 업무 제목
           });
         }
       }
