@@ -10,42 +10,47 @@ import {
 
 export class TaskRepository {
   private async findOrCreateDailyEntry(
-  tx: Prisma.TransactionClient,
-  userId: string,
-  entryDate: Date,
-) {
-  return tx.dailyEntry.upsert({
-    where: {
-      userId_entryDate: {
-        userId,
-        entryDate,
+    tx: Prisma.TransactionClient,
+    userId: string,
+    workspaceId: string,
+    entryDate: Date,
+  ) {
+    return tx.dailyEntry.upsert({
+      where: {
+        userId_workspaceId_entryDate: {
+          userId,
+          workspaceId,
+          entryDate,
+        },
       },
-    },
-    update: {},
-    create: {
-      userId,
-      entryDate,
-      title: '',
-      reflectionContent: '',
-    },
-    select: {
-      dailyEntryId: true,
-    },
-  });
-}
+      update: {},
+      create: {
+        userId,
+        workspaceId,
+        entryDate,
+        title: '',
+        reflectionContent: '',
+      },
+      select: {
+        dailyEntryId: true,
+      },
+    });
+  }
 
-private async syncReflectionTask(
-  tx: Prisma.TransactionClient,
-  taskId: string,
-  userId: string,
-  taskDate: Date,
-) {
-  const dailyEntry =
-    await this.findOrCreateDailyEntry(
-      tx,
-      userId,
-      taskDate,
-    );
+  private async syncReflectionTask(
+    tx: Prisma.TransactionClient,
+    taskId: string,
+    userId: string,
+    workspaceId: string,
+    taskDate: Date,
+  ) {
+    const dailyEntry =
+      await this.findOrCreateDailyEntry(
+        tx,
+        userId,
+        workspaceId,
+        taskDate,
+      );
 
   /**
    * 하나의 현재 Task는 현재 날짜의 DailyEntry 하나에만 연결되도록
@@ -67,11 +72,13 @@ private async syncReflectionTask(
 
   public async findManyByUserIdAndDate(
     userId: string,
+    workspaceId: string,
     taskDate: Date,
   ) {
     return prisma.task.findMany({
       where: {
         userId,
+        workspaceId,
         taskDate,
         deletedAt: null,
       },
@@ -115,6 +122,7 @@ private async syncReflectionTask(
 
   public async findCalendarSummary(
     userId: string,
+    workspaceId: string,
     startDate: Date,
     endDate: Date,
   ) {
@@ -122,6 +130,7 @@ private async syncReflectionTask(
       by: ['taskDate', 'status'],
       where: {
         userId,
+        workspaceId,
         deletedAt: null,
         taskDate: {
           gte: startDate,
@@ -140,11 +149,13 @@ private async syncReflectionTask(
   public async findActiveByIdAndUserId(
     taskId: string,
     userId: string,
+    workspaceId: string,
   ) {
     return prisma.task.findFirst({
       where: {
         taskId,
         userId,
+        workspaceId,
         deletedAt: null,
       },
       include: {
@@ -186,12 +197,14 @@ private async syncReflectionTask(
    */
   public async findNextSortOrder(
     userId: string,
+    workspaceId: string,
     taskDate: Date,
     priority: TaskPriority,
   ): Promise<number> {
     const result = await prisma.task.aggregate({
       where: {
         userId,
+        workspaceId,
         taskDate,
         priority,
         deletedAt: null,
@@ -206,6 +219,7 @@ private async syncReflectionTask(
 
   public async create(
   userId: string,
+  workspaceId: string,
   body: CreateTaskRequest,
   sortOrder: number,
 ) {
@@ -213,6 +227,7 @@ private async syncReflectionTask(
     const task = await tx.task.create({
       data: {
         userId,
+        workspaceId,
         title: body.title,
         priority: body.priority,
         sortOrder,
@@ -245,6 +260,7 @@ private async syncReflectionTask(
       tx,
       task.taskId,
       userId,
+      workspaceId,
       task.taskDate,
     );
 
@@ -255,6 +271,7 @@ private async syncReflectionTask(
   public async update(
   taskId: string,
   userId: string,
+  workspaceId: string,
   body: UpdateTaskRequest,
   sortOrder?: number,
 ) {
@@ -323,6 +340,7 @@ private async syncReflectionTask(
       tx,
       task.taskId,
       userId,
+      workspaceId,
       task.taskDate,
     );
 
@@ -354,11 +372,13 @@ private async syncReflectionTask(
   public async existsActiveTagByIdAndUserId(
     tagId: string,
     userId: string,
+    workspaceId: string,
   ) {
     const tag = await prisma.tag.findFirst({
       where: {
         tagId,
         userId,
+        workspaceId,
         deletedAt: null,
       },
       select: {
@@ -374,6 +394,7 @@ private async syncReflectionTask(
    */
   public async findTasksByIdsAndUserId(
     taskIds: string[],
+    workspaceId: string,
     userId: string,
   ) {
     return prisma.task.findMany({
@@ -382,6 +403,7 @@ private async syncReflectionTask(
           in: taskIds,
         },
         userId,
+        workspaceId,
         deletedAt: null,
       },
       select: {

@@ -36,6 +36,7 @@ class BadRequestError extends ApiError {
 
 export const createDailyEntry = async (
   authorization: string | undefined,
+  workspaceId: string,
   body: CreateDailyEntryRequest,
 ): Promise<CreateDailyEntryResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
@@ -47,6 +48,7 @@ export const createDailyEntry = async (
   const tasks =
     await findTasksByUserIdAndDate(
       userId,
+      workspaceId,
       entryDate,
     );
 
@@ -56,6 +58,7 @@ export const createDailyEntry = async (
   const existingEntry =
     await findDailyEntryByUserIdAndDate(
       userId,
+      workspaceId,
       entryDate,
     );
 
@@ -63,6 +66,7 @@ export const createDailyEntry = async (
     const updatedEntry =
       await restoreDailyEntryWithTasks(
         existingEntry.dailyEntryId,
+        workspaceId,
         body.reflectionContent.trim(),
         taskIds,
       );
@@ -79,8 +83,9 @@ export const createDailyEntry = async (
   };
 } 
 
-    const dailyEntry = await createDailyEntryWithTasks(
+  const dailyEntry = await createDailyEntryWithTasks(
     userId,
+    workspaceId,
     entryDate,
     (body.title ?? "").trim(),
     body.reflectionContent.trim(),

@@ -49,6 +49,7 @@ export class TaskService {
 
   public async getTasksByDate(
     authorization: string | undefined,
+    workspaceId: string,
     date: string,
   ): Promise<TaskWithResultResponse[]> {
     const userId =
@@ -59,6 +60,7 @@ export class TaskService {
     const tasks =
       await this.taskRepository.findManyByUserIdAndDate(
         userId,
+        workspaceId,
         new Date(date),
       );
 
@@ -67,6 +69,7 @@ export class TaskService {
 
     public async getCalendarSummary(
     authorization: string | undefined,
+    workspaceId: string,
     startDate: string,
     endDate: string,
   ): Promise<TaskCalendarDayResponse[]> {
@@ -91,6 +94,7 @@ export class TaskService {
     const groupedTasks =
       await this.taskRepository.findCalendarSummary(
         userId,
+        workspaceId,
         start,
         end,
       );
@@ -125,6 +129,7 @@ export class TaskService {
 
   public async createTask(
     authorization: string | undefined,
+    workspaceId: string,
     body: CreateTaskRequest,
   ): Promise<TaskResponse> {
     const userId =
@@ -137,6 +142,7 @@ export class TaskService {
         await this.taskRepository.existsActiveTagByIdAndUserId(
           body.tagId,
           userId,
+          workspaceId,
         );
 
       if (!existsTag) {
@@ -154,12 +160,14 @@ export class TaskService {
     const sortOrder =
       await this.taskRepository.findNextSortOrder(
         userId,
+        workspaceId,
         taskDate,
         body.priority,
       );
 
     const task = await this.taskRepository.create(
       userId,
+      workspaceId,
       body,
       sortOrder,
     );
@@ -169,6 +177,7 @@ export class TaskService {
 
   public async getTask(
     authorization: string | undefined,
+    workspaceId: string,
     taskId: string,
   ): Promise<TaskWithResultResponse> {
     const userId =
@@ -178,6 +187,7 @@ export class TaskService {
       await this.taskRepository.findActiveByIdAndUserId(
         taskId,
         userId,
+        workspaceId,
       );
 
     if (!task) {
@@ -194,6 +204,7 @@ export class TaskService {
    */
   public async reorderTasks(
     authorization: string | undefined,
+    workspaceId: string,
     body: TaskReorderRequest,
   ): Promise<TaskReorderResponse> {
     const userId =
@@ -208,6 +219,7 @@ export class TaskService {
       await this.taskRepository.findTasksByIdsAndUserId(
         taskIds,
         userId,
+        workspaceId,
       );
 
     /**
@@ -229,6 +241,7 @@ export class TaskService {
 
   public async updateTask(
     authorization: string | undefined,
+    workspaceId: string,
     taskId: string,
     body: UpdateTaskRequest,
   ): Promise<TaskResponse> {
@@ -239,6 +252,7 @@ export class TaskService {
       await this.taskRepository.findActiveByIdAndUserId(
         taskId,
         userId,
+        workspaceId,
       );
 
     if (!task) {
@@ -254,6 +268,7 @@ export class TaskService {
         await this.taskRepository.existsActiveTagByIdAndUserId(
           body.tagId,
           userId,
+          workspaceId,
         );
 
       if (!existsTag) {
@@ -295,6 +310,7 @@ export class TaskService {
       nextSortOrder =
         await this.taskRepository.findNextSortOrder(
           userId,
+          workspaceId,
           targetTaskDate,
           targetPriority,
         );
@@ -304,6 +320,7 @@ export class TaskService {
       await this.taskRepository.update(
         taskId,
         userId,
+        workspaceId,
         body,
         nextSortOrder,
       );
@@ -313,6 +330,7 @@ export class TaskService {
 
   public async deleteTask(
     authorization: string | undefined,
+    workspaceId: string,
     taskId: string,
   ): Promise<void> {
     const userId =
@@ -322,6 +340,7 @@ export class TaskService {
       await this.taskRepository.findActiveByIdAndUserId(
         taskId,
         userId,
+        workspaceId,
       );
 
     if (!task) {

@@ -21,6 +21,7 @@ const getUserId = (authorization: string | undefined): string => {
 // draft 저장 (임시저장)
 export const saveDraft = async (
   authorization: string | undefined,
+  workspaceId: string,
   type: DraftType,
   body: {
     workSummary?: string;
@@ -31,7 +32,7 @@ export const saveDraft = async (
 ) => {
   const userId = getUserId(authorization);
 
-  const draft = await upsertDraft(userId, type, {
+  const draft = await upsertDraft(userId, workspaceId, type, {
     workSummary: body.workSummary ?? null,
     resourcesUsed: body.resourcesUsed ?? null,
     learning: body.learning ?? null,
@@ -40,6 +41,7 @@ export const saveDraft = async (
 
   return {
     reflectionDraftId: draft.reflectionDraftId,
+    workspaceId: draft.workspaceId,
     type: draft.type,
     workSummary: draft.workSummary,
     resourcesUsed: draft.resourcesUsed,
@@ -52,17 +54,19 @@ export const saveDraft = async (
 // draft 조회 (복원)
 export const getDraft = async (
   authorization: string | undefined,
+  workspaceId: string,
   type: DraftType
 ) => {
   const userId = getUserId(authorization);
 
-  const draft = await findDraft(userId, type);
+  const draft = await findDraft(userId, workspaceId, type);
   if (!draft) {
     return null;   // 저장된 draft 없음
   }
 
   return {
     reflectionDraftId: draft.reflectionDraftId,
+    workspaceId: draft.workspaceId,
     type: draft.type,
     workSummary: draft.workSummary,
     resourcesUsed: draft.resourcesUsed,

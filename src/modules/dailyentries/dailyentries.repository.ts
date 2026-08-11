@@ -7,12 +7,14 @@ import { prisma } from "../../db.config.js";
 // 기간 내 일지 개수 (이번 달 / 지난 달 비교용)
 export const countEntriesBetween = async (
   userId: string,
+  workspaceId: string,
   start: Date,
   end: Date
 ): Promise<number> => {
   return prisma.dailyEntry.count({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       entryDate: { gte: start, lte: end },
     },
@@ -20,9 +22,9 @@ export const countEntriesBetween = async (
 };
 
 // 유저의 모든 일지 날짜 (연속 작성 streak 계산용)
-export const findAllEntryDates = async (userId: string) => {
+export const findAllEntryDates = async (userId: string, workspaceId: string) => {
   return prisma.dailyEntry.findMany({
-    where: { userId, deletedAt: null },
+    where: { userId, workspaceId, deletedAt: null },
     orderBy: { entryDate: "desc" },
     select: { entryDate: true },
   });
@@ -32,12 +34,13 @@ export const findAllEntryDates = async (userId: string) => {
 // 월별 목록 / 태그 집계용
 // 일지 + 연결된 업무(ReflectionTask → Task → Tag) 정보
 // ============================================================
-export const findEntriesWithTags = async (userId: string) => {
+export const findEntriesWithTags = async (userId: string, workspaceId: string) => {
   return prisma.dailyEntry.findMany({
-    where: { userId, deletedAt: null },
+    where: { userId, workspaceId, deletedAt: null },
     orderBy: { entryDate: "desc" },
     select: {
       dailyEntryId: true,
+      workspaceId: true,
       entryDate: true,
       reflectionContent: true,
       reflectionSnapshots: {
@@ -62,18 +65,21 @@ export const findEntriesWithTags = async (userId: string) => {
 // 특정 월(기간)의 일지 목록 (월 펼쳤을 때)
 export const findEntriesByMonth = async (
   userId: string,
+  workspaceId: string,
   start: Date,
   end: Date
 ) => {
   return prisma.dailyEntry.findMany({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       entryDate: { gte: start, lte: end },
     },
     orderBy: { entryDate: "desc" }, // orderBy: createdAt desc + reflectionTaskSnapshots
     select: {
       dailyEntryId: true,
+      workspaceId: true,
       entryDate: true,
       reflectionContent: true,
       reflectionSnapshots: {
@@ -116,16 +122,19 @@ export const findEntriesByMonth = async (
 // ============================================================
 export const findEntryByDate = async (
   userId: string,
+  workspaceId: string,
   entryDate: Date,
 ) => {
   return prisma.dailyEntry.findFirst({
     where: {
       userId,
+      workspaceId,
       entryDate,
       deletedAt: null,
     },
     select: {
       dailyEntryId: true,
+      workspaceId: true,
       entryDate: true,
       reflectionContent: true,
     },
@@ -135,9 +144,9 @@ export const findEntryByDate = async (
 // ============================================================
 // 일자 상세 => 스냅샷 기반으로 변경
 // ============================================================
-export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
+export const findEntryDetail = async (userId: string, workspaceId: string, dailyEntryId: string) => {
   return prisma.dailyEntry.findFirst({
-    where: { dailyEntryId, userId, deletedAt: null },
+    where: { dailyEntryId, userId, workspaceId, deletedAt: null },
     include: {
       // 변환됨: 스냅샷 (그 시점 박제) + 성과 미리보기 ID
       reflectionSnapshots: {
@@ -183,17 +192,17 @@ export const findEntryDetail = async (userId: string, dailyEntryId: string) => {
 };
 
 // 삭제 전 존재/소유 확인
-export const findEntryById = async (userId: string, dailyEntryId: string) => {
+export const findEntryById = async (userId: string, workspaceId: string, dailyEntryId: string) => {
   return prisma.dailyEntry.findFirst({
-    where: { dailyEntryId, userId, deletedAt: null },
+    where: { dailyEntryId, userId, workspaceId, deletedAt: null },
     select: { dailyEntryId: true },
   });
 };
 
 // 일지 소프트 삭제
-export const softDeleteEntry = async (dailyEntryId: string) => {
+export const softDeleteEntry = async (dailyEntryId: string, workspaceId: string,) => {
   return prisma.dailyEntry.update({
-    where: { dailyEntryId },
+    where: { dailyEntryId, workspaceId },
     data: { deletedAt: new Date() },
   });
 };
@@ -205,12 +214,14 @@ export const softDeleteEntry = async (dailyEntryId: string) => {
 // 업무 일지 검색: 회고 내용 / 업무 제목 / 업무 결과 내용에서 키워드 매칭
 export const searchEntries = async (
   userId: string,
+  workspaceId: string,
   keyword: string,
   sort: "latest" | "oldest"
 ) => {
   return prisma.dailyEntry.findMany({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       OR: [
         // 업무 일지 제목
@@ -232,6 +243,7 @@ export const searchEntries = async (
     orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
     select: {
       dailyEntryId: true,
+      workspaceId: true,
       entryDate: true,
       reflectionTasks: {
         select: {
@@ -251,11 +263,13 @@ export const searchEntries = async (
 // 프로젝트 태그 검색 (검색 결과 화면의 "프로젝트 태그" 탭 카운트용)
 export const countMatchingTags = async (
   userId: string,
+  workspaceId: string,
   keyword: string
 ): Promise<number> => {
   return prisma.tag.count({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       tagName: { contains: keyword },
     },
@@ -265,12 +279,14 @@ export const countMatchingTags = async (
 // 제목 검색 (업무 일지 탭)
 export const searchByTitle = async (
   userId: string,
+  workspaceId: string,
   keyword: string,
   sort: "latest" | "oldest"
 ) => {
   return prisma.dailyEntry.findMany({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       OR: [
         { title: { contains: keyword } },
@@ -289,6 +305,7 @@ export const searchByTitle = async (
     orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
     select: {
       dailyEntryId: true,
+      workspaceId: true,
       entryDate: true,
       title: true,  //  title 추가
       reflectionTasks: {
@@ -307,12 +324,14 @@ export const searchByTitle = async (
 // 태그 검색 (프로젝트 태그 탭)
 export const searchByTag = async (
   userId: string,
+  workspaceId: string,
   keyword: string,
   sort: "latest" | "oldest"
 ) => {
   return prisma.dailyEntry.findMany({
     where: {
       userId,
+      workspaceId,
       deletedAt: null,
       reflectionTasks: {
         some: {
@@ -323,6 +342,7 @@ export const searchByTag = async (
     orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
     select: {
       dailyEntryId: true,
+      workspaceId: true,
       entryDate: true,
       title: true,  // 추가 (표시용 일지 제목)
       reflectionTasks: {

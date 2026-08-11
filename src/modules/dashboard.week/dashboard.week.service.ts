@@ -62,7 +62,7 @@ const toDateStr = (d: Date) => {
 };
 
 // 생성 조건 충족 여부 확인 (baseDate: 조회할 주의 기준 날짜)
-export const getEligibility = async (userId: string, baseDate?: string) => {
+export const getEligibility = async (userId: string, workspaceId: string, baseDate?: string) => {
   // baseDate가 있으면 그 날짜 기준, 없으면 오늘 기준
   let base = new Date();
   if (baseDate) {
@@ -79,9 +79,10 @@ export const getEligibility = async (userId: string, baseDate?: string) => {
 
   const { start, end } = getWeekRange(base);
 
-  const entries = await findDailyEntries(userId, start, end);
+  const entries = await findDailyEntries(userId, workspaceId, start, end);
 
   return {
+    workspaceId,
     eligible: entries.length >= REQUIRED_DAYS,
     journalDays: entries.length,
     requiredDays: REQUIRED_DAYS,
@@ -100,10 +101,11 @@ export const getEligibility = async (userId: string, baseDate?: string) => {
 };
 
 // 대시보드 목록 조회
-export const getDashboardList = async (userId: string) => {
-  const dashboards = await findDashboards(userId);
+export const getDashboardList = async (userId: string, workspaceId: string,) => {
+  const dashboards = await findDashboards(userId, workspaceId);
   return dashboards.map((d: typeof dashboards[number]) => ({
     dashboardId: d.dashboardId,
+    workspaceId: d.workspaceId,
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
     summary: d.summary,
@@ -114,9 +116,10 @@ export const getDashboardList = async (userId: string) => {
 // 대시보드 상세 조회npm run dev
 export const getDashboardDetail = async (
   dashboardId: string,
-  userId: string
+  userId: string,
+  workspaceId: string,
 ) => {
-  const d = await findDashboardById(dashboardId, userId);
+  const d = await findDashboardById(dashboardId, userId, workspaceId);
   if (!d) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
@@ -136,6 +139,7 @@ export const getDashboardDetail = async (
 
     return {
     dashboardId: d.dashboardId,
+    workspaceId: d.workspaceId,
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
     summary: d.summary,
@@ -171,6 +175,7 @@ export const getDashboardDetail = async (
 export const addWeeklyReflection = async (
   dashboardId: string,
   userId: string,
+  workspaceId: string,
   data: {
     workSummary?: string;
     resourcesUsed?: string;
@@ -178,7 +183,7 @@ export const addWeeklyReflection = async (
   }
 ) => {
   // 1. 대시보드가 존재하고 이 유저 것인지 확인
-  const exists = await existsDashboard(dashboardId, userId);
+  const exists = await existsDashboard(dashboardId, userId, workspaceId);
   if (!exists) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
@@ -200,6 +205,7 @@ export const editWeeklyReflection = async (
   dashboardId: string,
   reflectionId: string,
   userId: string,
+  workspaceId: string,
   data: {
     workSummary?: string;
     resourcesUsed?: string;
@@ -207,7 +213,7 @@ export const editWeeklyReflection = async (
   }
 ) => {
   // 대시보드가 이 유저 것인지 확인
-  const exists = await existsDashboard(dashboardId, userId);
+  const exists = await existsDashboard(dashboardId, userId, workspaceId);
   if (!exists) {
     throw new Error("해당 대시보드를 찾을 수 없습니다.");
   }
@@ -232,6 +238,7 @@ export const editWeeklyReflection = async (
 // 대시보드 생성 (AI 호출 → DB 저장)
 export const createDashboardWithAI = async (
   authorization: string | undefined,
+  workspaceId: string,
   startDate: string,
   endDate: string
 ) => {
@@ -252,7 +259,7 @@ export const createDashboardWithAI = async (
   );
 
   // 2. AI로 대시보드 내용 생성 (authorization 그대로 전달)
-  const aiResult = await aiService.generateWeeklyDashboard(authorization, {
+  const aiResult = await aiService.generateWeeklyDashboard(authorization, workspaceId, {
     startDate,
     endDate,
   });
@@ -260,6 +267,7 @@ export const createDashboardWithAI = async (
   // 3. DB 저장 (위에서 뽑은 userId 사용)
   const saved = await createDashboard({
     userId,
+    workspaceId,
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     summary: aiResult.summary,

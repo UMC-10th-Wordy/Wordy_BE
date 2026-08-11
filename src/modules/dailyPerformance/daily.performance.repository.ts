@@ -66,13 +66,15 @@ export class DailyPerformanceRepository {
   async findReflectionSnapshot(
     reflectionSnapshotId: string,
     userId: string,
+    workspaceId: string,
   ) {
     return this.prisma.reflectionSnapshot.findFirst({
       where: {
         reflectionSnapshotId,
-        status:"TEMP",
+        status: "TEMP",
         dailyEntry: {
           userId,
+          workspaceId,
           deletedAt: null,
         },
       },
@@ -95,10 +97,12 @@ export class DailyPerformanceRepository {
   async findTasksByDailyEntry(
     dailyEntryId: string,
     userId: string,
+    workspaceId: string,
   ): Promise<TaskWithResultAndTag[]> {
     return this.prisma.task.findMany({
       where: {
         userId,
+        workspaceId,
         reflectionTasks: {
           some: {
             dailyEntryId,
@@ -140,11 +144,13 @@ export class DailyPerformanceRepository {
   async findDailyPerformanceById(
     dailyPerformanceId: string,
     userId: string,
+    workspaceId: string,
   ): Promise<DailyPerformanceDetail | null> {
     return this.prisma.dailyPerformance.findFirst({
       where: {
         dailyPerformanceId,
         userId,
+        workspaceId,
       },
       include: {
         reflectionSnapshot: {
@@ -177,6 +183,7 @@ export class DailyPerformanceRepository {
 
   async findDailyPerformanceByDate(
     userId: string,
+    workspaceId: string,
     date: Date,
   ): Promise<DailyPerformanceDetail | null> {
 
@@ -189,6 +196,7 @@ export class DailyPerformanceRepository {
     return this.prisma.dailyPerformance.findFirst({
       where: {
         userId,
+        workspaceId,
         dailyEntry: {
           entryDate: date,
           deletedAt: null,
@@ -224,26 +232,30 @@ export class DailyPerformanceRepository {
         },
       },
     });
-  } 
+  }
 
   async findDailyPerformance(
     dailyPerformanceId: string,
     userId: string,
+    workspaceId: string,
   ): Promise<DailyPerformance | null> {
     return this.prisma.dailyPerformance.findFirst({
       where: {
         dailyPerformanceId,
         userId,
+        workspaceId,
       },
     });
   }
 
   async findDailyPerformances(
     userId: string,
+    workspaceId: string,
   ): Promise<PerformanceList[]> {
     return this.prisma.dailyPerformance.findMany({
       where: {
         userId,
+        workspaceId,
       },
       orderBy: {
         createdAt: "desc",
@@ -260,11 +272,13 @@ export class DailyPerformanceRepository {
   async findDailyEntry(
     dailyEntryId: string,
     userId: string,
+    workspaceId: string,
   ) {
     return this.prisma.dailyEntry.findFirst({
       where: {
         dailyEntryId,
         userId,
+        workspaceId,
         deletedAt: null,
       },
     });
@@ -273,10 +287,12 @@ export class DailyPerformanceRepository {
   async findIncompleteTasks(
     dailyEntryId: string,
     userId: string,
+    workspaceId: string,
   ) {
     return this.prisma.task.findMany({
       where: {
         userId,
+        workspaceId,
         status: TaskStatus.IN_PROGRESS,
         reflectionTasks: {
           some: {
@@ -293,45 +309,49 @@ export class DailyPerformanceRepository {
   async findDailyPerformanceByDailyEntry(
     dailyEntryId: string,
     userId: string,
+    workspaceId: string,
   ): Promise<DailyPerformance | null> {
     return this.prisma.dailyPerformance.findFirst({
       where: {
         dailyEntryId,
         userId,
+        workspaceId,
       },
       orderBy: {
-        createdAt: "desc"
-      }
+        createdAt: "desc",
+      },
     });
   }
 
   async findReflectionSnapshotById(
     reflectionSnapshotId: string,
     userId: string,
+    workspaceId: string,
   ) {
     return this.prisma.reflectionSnapshot.findFirst({
-      where:{
+      where: {
         reflectionSnapshotId,
-        dailyEntry:{
+        dailyEntry: {
           userId,
-          deletedAt:null,
+          workspaceId,
+          deletedAt: null,
         },
       },
-      select:{
-        reflectionSnapshotId:true,
-        status:true,
-        promptBResult:true,
-        reflectionTaskSnapshots:{
-          include:{
-            resultSnapshots:true,
-            task:{
-              include:{
-                tag:true,
+      select: {
+        reflectionSnapshotId: true,
+        status: true,
+        promptBResult: true,
+        reflectionTaskSnapshots: {
+          include: {
+            resultSnapshots: true,
+            task: {
+              include: {
+                tag: true,
               },
             },
           },
         },
-      }
+      },
     });
   }
 

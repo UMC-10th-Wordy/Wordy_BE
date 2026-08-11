@@ -2,11 +2,13 @@ import { prisma } from '../../db.config.js';
 
 export const findTasksByUserIdAndDate = async (
   userId: string,
+  workspaceId: string,
   entryDate: Date,
 ) => {
   return prisma.task.findMany({
     where: {
       userId,
+      workspaceId,
       taskDate: entryDate,
       deletedAt: null,
     },
@@ -18,12 +20,14 @@ export const findTasksByUserIdAndDate = async (
 
 export const findDailyEntryByUserIdAndDate = async (
   userId: string,
+  workspaceId: string,
   entryDate: Date,
 ) => {
   return prisma.dailyEntry.findUnique({
     where: {
-      userId_entryDate: {
+      userId_workspaceId_entryDate: {
         userId,
+        workspaceId,
         entryDate,
       },
     },
@@ -32,6 +36,7 @@ export const findDailyEntryByUserIdAndDate = async (
 
 export const createDailyEntryWithTasks = async (
   userId: string,
+  workspaceId: string,
   entryDate: Date,
   title: string,
   reflectionContent: string,
@@ -51,6 +56,7 @@ export const createDailyEntryWithTasks = async (
     return tx.dailyEntry.create({
       data: {
         userId,
+        workspaceId,
         entryDate,
         title,
         reflectionContent,
@@ -75,6 +81,7 @@ export const createDailyEntryWithTasks = async (
 
 export const restoreDailyEntryWithTasks = async (
   dailyEntryId: string,
+  workspaceId: string,
   reflectionContent: string,
   taskIds: string[],
 ) => {
@@ -101,6 +108,7 @@ export const restoreDailyEntryWithTasks = async (
     return tx.dailyEntry.update({
       where: {
         dailyEntryId,
+        workspaceId,
       },
       data: {
         reflectionContent,
