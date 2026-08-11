@@ -538,24 +538,40 @@ export const searchDailyEntries = async (
   }));
 
   // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
-  const tagResults = tagEntries.map((e) => {
-    const tags = e.reflectionTasks
-      .map((rt) => rt.task)
-      .filter((t): t is NonNullable<typeof t> => !!t)
-      .filter((t) => t.tag)
-      .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
+// tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
+  const tagResults = tagEntries.map((tag) => {
+    // 이 태그가 쓰인 일지들을 모으고 중복 제거
+    const diaryMap = new Map<string, {
+      dailyEntryId: string;
+      workspaceId: string | null;
+      entryDate: string;
+      title: string;
+    }>();
+
+    for (const task of tag.tasks) {
+      for (const rt of task.reflectionTasks) {
+        const d = rt.dailyEntry;
+        if (!diaryMap.has(d.dailyEntryId)) {
+          diaryMap.set(d.dailyEntryId, {
+            dailyEntryId: d.dailyEntryId,
+            workspaceId: d.workspaceId,
+            entryDate: toDateStr(d.entryDate),
+            title: d.title,
+          });
+        }
+      }
+    } 
+
     return {
-      dailyEntryId: e.dailyEntryId,
-      workspaceId: e.workspaceId,
-      entryDate: toDateStr(e.entryDate),
-      tags: pickTags(tags),
-      title: e.title,
+      tagName: tag.tagName,
+      color: tag.color,
+      diaries: Array.from(diaryMap.values()),
     };
   });
 
   return {
     keyword: trimmed,
     journalTab: { count: journalResults.length, results: journalResults },
-    tagTab: { count: tagCount, results: tagResults },
+    tagTab: { count: tagResults.length, results: tagResults },
   };
 };

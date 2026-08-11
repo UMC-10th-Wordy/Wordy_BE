@@ -281,5 +281,39 @@ export class DailyEntriesSearchResponse {
   keyword!: string;
 
   journalTab!: SearchTab; // 업무 일지 탭 (제목 매칭)
-  tagTab!: SearchTab;     // 프로젝트 태그 탭 (태그 매칭)
+  tagTab!: TagSearchTab;     // 프로젝트 태그 탭 (태그 매칭)
+}
+// 태그 탭 - 각 태그가 쓰인 일지
+export class TagDiaryItem {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  dailyEntryId!: string;
+
+  @Example("a3c59e7f-956d-11f1-871e-42010ab20002")
+  workspaceId!: string | null;
+
+  @Example("2026-08-09")
+  entryDate!: string;
+
+  @Example("온보딩 입력 화면 개선")
+  title!: string;
+}
+
+// 태그 탭 - 태그 단위 결과
+export class TagTabItem {
+  @Example("온보딩 리뉴얼")
+  tagName!: string;
+
+  @Example("#ff6d38")
+  color!: string | null;
+
+  @Example([])
+  diaries!: TagDiaryItem[];
+}
+
+// 태그 탭 (기존 SearchTab과 results 타입이 다름)
+export class TagSearchTab {
+  @Example(3)
+  count!: number;
+
+  results!: TagTabItem[];
 }
