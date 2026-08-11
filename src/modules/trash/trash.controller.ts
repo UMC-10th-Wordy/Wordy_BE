@@ -13,11 +13,13 @@ import {
 
 import {
   getTrashedDailyEntries,
+  getTrashedDailyEntryDetail,
   restoreDailyEntry,
   deleteDailyEntryPermanently,
 } from "./trash.service.js";
 
 import { TrashDailyEntryListResponse } from "./trash.dto.js";
+import { DailyEntriesDetailResponse } from "../dailyentries/dailyentries.dto.js";
 
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
@@ -59,6 +61,58 @@ export class TrashController extends Controller {
     @Query() size?: number
   ): Promise<ApiResponse<TrashDailyEntryListResponse>> {
     const data = await getTrashedDailyEntries(authorization, page, size);
+    return success(
+      SuccessCode.GET_SUCCESS.code,
+      SuccessCode.GET_SUCCESS.message,
+      data
+    );
+  }
+
+/**
+ * @summary 휴지통 일지 상세 조회
+ */
+  @Get("{dailyEntryId}")
+  @Example<ApiResponse<DailyEntriesDetailResponse>>({
+    success: true,
+    code: "S200",
+    message: "조회에 성공했습니다.",
+    result: {
+      dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+      dailyPerformanceId: "550e8400-e29b-41d4-a716-446655440000",
+      entryDate: "2026-08-21",
+      reflectionContent: "오늘은 JWT 인증 기능 구현을 완료했다.",
+      converted: true,
+      completedCount: 2,
+      incompleteCount: 1,
+      tasks: [
+        {
+          taskId: "550e8400-e29b-41d4-a716-446655440001",
+          tag: {
+            tagName: "백엔드",
+            color: "#4A90E2",
+          },
+          title: "JWT 인증 구현",
+          memo: "Refresh Token 추가 필요",
+          priority: "MUST_DO",
+          status: "COMPLETED",
+          result: {
+            taskResultId: "result-001",
+            content: "JWT 인증 API 구현 완료",
+            attachments: [],
+          },
+        },
+      ],
+    },
+  })
+  public async getDetail(
+    @Header("Authorization") authorization: string | undefined,
+    @Path() dailyEntryId: string
+  ): Promise<ApiResponse<DailyEntriesDetailResponse>> {
+    const data = await getTrashedDailyEntryDetail(
+      authorization,
+      dailyEntryId
+    );
+
     return success(
       SuccessCode.GET_SUCCESS.code,
       SuccessCode.GET_SUCCESS.message,

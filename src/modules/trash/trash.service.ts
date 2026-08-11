@@ -7,6 +7,8 @@ import {
 } from "./trash.repository.js";
 
 import type { TrashDailyEntryListResponse } from "./trash.dto.js";
+import type { DailyEntriesDetailResponse } from "../dailyentries/dailyentries.dto.js";
+import { getDailyEntriesDetail } from "../dailyentries/dailyentries.service.js";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
@@ -82,6 +84,30 @@ export const getTrashedDailyEntries = async (
     totalPages,
     hasNext: safePage < totalPages,
   };
+};
+
+export const getTrashedDailyEntryDetail = async (
+  authorization: string | undefined,
+  dailyEntryId: string
+): Promise<DailyEntriesDetailResponse> => {
+  const userId = getUserIdFromAuthorization(authorization);
+
+  const found = await findTrashedEntryById(userId, dailyEntryId);
+
+  if (!found) {
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "휴지통에서 해당 일지를 찾을 수 없습니다."
+    );
+  }
+
+  return getDailyEntriesDetail(
+    userId,
+    found.workspaceId,
+    dailyEntryId,
+    "trashed"
+  );
 };
 
 export const restoreDailyEntry = async (
