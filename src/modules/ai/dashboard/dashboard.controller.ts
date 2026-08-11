@@ -72,6 +72,7 @@ export class DashboardAiController extends Controller {
           achievementStatus: "COMPLETED",
           insight:
             "AI 기반 업무 분석 기능을 구현하고 성과 정리를 완료했습니다.",
+          taskCount: 3,
         },
       ],
     },
@@ -137,6 +138,7 @@ export class DashboardAiController extends Controller {
           achievementStatus: "달성",
           insight:
             "주간 성과 데이터를 기반으로 월간 성장 흐름을 분석했습니다.",
+          taskCount: 3,
         },
         {
           tagId: "550e8400-e29b-41d4-a716-446655440002",
@@ -148,6 +150,7 @@ export class DashboardAiController extends Controller {
           achievementStatus: "IN_PROGRESS",
           insight:
             "API 구조 개선과 코드 안정화 작업을 진행했습니다.",
+          taskCount: 3,
         },
       ],
     },
