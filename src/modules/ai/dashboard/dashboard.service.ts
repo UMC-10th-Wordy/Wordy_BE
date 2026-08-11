@@ -98,6 +98,7 @@ export class DashboardService {
         where: {
           userId,
           dailyEntry: {
+            workspaceId,
             entryDate: {
               gte: new Date(request.startDate),
               lte: new Date(request.endDate),
@@ -122,6 +123,7 @@ export class DashboardService {
       await this.prisma.dashboard.findFirst({
         where: {
           userId,
+          workspaceId,
           type: "WEEKLY",
           startDate: new Date(request.startDate),
           endDate: new Date(request.endDate),
@@ -481,6 +483,7 @@ export class DashboardService {
       await this.prisma.dashboard.findMany({
         where:{
           userId,
+          workspaceId,
           type:"WEEKLY",
           startDate:{
             gte:new Date(request.startDate),
@@ -601,6 +604,7 @@ export class DashboardService {
       await this.prisma.dashboard.findFirst({
         where: {
           userId,
+          workspaceId,
           type: "MONTHLY",
           startDate: new Date(request.startDate),
           endDate: new Date(request.endDate),

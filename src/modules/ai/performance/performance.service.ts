@@ -50,6 +50,36 @@ export class PerformanceService {
     }
   }
 
+  private async validateTasksInWorkspace(
+    userId: string,
+    workspaceId: string,
+    tasks: TaskDto[],
+  ): Promise<void> {
+    const taskIds = tasks.map((task) => task.taskId);
+
+    const tasksInWorkspace = await this.prisma.task.findMany({
+      where: {
+        taskId: {
+          in: taskIds,
+        },
+        userId,
+        workspaceId,
+        deletedAt: null,
+      },
+      select: {
+        taskId: true,
+      },
+    });
+
+    if (tasksInWorkspace.length !== taskIds.length) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "존재하지 않거나 사용할 수 없는 업무가 포함되어 있습니다.",
+      );
+    }
+  }
+
   // 첫 번째 호출
   async generatePerformancePreview(
     authorization: string | undefined,
@@ -75,6 +105,12 @@ export class PerformanceService {
         "업무일지를 찾을 수 없습니다.",
       );
     }
+
+  await this.validateTasksInWorkspace(
+    userId,
+    workspaceId,
+    request.tasks,
+  );
 
     // Prompt A 생성
     const promptARequest =
@@ -341,6 +377,12 @@ export class PerformanceService {
         "업무일지를 찾을 수 없습니다.",
       );
     }
+
+    await this.validateTasksInWorkspace(
+      userId,
+      workspaceId,
+      request.originalRequest.tasks,
+    );
 
     const updatedSnapshot =
       await this.preparePerformanceSnapshot(

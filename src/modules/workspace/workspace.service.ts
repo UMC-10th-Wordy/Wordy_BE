@@ -86,8 +86,58 @@ export class WorkspaceService {
     );
   }
 
+  // 워크스페이스 이름 수정
+  async updateWorkspaceName(
+    userId: string,
+    workspaceId: string,
+    name: string,
+  ): Promise<WorkspaceResponseDto> {
+    const workspace =
+      await this.workspaceRepository.findByIdAndUserId(
+        workspaceId,
+        userId,
+      );
 
-  // 삭제
+    if (!workspace) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "워크스페이스를 찾을 수 없습니다.",
+      );
+    }
+
+    const result = await this.workspaceRepository.updateName(
+      workspaceId,
+      userId,
+      name,
+    );
+
+    if (result.count === 0) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "워크스페이스를 찾을 수 없습니다.",
+      );
+    }
+
+    const updatedWorkspace =
+      await this.workspaceRepository.findByIdAndUserId(
+        workspaceId,
+        userId,
+      );
+
+    if (!updatedWorkspace) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "워크스페이스를 찾을 수 없습니다.",
+      );
+    }
+
+    return this.toResponseDto(updatedWorkspace);
+  }
+
+  // 워크스페이스 삭제
   async deleteWorkspace(
     userId: string,
     workspaceId: string,

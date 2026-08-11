@@ -5,6 +5,11 @@ export class CreateWorkspaceRequestDto {
   name!: string;
 }
 
+export class UpdateWorkspaceRequestDto {
+  @Example("워디 워크스페이스")
+  name!: string;
+}
+
 export class WorkspaceResponseDto {
   @Example("8c2d4f6a-7e91-4b23-a567-123456789abc")
   workspaceId!: string;
@@ -12,7 +17,7 @@ export class WorkspaceResponseDto {
   @Example("개발팀 워크스페이스")
   name!: string;
 
-  @Example("false")
+  @Example(false)
   isDefault!: boolean;
 
   @Example("2026-08-10T06:00:00.000Z")
