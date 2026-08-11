@@ -140,13 +140,23 @@ export const findEntryByDate = async (
     },
   });
 };
-
+export type DailyEntryDetailScope = "active" | "trashed";
 // ============================================================
 // 일자 상세 => 스냅샷 기반으로 변경
 // ============================================================
-export const findEntryDetail = async (userId: string, workspaceId: string, dailyEntryId: string) => {
+export const findEntryDetail = async (
+  userId: string,
+  workspaceId: string | null,
+  dailyEntryId: string,
+  scope: DailyEntryDetailScope = "active"
+) => {
   return prisma.dailyEntry.findFirst({
-    where: { dailyEntryId, userId, workspaceId, deletedAt: null },
+    where: {
+      dailyEntryId,
+      userId,
+      workspaceId,
+      deletedAt: scope === "active" ? null : { not: null },
+    },
     include: {
       // 변환됨: 스냅샷 (그 시점 박제) + 성과 미리보기 ID
       reflectionSnapshots: {

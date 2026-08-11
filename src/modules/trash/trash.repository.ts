@@ -31,7 +31,10 @@ export const findTrashedEntryById = async (
 ) => {
   return prisma.dailyEntry.findFirst({
     where: { dailyEntryId, userId, deletedAt: { not: null } },
-    select: { dailyEntryId: true },
+    select: {
+      dailyEntryId: true,
+      workspaceId: true,
+    },
   });
 };
 
