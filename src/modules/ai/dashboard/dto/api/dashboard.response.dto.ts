@@ -70,11 +70,17 @@ export class FocusedTagDto {
 }
 
 export class DashboardKpiDto {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  tagId!: string;
+
   @Example("Swagger API 문서 작성")
   kpiName!: string;
 
   @Example("100%")
   progress!: string;
+
+  @Example("Swagger API 문서화를 완료하여 목표를 달성했습니다.")
+  relatedAchievement!: string;
 }
 
 export class DashboardTagAnalysisDto {

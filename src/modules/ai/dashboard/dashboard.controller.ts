@@ -63,12 +63,16 @@ export class DashboardAiController extends Controller {
 
       kpis: [
         {
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
           kpiName: "Swagger API 문서 작성",
           progress: "100%",
+          relatedAchievement: "AI 성과 분석 기능을 구현했습니다.",
         },
         {
+          tagId: "550e8400-e29b-41d4-a716-446655440001",
           kpiName: "AI 기능 구현",
           progress: "80%",
+          relatedAchievement: "주간 회고 작성을 꾸준히 완료했습니다.",
         },
       ],
 
@@ -138,12 +142,16 @@ export class DashboardAiController extends Controller {
 
       kpis: [
         {
-          kpiName: "AI 기능 개발 완료율",
-          progress: "90%",
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
+          kpiName: "Swagger API 문서 작성",
+          progress: "100%",
+          relatedAchievement: "AI 성과 분석 기능을 구현했습니다.",
         },
         {
-          kpiName: "주간 회고 작성률",
-          progress: "100%",
+          tagId: "550e8400-e29b-41d4-a716-446655440001",
+          kpiName: "AI 기능 구현",
+          progress: "80%",
+          relatedAchievement: "주간 회고 작성을 꾸준히 완료했습니다.",
         },
       ],
 
