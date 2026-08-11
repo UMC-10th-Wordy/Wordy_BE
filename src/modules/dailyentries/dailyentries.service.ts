@@ -12,6 +12,8 @@ import {
   countMatchingTags,
 } from "./dailyentries.repository.js";
 
+import type { DailyEntryDetailScope } from "./dailyentries.repository.js";
+
 import type {
   DailyEntriesSummaryResponse,
   MonthlyRecordItem,
@@ -372,10 +374,16 @@ const parseDate = (date: string): Date => {
 // 4) 일자 상세 --> 스냅샷 기반
 export const getDailyEntriesDetail = async (
   userId: string,
-  workspaceId: string,
+  workspaceId: string | null,
   dailyEntryId: string,
+  scope: DailyEntryDetailScope = "active",
 ): Promise<DailyEntriesDetailResponse> => {
-  const entry = await findEntryDetail(userId, workspaceId, dailyEntryId);
+  const entry = await findEntryDetail(
+    userId,
+    workspaceId,
+    dailyEntryId,
+    scope,
+  );
   if (!entry) {
     throw new ApiError(
       ErrorCode.NOT_FOUND.status,
