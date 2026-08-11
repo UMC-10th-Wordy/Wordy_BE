@@ -509,24 +509,33 @@ export const searchDailyEntries = async (
     countMatchingTags(userId, trimmed),
   ]);
 
-  const toResults = (entries: typeof titleEntries) =>
+  const toJournalResults = (items: typeof titleEntries) =>
+  items.map((rt) => ({
+    dailyEntryId: rt.dailyEntry.dailyEntryId,
+    entryDate: toDateStr(rt.dailyEntry.entryDate),
+    tags: rt.task.tag
+      ? pickTags([{ tagName: rt.task.tag.tagName, color: rt.task.tag.color }])
+      : [],
+    title: rt.task.title,
+  }));
+
+  const toTagResults = (entries: typeof tagEntries) =>
   entries.map((e) => {
     const tags = e.reflectionTasks
       .map((rt) => rt.task)
       .filter((t): t is NonNullable<typeof t> => !!t)
       .filter((t) => t.tag)
       .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
-
     return {
       dailyEntryId: e.dailyEntryId,
       entryDate: toDateStr(e.entryDate),
       tags: pickTags(tags),
-      title: e.title,  // ← 일지 title (task 아님)
+      title: e.title,
     };
   });
 
-  const journalResults = toResults(titleEntries);
-  const tagResults = toResults(tagEntries);
+  const journalResults = toJournalResults(titleEntries);
+  const tagResults = toTagResults(tagEntries);
 
   return {
     keyword: trimmed,

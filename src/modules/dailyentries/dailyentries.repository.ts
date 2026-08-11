@@ -268,36 +268,18 @@ export const searchByTitle = async (
   keyword: string,
   sort: "latest" | "oldest"
 ) => {
-  return prisma.dailyEntry.findMany({
+  return prisma.reflectionTask.findMany({
     where: {
-      userId,
-      deletedAt: null,
-      OR: [
-        { title: { contains: keyword } },
-        {
-          reflectionTasks: {
-            some: {
-              task: {
-                deletedAt: null,
-                title: { contains: keyword },
-              },
-            },
-          },
-        },
-      ],
+      dailyEntry: { userId, deletedAt: null },
+      task: { deletedAt: null, title: { contains: keyword } },
     },
-    orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
+    orderBy: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
     select: {
-      dailyEntryId: true,
-      entryDate: true,
-      title: true,  //  title 추가
-      reflectionTasks: {
+      dailyEntry: { select: { dailyEntryId: true, entryDate: true } },
+      task: {
         select: {
-          task: {
-            select: {
-              tag: { select: { tagName: true, color: true } },  // 태그는 표시용으로 유지
-            },
-          },
+          title: true,
+          tag: { select: { tagName: true, color: true } },
         },
       },
     },
