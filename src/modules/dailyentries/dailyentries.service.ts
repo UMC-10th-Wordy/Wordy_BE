@@ -540,7 +540,6 @@ export const searchDailyEntries = async (
   // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
 // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
   const tagResults = tagEntries.map((tag) => {
-    // 이 태그가 쓰인 일지들을 모으고 중복 제거
     const diaryMap = new Map<string, {
       dailyEntryId: string;
       workspaceId: string | null;
@@ -560,12 +559,19 @@ export const searchDailyEntries = async (
           });
         }
       }
-    } 
+    }
+
+    // diaries를 entryDate 기준 정렬 (sort 파라미터 반영)
+    const diaries = Array.from(diaryMap.values()).sort((a, b) =>
+      sort === "oldest"
+        ? a.entryDate.localeCompare(b.entryDate)
+        : b.entryDate.localeCompare(a.entryDate)
+    );
 
     return {
       tagName: tag.tagName,
       color: tag.color,
-      diaries: Array.from(diaryMap.values()),
+      diaries,
     };
   });
 
