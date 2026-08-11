@@ -21,6 +21,7 @@ export class EligibilityResponse {
     {
       dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
       entryDate: "2026-07-20",
+      converted: false,
     },
   ])
   entries!: DailyEntryItem[];
@@ -252,4 +253,7 @@ export class DailyEntryItem {
 
   @Example("2026-07-20")
   entryDate!: string;
+
+    @Example(false)
+    converted!: boolean; // 성과 변환 여부 (유효 스냅샷 존재 시 true)
 }

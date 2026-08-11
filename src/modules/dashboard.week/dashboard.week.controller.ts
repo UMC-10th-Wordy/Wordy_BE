@@ -40,9 +40,8 @@ export class DashboardController extends Controller {
       weekStart: "2026-06-15",
       weekEnd: "2026-06-21",
       entries: [
-        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-15" },
-        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-16" },
-      ],
+        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-15", converted: false },
+        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-16", converted: true },      ],
     },
   })
   public async getEligibility(

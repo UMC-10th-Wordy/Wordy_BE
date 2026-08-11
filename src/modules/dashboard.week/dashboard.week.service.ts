@@ -24,18 +24,36 @@ const REQUIRED_DAYS = 3; // 대시보드 생성에 필요한 최소 일지 수
 
 // 이번 주 월요일~일요일 범위 구하기, 시간 UTC로 변경
 const getWeekRange = (base: Date = new Date()) => {
-  const day = base.getUTCDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(Date.UTC(
-    base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate() + diffToMonday,
+  const day = base.getUTCDay(); // 0=일 ... 6=토
+
+  // 일요일 시작
+  const sunday = new Date(Date.UTC(
+    base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate() - day,
     0, 0, 0, 0
   ));
-  const sunday = new Date(monday);
-  sunday.setUTCDate(monday.getUTCDate() + 6);
-  sunday.setUTCHours(23, 59, 59, 999);
-  return { start: monday, end: sunday };
-};
 
+  // 토요일 끝
+  const saturday = new Date(sunday);
+  saturday.setUTCDate(sunday.getUTCDate() + 6);
+  saturday.setUTCHours(23, 59, 59, 999);
+
+  const baseYear = base.getUTCFullYear();
+  const baseMonth = base.getUTCMonth();
+
+  // 월 경계 절단: 시작이 이전 달이면 → 이번 달 1일로
+  let start = sunday;
+  if (sunday.getUTCMonth() !== baseMonth || sunday.getUTCFullYear() !== baseYear) {
+    start = new Date(Date.UTC(baseYear, baseMonth, 1, 0, 0, 0, 0));
+  }
+
+  // 월 경계 절단: 끝이 다음 달이면 → 이번 달 말일로
+  let end = saturday;
+  if (saturday.getUTCMonth() !== baseMonth || saturday.getUTCFullYear() !== baseYear) {
+    end = new Date(Date.UTC(baseYear, baseMonth + 1, 0, 23, 59, 59, 999));
+  }
+
+  return { start, end };
+};
 const toDateStr = (d: Date) => {
   const year = d.getUTCFullYear();
   const month = String(d.getUTCMonth() + 1).padStart(2, "0");
@@ -72,6 +90,11 @@ export const getEligibility = async (userId: string, baseDate?: string) => {
     entries: entries.map((e: typeof entries[number]) => ({
       dailyEntryId: e.dailyEntryId,
       entryDate: toDateStr(e.entryDate),
+      converted: e.reflectionSnapshots.some(
+        (s) =>
+          (s.status === "TEMP" || s.status === "SAVED") &&
+          s.promptBResult != null
+      ),
     })),
   };
 };
