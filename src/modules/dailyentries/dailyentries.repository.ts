@@ -293,38 +293,24 @@ export const searchByTitle = async (
   keyword: string,
   sort: "latest" | "oldest"
 ) => {
-  return prisma.dailyEntry.findMany({
+  return prisma.reflectionTask.findMany({
     where: {
-      userId,
-      workspaceId,
-      deletedAt: null,
-      OR: [
-        { title: { contains: keyword } },
-        {
-          reflectionTasks: {
-            some: {
-              task: {
-                deletedAt: null,
-                title: { contains: keyword },
-              },
-            },
-          },
-        },
-      ],
+      dailyEntry: { userId, workspaceId, deletedAt: null },
+      task: { deletedAt: null, title: { contains: keyword } },
     },
-    orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
+    orderBy: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
     select: {
-      dailyEntryId: true,
-      workspaceId: true,
-      entryDate: true,
-      title: true,  //  title 추가
-      reflectionTasks: {
+      dailyEntry: {
         select: {
-          task: {
-            select: {
-              tag: { select: { tagName: true, color: true } },  // 태그는 표시용으로 유지
-            },
-          },
+          dailyEntryId: true,
+          workspaceId: true,
+          entryDate: true,
+        },
+      },
+      task: {
+        select: {
+          title: true,
+          tag: { select: { tagName: true, color: true } },
         },
       },
     },
@@ -338,28 +324,32 @@ export const searchByTag = async (
   keyword: string,
   sort: "latest" | "oldest"
 ) => {
-  return prisma.dailyEntry.findMany({
+  return prisma.tag.findMany({
     where: {
       userId,
       workspaceId,
       deletedAt: null,
-      reflectionTasks: {
-        some: {
-          task: { tag: { tagName: { contains: keyword } }, deletedAt: null },
-        },
-      },
+      tagName: { contains: keyword },
     },
-    orderBy: { entryDate: sort === "oldest" ? "asc" : "desc" },
+    orderBy: { createdAt: sort === "oldest" ? "asc" : "desc" },
     select: {
-      dailyEntryId: true,
-      workspaceId: true,
-      entryDate: true,
-      title: true,  // 추가 (표시용 일지 제목)
-      reflectionTasks: {
+      tagName: true,
+      color: true,
+      tasks: {
+        where: { deletedAt: null },
         select: {
-          task: {
+          title: true,   // ← 추가 (그 태그 붙은 업무 제목)
+          reflectionTasks: {
+            where: { dailyEntry: { deletedAt: null } },
             select: {
-              tag: { select: { tagName: true, color: true } },  // 태그만 (표시용)
+              dailyEntry: {
+                select: {
+                  dailyEntryId: true,
+                  workspaceId: true,
+                  entryDate: true,
+                  title: true,
+                },
+              },
             },
           },
         },
