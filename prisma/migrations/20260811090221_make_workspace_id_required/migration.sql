@@ -10,40 +10,40 @@
 
 */
 -- DropForeignKey
-ALTER TABLE `dailyentry` DROP FOREIGN KEY `DailyEntry_workspace_id_fkey`;
+ALTER TABLE `DailyEntry` DROP FOREIGN KEY `DailyEntry_workspace_id_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `dailyperformance` DROP FOREIGN KEY `DailyPerformance_workspace_id_fkey`;
+ALTER TABLE `DailyPerformance` DROP FOREIGN KEY `DailyPerformance_workspace_id_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `dashboard` DROP FOREIGN KEY `Dashboard_workspace_id_fkey`;
+ALTER TABLE `Dashboard` DROP FOREIGN KEY `Dashboard_workspace_id_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `reflectiondraft` DROP FOREIGN KEY `ReflectionDraft_workspace_id_fkey`;
+ALTER TABLE `ReflectionDraft` DROP FOREIGN KEY `ReflectionDraft_workspace_id_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `tag` DROP FOREIGN KEY `Tag_workspace_id_fkey`;
+ALTER TABLE `Tag` DROP FOREIGN KEY `Tag_workspace_id_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `task` DROP FOREIGN KEY `Task_workspace_id_fkey`;
+ALTER TABLE `Task` DROP FOREIGN KEY `Task_workspace_id_fkey`;
 
 -- AlterTable
-ALTER TABLE `dailyentry` MODIFY `workspace_id` CHAR(36) NOT NULL;
+ALTER TABLE `DailyEntry` MODIFY `workspace_id` CHAR(36) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `dailyperformance` MODIFY `workspace_id` CHAR(36) NOT NULL;
+ALTER TABLE `DailyPerformance` MODIFY `workspace_id` CHAR(36) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `dashboard` MODIFY `workspace_id` CHAR(36) NOT NULL;
+ALTER TABLE `Dashboard` MODIFY `workspace_id` CHAR(36) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `reflectiondraft` MODIFY `workspace_id` CHAR(36) NOT NULL;
+ALTER TABLE `ReflectionDraft` MODIFY `workspace_id` CHAR(36) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `tag` MODIFY `workspace_id` CHAR(36) NOT NULL;
+ALTER TABLE `Tag` MODIFY `workspace_id` CHAR(36) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `task` MODIFY `workspace_id` CHAR(36) NOT NULL;
+ALTER TABLE `Task` MODIFY `workspace_id` CHAR(36) NOT NULL;
 
 -- AddForeignKey
 ALTER TABLE `Tag` ADD CONSTRAINT `Tag_workspace_id_fkey` FOREIGN KEY (`workspace_id`) REFERENCES `Workspace`(`workspace_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
