@@ -394,8 +394,8 @@ export class TaskRepository {
    */
   public async findTasksByIdsAndUserId(
     taskIds: string[],
-    workspaceId: string,
     userId: string,
+    workspaceId: string,
   ) {
     return prisma.task.findMany({
       where: {
