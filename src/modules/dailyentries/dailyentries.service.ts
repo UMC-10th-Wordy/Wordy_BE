@@ -540,29 +540,27 @@ export const searchDailyEntries = async (
   // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
 // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
   const tagResults = tagEntries.map((tag) => {
-    const diaryMap = new Map<string, {
+    const diaries: {
       dailyEntryId: string;
       workspaceId: string | null;
       entryDate: string;
       title: string;
-    }>();
+    }[] = [];
 
     for (const task of tag.tasks) {
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
-        if (!diaryMap.has(d.dailyEntryId)) {
-          diaryMap.set(d.dailyEntryId, {
-            dailyEntryId: d.dailyEntryId,
-            workspaceId: d.workspaceId,
-            entryDate: toDateStr(d.entryDate),
-            title: d.title,
-          });
-        }
+        diaries.push({
+          dailyEntryId: d.dailyEntryId,
+          workspaceId: d.workspaceId,
+          entryDate: toDateStr(d.entryDate),
+          title: task.title,
+        });
       }
     }
 
-    // diaries를 entryDate 기준 정렬 (sort 파라미터 반영)
-    const diaries = Array.from(diaryMap.values()).sort((a, b) =>
+    // entryDate 기준 정렬 (sort 파라미터 반영)
+    diaries.sort((a, b) =>
       sort === "oldest"
         ? a.entryDate.localeCompare(b.entryDate)
         : b.entryDate.localeCompare(a.entryDate)
