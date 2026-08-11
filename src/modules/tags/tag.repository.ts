@@ -3,14 +3,18 @@ import { Prisma } from '../../generated/prisma/client.js';
 import { CreateTagRequest, UpdateTagRequest } from './tag.dto.js';
 
 export class TagRepository {
-  public async findManyByUserId(userId: string) {
+  public async findManyByUserId(
+    userId: string,
+    workspaceId: string,
+  ) {
     return prisma.tag.findMany({
       where: {
         userId,
+        workspaceId,
         deletedAt: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
   }
@@ -21,20 +25,26 @@ export class TagRepository {
     });
   }
 
-  public async findActiveByIdAndUserId(tagId: string, userId: string) {
+  public async findActiveByIdAndUserId(
+    tagId: string,
+    userId: string,
+    workspaceId: string,
+  ) {
     return prisma.tag.findFirst({
       where: {
         tagId,
         userId,
+        workspaceId,
         deletedAt: null,
       },
     });
   }
 
-  public async create(userId: string, body: CreateTagRequest) {
+  public async create(userId: string, workspaceId: string,  body: CreateTagRequest) {
     return prisma.tag.create({
       data: {
         userId,
+        workspaceId,
         tagName: body.tagName,
         color: body.color,
         projectName: body.projectName,

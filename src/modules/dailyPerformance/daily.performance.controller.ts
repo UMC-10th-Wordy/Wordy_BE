@@ -17,7 +17,7 @@ import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
 
-@Route("performances")
+@Route("workspaces/{workspaceId}/performances")
 @Tags("Performance")
 export class DailyPerformanceController extends Controller {
   private readonly dailyPerformanceService: DailyPerformanceService;
@@ -49,13 +49,16 @@ export class DailyPerformanceController extends Controller {
     @Header("Authorization")
     authorization: string | undefined,
 
+    @Path()
+    workspaceId: string,
+
     @Body()
     request: CreateDailyPerformanceRequestDto,
   ): Promise<ApiResponse<CreateDailyPerformanceResponseDto>> {
-
     const result =
       await this.dailyPerformanceService.createDailyPerformance(
         authorization,
+        workspaceId,
         request,
       );
 
@@ -70,7 +73,11 @@ export class DailyPerformanceController extends Controller {
    * @summary 업무 성과 조회
    */
   @Get()
-  @Example<ApiResponse<PerformanceListResponseDto>>({
+  @Example<
+    ApiResponse<
+      PerformanceListResponseDto | DailyPerformancePreviewResponseDto
+    >
+  >({
     success: true,
     code: "S200",
     message: "업무 성과 조회에 성공했습니다.",
@@ -91,19 +98,25 @@ export class DailyPerformanceController extends Controller {
     @Header("Authorization")
     authorization: string | undefined,
 
+    @Path()
+    workspaceId: string,
+
     @Query()
     date?: string,
-  ): Promise<ApiResponse<
-    PerformanceListResponseDto | DailyPerformancePreviewResponseDto
-  >> {
-
+  ): Promise<
+    ApiResponse<
+      PerformanceListResponseDto | DailyPerformancePreviewResponseDto
+    >
+  > {
     const result = date
       ? await this.dailyPerformanceService.getDailyPerformanceByDate(
           authorization,
+          workspaceId,
           date,
         )
       : await this.dailyPerformanceService.getDailyPerformances(
           authorization,
+          workspaceId,
         );
 
     return success(
@@ -145,12 +158,15 @@ export class DailyPerformanceController extends Controller {
     authorization: string | undefined,
 
     @Path()
+    workspaceId: string,
+
+    @Path()
     dailyPerformanceId: string,
   ): Promise<ApiResponse<PerformanceDetailResponseDto>> {
-
     const result =
       await this.dailyPerformanceService.getDailyPerformanceDetail(
         authorization,
+        workspaceId,
         dailyPerformanceId,
       );
 
@@ -192,12 +208,15 @@ export class DailyPerformanceController extends Controller {
     authorization: string | undefined,
 
     @Path()
+    workspaceId: string,
+
+    @Path()
     reflectionSnapshotId: string,
   ): Promise<ApiResponse<ReflectionSnapshotPreviewResponseDto>> {
-
     const result =
       await this.dailyPerformanceService.getReflectionSnapshotPreview(
         authorization,
+        workspaceId,
         reflectionSnapshotId,
       );
 
@@ -226,15 +245,18 @@ export class DailyPerformanceController extends Controller {
     authorization: string | undefined,
 
     @Path()
+    workspaceId: string,
+
+    @Path()
     dailyPerformanceId: string,
 
     @Body()
     request: UpdateDailyPerformanceRequestDto,
   ): Promise<ApiResponse<UpdateDailyPerformanceResponseDto>> {
-
     const result =
       await this.dailyPerformanceService.updateDailyPerformance(
         authorization,
+        workspaceId,
         dailyPerformanceId,
         request,
       );

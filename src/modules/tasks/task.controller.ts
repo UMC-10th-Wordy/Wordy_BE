@@ -29,7 +29,7 @@ import { ApiResponse } from '../../common/responses/api.response.js';
 import { success } from '../../common/responses/response.js';
 import { SuccessCode } from '../../common/responses/success.code.js';
 
-@Route('tasks')
+@Route('workspaces/{workspaceId}/tasks')
 @Tags('Tasks')
 export class TaskController extends Controller {
   private readonly taskService = new TaskService();
@@ -128,6 +128,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Query()
     date: string,
   ): Promise<
@@ -136,6 +138,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.getTasksByDate(
         authorization,
+        workspaceId,
         date,
       );
 
@@ -183,6 +186,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Query()
     startDate: string,
 
@@ -194,6 +199,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.getCalendarSummary(
         authorization,
+        workspaceId,
         startDate,
         endDate,
       );
@@ -253,12 +259,15 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Body()
     body: CreateTaskRequest,
   ): Promise<ApiResponse<TaskResponse>> {
     const data =
       await this.taskService.createTask(
         authorization,
+        workspaceId,
         body,
       );
 
@@ -292,6 +301,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Body()
     body: TaskReorderRequest,
   ): Promise<
@@ -300,6 +311,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.reorderTasks(
         authorization,
+        workspaceId,
         body,
       );
 
@@ -369,6 +381,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Path()
     taskId: string,
   ): Promise<
@@ -377,6 +391,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.getTask(
         authorization,
+        workspaceId,
         taskId,
       );
 
@@ -431,6 +446,8 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Path()
     taskId: string,
 
@@ -440,6 +457,7 @@ export class TaskController extends Controller {
     const data =
       await this.taskService.updateTask(
         authorization,
+        workspaceId,
         taskId,
         body,
       );
@@ -465,11 +483,14 @@ export class TaskController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Path()
     taskId: string,
   ): Promise<ApiResponse<null>> {
     await this.taskService.deleteTask(
       authorization,
+      workspaceId,
       taskId,
     );
 

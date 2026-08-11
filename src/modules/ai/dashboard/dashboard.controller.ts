@@ -1,6 +1,6 @@
 console.log("dashboard.controller.ts loaded");
 
-import { Body, Controller, Example, Header, Post, Route, Tags } from "tsoa";
+import { Body, Controller, Example, Header, Path, Post, Route, Tags } from "tsoa";
 
 import { prisma } from "../../../common/prisma/prisma.client.js";
 import { LlmClient } from "../common/llm.client.js";
@@ -15,7 +15,7 @@ import { ApiResponse } from "../../../common/responses/api.response.js";
 import { success } from "../../../common/responses/response.js";
 import { SuccessCode } from "../../../common/responses/success.code.js";
 
-@Route("ai")
+@Route("ai/workspaces/{workspaceId}/dashboard")
 @Tags("AI")
 export class DashboardAiController extends Controller {
   private readonly dashboardService: DashboardService;
@@ -34,7 +34,7 @@ export class DashboardAiController extends Controller {
   /**
    * @summary 주간 대시보드 생성
    */
-  @Post("dashboard/weekly")
+  @Post("weekly")
   @Example<ApiResponse<DashboardResponseDto>>({
     success: true,
     code: "S200",
@@ -78,11 +78,13 @@ export class DashboardAiController extends Controller {
   })
   public async createDashboard(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Body() request: DashboardRequestDto,
   ): Promise<ApiResponse<DashboardResponseDto>> {
     const result =
       await this.dashboardService.generateWeeklyDashboard(
         authorization,
+        workspaceId,
         request,
       );
 
@@ -96,7 +98,7 @@ export class DashboardAiController extends Controller {
   /**
    * @summary 월간 대시보드 생성
    */
-  @Post("dashboard/monthly")
+  @Post("monthly")
   @Example<ApiResponse<DashboardResponseDto>>({
     success: true,
     code: "S200",
@@ -152,11 +154,13 @@ export class DashboardAiController extends Controller {
   })
   public async createMonthlyDashboard(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Body() request: DashboardRequestDto,
   ): Promise<ApiResponse<DashboardResponseDto>> {
     const result =
       await this.dashboardService.generateMonthlyDashboard(
         authorization,
+        workspaceId,
         request,
       );
 

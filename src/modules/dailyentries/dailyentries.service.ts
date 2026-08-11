@@ -57,7 +57,8 @@ const pickTags = (
 
 // 1 나의 요약 (상단 카드 3개)
 export const getDailyEntriesSummary = async (
-  userId: string
+  userId: string,
+  workspaceId: string,
 ): Promise<DailyEntriesSummaryResponse> => {
   const now = new Date();
   const y = now.getFullYear();
@@ -68,18 +69,18 @@ export const getDailyEntriesSummary = async (
   const lastMonth = getMonthRange(m === 1 ? y - 1 : y, m === 1 ? 12 : m - 1);
 
   const [thisCount, lastCount] = await Promise.all([
-    countEntriesBetween(userId, thisMonth.start, thisMonth.end),
-    countEntriesBetween(userId, lastMonth.start, lastMonth.end),
+    countEntriesBetween(userId, workspaceId, thisMonth.start, thisMonth.end),
+    countEntriesBetween(userId, workspaceId, lastMonth.start, lastMonth.end),
   ]);
 
   // 연속 작성 streak 
-  const dateRows = await findAllEntryDates(userId);
+  const dateRows = await findAllEntryDates(userId, workspaceId);
   const { currentStreak, maxStreak } = calcStreaks(
     dateRows.map((r) => toDateStr(r.entryDate))
   );
 
   // 최다 기록 카테고리 
-  const entries = await findEntriesWithTags(userId);
+  const entries = await findEntriesWithTags(userId, workspaceId);
   const topCategory = calcTopCategory(entries);
 
   return {
@@ -168,9 +169,10 @@ const calcTopCategory = (
 
 // 2 월별 기록 목록 (접힌 상태)
 export const getMonthlyList = async (
-  userId: string
+  userId: string,
+  workspaceId: string,
 ): Promise<MonthlyRecordItem[]> => {
-  const entries = await findEntriesWithTags(userId);
+  const entries = await findEntriesWithTags(userId, workspaceId);
 
   // yearMonth 별로 그룹핑
   const groups = new Map<
@@ -236,7 +238,8 @@ const buildMonthlySummary = (tagNames: string[], totalDays: number): string => {
 // yearMonth: "2026-08"
 export const getMonthlyEntries = async (
   userId: string,
-  yearMonth: string
+  workspaceId: string,
+  yearMonth: string,
 ): Promise<DailyRecordItem[]> => {
   const [year, month] = yearMonth.split("-").map(Number);
   if (!year || !month) {
@@ -248,7 +251,7 @@ export const getMonthlyEntries = async (
   }
 
   const { start, end } = getMonthRange(year, month);
-  const entries = await findEntriesByMonth(userId, start, end);
+  const entries = await findEntriesByMonth(userId, workspaceId, start, end);
 
   return entries
     .map((e) => {
@@ -293,6 +296,7 @@ export const getMonthlyEntries = async (
 
       return {
         dailyEntryId: e.dailyEntryId,
+        workspaceId: e.workspaceId,
         entryDate: dateStr,
         day: Number(dateStr.slice(8, 10)),
         tags: pickTags(tagList),
@@ -316,12 +320,14 @@ export const getMonthlyEntries = async (
 // 날짜별 일지 조회 (오늘의 업무 화면 회고 복원용)
 export const getDailyEntryByDate = async (
   userId: string,
+  workspaceId: string,
   date: string,
 ): Promise<DailyEntryByDateResponse | null> => {
   const entryDate = parseDate(date);
 
   const entry = await findEntryByDate(
     userId,
+    workspaceId,
     entryDate,
   );
 
@@ -366,9 +372,10 @@ const parseDate = (date: string): Date => {
 // 4) 일자 상세 --> 스냅샷 기반
 export const getDailyEntriesDetail = async (
   userId: string,
-  dailyEntryId: string
+  workspaceId: string,
+  dailyEntryId: string,
 ): Promise<DailyEntriesDetailResponse> => {
-  const entry = await findEntryDetail(userId, dailyEntryId);
+  const entry = await findEntryDetail(userId, workspaceId, dailyEntryId);
   if (!entry) {
     throw new ApiError(
       ErrorCode.NOT_FOUND.status,
@@ -380,6 +387,7 @@ export const getDailyEntriesDetail = async (
   // 회고는 변환 여부와 무관하게 항상 노출
   const base = {
     dailyEntryId: entry.dailyEntryId,
+    workspaceId: entry.workspaceId,
     entryDate: toDateStr(entry.entryDate),
     reflectionContent: entry.reflectionContent,
   };
@@ -474,8 +482,8 @@ export const getDailyEntriesDetail = async (
 };
 
 // 5 일지 삭제 (소프트 삭제)
-export const removeDailyEntry = async (userId: string, dailyEntryId: string) => {
-  const found = await findEntryById(userId, dailyEntryId);
+export const removeDailyEntry = async (userId: string, workspaceId: string, dailyEntryId: string) => {
+  const found = await findEntryById(userId, workspaceId, dailyEntryId);
   if (!found) {
     throw new ApiError(
       ErrorCode.NOT_FOUND.status,
@@ -484,13 +492,14 @@ export const removeDailyEntry = async (userId: string, dailyEntryId: string) => 
     );
   }
 
-  await softDeleteEntry(dailyEntryId);
+  await softDeleteEntry(dailyEntryId, workspaceId);
   return { dailyEntryId };
 };
 
 // 6 검색
 export const searchDailyEntries = async (
   userId: string,
+  workspaceId: string,
   keyword: string,
   sort: "latest" | "oldest" = "latest"
 ): Promise<DailyEntriesSearchResponse> => {
@@ -504,9 +513,9 @@ export const searchDailyEntries = async (
   }
 
   const [titleEntries, tagEntries, tagCount] = await Promise.all([
-    searchByTitle(userId, trimmed, sort),
-    searchByTag(userId, trimmed, sort),
-    countMatchingTags(userId, trimmed),
+    searchByTitle(userId, workspaceId, trimmed, sort),
+    searchByTag(userId, workspaceId, trimmed, sort),
+    countMatchingTags(userId, workspaceId, trimmed),
   ]);
 
   const toResults = (entries: typeof titleEntries) =>
@@ -519,6 +528,7 @@ export const searchDailyEntries = async (
 
     return {
       dailyEntryId: e.dailyEntryId,
+      workspaceId: e.workspaceId,
       entryDate: toDateStr(e.entryDate),
       tags: pickTags(tags),
       title: e.title,  // ← 일지 title (task 아님)

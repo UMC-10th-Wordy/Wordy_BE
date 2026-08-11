@@ -45,6 +45,7 @@ export class TaskResultService {
 
   public async upsertTaskResult(
     authorization: string | undefined,
+    workspaceId: string,
     taskId: string,
     content: string,
     removedAttachmentIds: string | undefined,
@@ -54,6 +55,7 @@ export class TaskResultService {
 
     const task = await this.taskRepository.findActiveByIdAndUserId(
       taskId,
+      workspaceId,
       userId,
     );
 

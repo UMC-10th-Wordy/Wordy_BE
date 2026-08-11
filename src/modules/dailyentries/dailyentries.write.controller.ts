@@ -3,6 +3,7 @@ import {
   Controller,
   Example,
   Header,
+  Path,
   Post,
   Route,
   Tags,
@@ -19,7 +20,7 @@ import { ApiResponse } from '../../common/responses/api.response.js';
 import { success } from '../../common/responses/response.js';
 import { SuccessCode } from '../../common/responses/success.code.js';
 
-@Route('daily-entries')
+@Route('workspaces/{workspaceId}/daily-entries')
 @Tags('DailyEntries')
 export class DailyEntriesWriteController extends Controller {
   /**
@@ -50,11 +51,14 @@ export class DailyEntriesWriteController extends Controller {
     @Header('authorization')
     authorization: string,
 
+    @Path() workspaceId: string,
+
     @Body()
     body: CreateDailyEntryRequest,
   ): Promise<ApiResponse<CreateDailyEntryResponse>> {
     const data = await createDailyEntry(
       authorization,
+      workspaceId,
       body,
     );
 

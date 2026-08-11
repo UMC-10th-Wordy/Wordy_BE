@@ -21,7 +21,7 @@ import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { verifyAccessToken } from "../../auth.config.js";
 
-@Route("dashboards")
+@Route("workspaces/{workspaceId}/dashboards")
 @Tags("Dashboard")
 export class DashboardController extends Controller {
   /**
@@ -40,13 +40,13 @@ export class DashboardController extends Controller {
       weekStart: "2026-06-15",
       weekEnd: "2026-06-21",
       entries: [
-        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-15" },
-        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-16" },
-      ],
+        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-15", converted: false },
+        { dailyEntryId: "550e8400-e29b-41d4-a716-446655440000", entryDate: "2026-06-16", converted: true },      ],
     },
   })
   public async getEligibility(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() baseDate?: string
   ): Promise<ApiResponse<EligibilityResponse>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
@@ -54,7 +54,7 @@ export class DashboardController extends Controller {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await getEligibility(userId, baseDate);
+    const data = await getEligibility(userId, workspaceId, baseDate);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 
@@ -77,14 +77,15 @@ export class DashboardController extends Controller {
     ],
   })
   public async getList(
-    @Header("Authorization") authorization: string | undefined
+    @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
   ): Promise<ApiResponse<DashboardListItem[]>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
     if (!token) {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await getDashboardList(userId);
+    const data = await getDashboardList(userId, workspaceId);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 
@@ -160,6 +161,7 @@ export class DashboardController extends Controller {
   })
   public async getDetail(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dashboardId: string
   ): Promise<ApiResponse<DashboardDetail>> {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
@@ -167,7 +169,7 @@ export class DashboardController extends Controller {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await getDashboardDetail(dashboardId, userId);
+    const data = await getDashboardDetail(dashboardId, userId, workspaceId);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 
@@ -178,6 +180,7 @@ export class DashboardController extends Controller {
   @Post("{dashboardId}/reflection")
   public async createReflection(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dashboardId: string,
     @Body() body: CreateWeeklyReflectionRequest
   ): Promise<ApiResponse<any>> {
@@ -186,7 +189,7 @@ export class DashboardController extends Controller {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await addWeeklyReflection(dashboardId, userId, body);
+    const data = await addWeeklyReflection(dashboardId, userId, workspaceId, body);
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
   }
@@ -209,6 +212,7 @@ export class DashboardController extends Controller {
   })
   public async updateReflection(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dashboardId: string,
     @Path() reflectionId: string,
     @Body() body: CreateWeeklyReflectionRequest
@@ -218,7 +222,7 @@ export class DashboardController extends Controller {
       throw new ApiError(ErrorCode.UNAUTHORIZED.status, ErrorCode.UNAUTHORIZED.code, "인증이 필요합니다.");
     }
     const userId = verifyAccessToken(token).userId;
-    const data = await editWeeklyReflection(dashboardId, reflectionId, userId, body);
+    const data = await editWeeklyReflection(dashboardId, reflectionId, userId, workspaceId, body);
     return success(SuccessCode.UPDATED.code, SuccessCode.UPDATED.message, data);
   }
 
@@ -295,9 +299,10 @@ export class DashboardController extends Controller {
   })
   public async createDashboard(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Body() body: { startDate: string; endDate: string }
   ): Promise<ApiResponse<any>> {
-    const data = await createDashboardWithAI(authorization, body.startDate, body.endDate); 
+    const data = await createDashboardWithAI(authorization, workspaceId, body.startDate, body.endDate); 
     this.setStatus(201);
     return success(SuccessCode.CREATED.code, SuccessCode.CREATED.message, data);
   }

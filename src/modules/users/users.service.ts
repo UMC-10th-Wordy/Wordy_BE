@@ -5,6 +5,8 @@ import { CompleteProfileRequest, ProfileImageData, UserProfileData, YearsOfServi
 import { ApiError } from '../../common/errors/api.error.js';
 import { ErrorCode } from '../../common/errors/error.code.js';
 import { uploadToGcs } from '../../common/storage/gcs.storage.js';
+import { WorkspaceService } from '../workspace/workspace.service.js';
+import { WorkspaceRepository } from '../workspace/workspace.repository.js';
 
 const PROFILE_IMAGE_EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -37,12 +39,15 @@ export class InvalidImageTypeError extends ApiError {
 
 export class InvalidUserNameError extends ApiError {
   constructor() {
-    super(ErrorCode.BAD_REQUEST.status, ErrorCode.BAD_REQUEST.code, '닉네임은 5자 이하로 입력해주세요.');
+    super(ErrorCode.BAD_REQUEST.status, ErrorCode.BAD_REQUEST.code, '닉네임은 10자 이하로 입력해주세요.');
   }
 }
 
 export class UsersService {
   private usersRepository = new UsersRepository();
+  private workspaceService = new WorkspaceService(
+    new WorkspaceRepository(),
+  );
 
   /**
    * Authorization 헤더의 액세스 토큰에서 유저 ID를 추출
@@ -59,14 +64,39 @@ export class UsersService {
   }
 
   /**
-   * 프로필 등록
+   * 프로필 등록/수정
    */
   public async completeProfile(authorization: string | undefined, body: CompleteProfileRequest): Promise<{ userId: string; email: string }> {
     const userId = this.extractUserId(authorization);
-    if (body.userName.length > 5) throw new InvalidUserNameError();
+    if (body.userName.length > 10) throw new InvalidUserNameError();
 
+    // 기존 프로필 존재 여부 확인
+    const existingUser = await this.usersRepository.findById(userId);
+
+    const isFirstProfile = !existingUser?.profile;
+
+    // 프로필 등록/수정
     const profile = await this.usersRepository.upsertProfile(userId, body);
-    return { userId: profile.userId, email: profile.user.email };
+
+    // 최초 프로필 등록이면 기본 Workspace 생성
+    if (isFirstProfile) {
+      await this.workspaceService.createDefaultWorkspace(
+        userId,
+        body.userName,
+      );
+    } else {
+      // 기존 프로필 수정이면 기본 Workspace 이름 변경
+      await this.workspaceService.updateDefaultWorkspaceName(
+        userId,
+        body.userName,
+      );
+    }
+
+    // 최종 응답
+    return {
+      userId: profile.userId,
+      email: profile.user.email,
+    };
   }
 
   /**

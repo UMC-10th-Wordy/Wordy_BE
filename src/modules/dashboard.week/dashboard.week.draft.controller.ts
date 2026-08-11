@@ -1,18 +1,16 @@
-import { Controller, Get, Post, Body, Query, Route, Tags, Example, Header } from "tsoa";
+import { Controller, Get, Post, Body, Query, Route, Tags, Example, Header, Path } from "tsoa";
 import { saveDraft, getDraft } from "./dashboard.week.draft.service.js";
 import { DraftType } from "../../generated/prisma/client.js";
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
-import { ApiError } from "../../common/errors/api.error.js";
-import { ErrorCode } from "../../common/errors/error.code.js";
-import { verifyAccessToken } from "../../auth.config.js";
+
 import {
   SaveDraftRequest,
   DraftResponse,
 } from "./dashboard.week.draft.dto.js";
 
-@Route("dashboards/drafts")
+@Route("workspaces/{workspaceId}/dashboards/drafts")
 @Tags("DashboardDraft")
 export class DashboardDraftController extends Controller {
   /**
@@ -39,10 +37,11 @@ export class DashboardDraftController extends Controller {
   })
   public async save(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() type: DraftType,
     @Body() body: SaveDraftRequest
   ): Promise<ApiResponse<DraftResponse>> {
-    const data = await saveDraft(authorization, type, body);
+    const data = await saveDraft(authorization, workspaceId, type, body);
     return success(SuccessCode.OK.code, "임시 저장되었습니다.", data);
   }
 
@@ -69,9 +68,10 @@ export class DashboardDraftController extends Controller {
   })
   public async get(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() type: DraftType
   ): Promise<ApiResponse<DraftResponse | null>> {
-    const data = await getDraft(authorization, type);
+    const data = await getDraft(authorization, workspaceId, type);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 }
