@@ -253,10 +253,10 @@ model Tag {
   deletedAt DateTime? @map("deleted_at") @db.DateTime(0)
 
   userId String @map("user_id") @db.Char(36)
-  workspaceId String @map("workspace_id") @db.Char(36)
+  workspaceId String? @map("workspace_id") @db.Char(36)
 
   user  User   @relation(fields: [userId], references: [userId])
-  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId])
+  workspace Workspace? @relation(fields: [workspaceId], references: [workspaceId])
   tasks Task[]
 
   @@index([userId])
@@ -279,11 +279,11 @@ model Task {
   completedAt DateTime?    @map("completed_at") @db.DateTime(0)
   taskDate    DateTime     @map("task_date") @db.Date
   userId      String       @map("user_id") @db.Char(36)
-  workspaceId String       @map("workspace_id") @db.Char(36)
+  workspaceId String?       @map("workspace_id") @db.Char(36)
   tagId       String?       @map("tag_id") @db.Char(36)
 
   user                    User                     @relation(fields: [userId], references: [userId])
-  workspace               Workspace                @relation(fields: [workspaceId], references: [workspaceId])
+  workspace               Workspace?                @relation(fields: [workspaceId], references: [workspaceId])
   tag                     Tag?                     @relation(fields: [tagId], references: [tagId])
   taskResult              TaskResult?
   reflectionTasks         ReflectionTask[]
@@ -305,10 +305,10 @@ model DailyEntry {
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt         DateTime? @map("deleted_at") @db.DateTime(0)
   userId            String    @map("user_id") @db.Char(36)
-  workspaceId       String    @map("workspace_id") @db.Char(36)
+  workspaceId       String?    @map("workspace_id") @db.Char(36)
 
   user                User                 @relation(fields: [userId], references: [userId])
-  workspace           Workspace            @relation(fields: [workspaceId], references: [workspaceId])
+  workspace           Workspace?            @relation(fields: [workspaceId], references: [workspaceId])
   reflectionTasks     ReflectionTask[]
   dailyPerformances   DailyPerformance[]
   reflectionSnapshots ReflectionSnapshot[]
@@ -482,11 +482,11 @@ model DailyPerformance {
   
   reflectionSnapshotId String   @map("reflection_snapshot_id") @db.Char(36)
   userId               String   @map("user_id") @db.Char(36)
-  workspaceId          String @map("workspace_id") @db.Char(36)
+  workspaceId          String? @map("workspace_id") @db.Char(36)
   dailyEntryId         String @map("daily_entry_id") @db.Char(36)
 
   user               User               @relation(fields: [userId], references: [userId])
-  workspace          Workspace          @relation(fields: [workspaceId], references: [workspaceId])
+  workspace          Workspace?          @relation(fields: [workspaceId], references: [workspaceId])
   dailyEntry         DailyEntry         @relation(fields: [dailyEntryId], references: [dailyEntryId])
   reflectionSnapshot ReflectionSnapshot @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
   performanceItems   PerformanceItem[]
@@ -528,10 +528,10 @@ model Dashboard {
   updatedAt        DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
   deletedAt        DateTime? @map("deleted_at") @db.DateTime(0)
   userId           String    @map("user_id") @db.Char(36)
-  workspaceId      String    @map("workspace_id") @db.Char(36)
+  workspaceId      String?    @map("workspace_id") @db.Char(36)
 
   user              User                   @relation(fields: [userId], references: [userId])
-  workspace         Workspace              @relation(fields: [workspaceId], references: [workspaceId])
+  workspace         Workspace?              @relation(fields: [workspaceId], references: [workspaceId])
   aiRuns            AIRun[]
   performances      DashboardPerformance[]
   kpis              DashboardKPI[]
@@ -622,7 +622,7 @@ enum DraftType {
 model ReflectionDraft {
   reflectionDraftId String    @id @default(uuid()) @map("reflection_draft_id") @db.Char(36)
   userId            String    @map("user_id") @db.Char(36)
-  workspaceId       String    @map("workspace_id") @db.Char(36)
+  workspaceId       String?    @map("workspace_id") @db.Char(36)
   type              DraftType
   workSummary       String?   @map("work_summary") @db.Text
   resourcesUsed     String?   @map("resources_used") @db.Text
@@ -632,7 +632,7 @@ model ReflectionDraft {
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
 
   user User @relation(fields: [userId], references: [userId])
-  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId])
+  workspace Workspace? @relation(fields: [workspaceId], references: [workspaceId])
 
   @@unique([userId, workspaceId, type])
   @@index([userId])
