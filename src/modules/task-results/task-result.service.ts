@@ -55,8 +55,8 @@ export class TaskResultService {
 
     const task = await this.taskRepository.findActiveByIdAndUserId(
       taskId,
-      workspaceId,
       userId,
+      workspaceId,
     );
 
     if (!task) {
