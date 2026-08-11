@@ -526,25 +526,32 @@ export const searchDailyEntries = async (
     countMatchingTags(userId, workspaceId, trimmed),
   ]);
 
-  const toResults = (entries: typeof titleEntries) =>
-  entries.map((e) => {
+  // journalTab: 매칭된 업무(Task) 단위
+  const journalResults = titleEntries.map((rt) => ({
+    dailyEntryId: rt.dailyEntry.dailyEntryId,
+    workspaceId: rt.dailyEntry.workspaceId,
+    entryDate: toDateStr(rt.dailyEntry.entryDate),
+    tags: rt.task.tag
+      ? pickTags([{ tagName: rt.task.tag.tagName, color: rt.task.tag.color }])
+      : [],
+    title: rt.task.title,
+  }));
+
+  // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
+  const tagResults = tagEntries.map((e) => {
     const tags = e.reflectionTasks
       .map((rt) => rt.task)
       .filter((t): t is NonNullable<typeof t> => !!t)
       .filter((t) => t.tag)
       .map((t) => ({ tagName: t.tag!.tagName, color: t.tag!.color }));
-
     return {
       dailyEntryId: e.dailyEntryId,
       workspaceId: e.workspaceId,
       entryDate: toDateStr(e.entryDate),
       tags: pickTags(tags),
-      title: e.title,  // ← 일지 title (task 아님)
+      title: e.title,
     };
   });
-
-  const journalResults = toResults(titleEntries);
-  const tagResults = toResults(tagEntries);
 
   return {
     keyword: trimmed,
