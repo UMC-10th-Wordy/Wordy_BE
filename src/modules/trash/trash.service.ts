@@ -7,8 +7,8 @@ import {
 } from "./trash.repository.js";
 
 import type { TrashDailyEntryListResponse } from "./trash.dto.js";
-import type { DailyEntriesDetailResponse } from "../dailyentries/dailyentries.dto.js";
-import { getDailyEntriesDetail } from "../dailyentries/dailyentries.service.js";
+import type { DailyEntriesDetailResponse } from "../dailyEntries/dailyentries.dto.js";
+import { getDailyEntriesDetail } from "../dailyEntries/dailyentries.service.js";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
