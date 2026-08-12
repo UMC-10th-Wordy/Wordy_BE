@@ -172,12 +172,14 @@ export const updateMonthlyReflection = async (
 };
 export const softDeleteMonthlyDashboardByPeriod = async (
   userId: string,
+  workspaceId: string,
   startDate: Date,
   endDate: Date
 ) => {
   return prisma.dashboard.updateMany({
     where: {
       userId,
+      workspaceId,
       startDate,
       endDate,
       type: "MONTHLY",

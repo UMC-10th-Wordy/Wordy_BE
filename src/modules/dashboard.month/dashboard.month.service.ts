@@ -7,6 +7,7 @@ import {
   createMonthlyDashboard,
   findMonthlyReflectionById,   // 추가
   updateMonthlyReflection,     // 추가
+  softDeleteMonthlyDashboardByPeriod,
 } from "./dashboard.month.repository.js";
 
 import { DashboardService } from "../ai/dashboard/dashboard.service.js";
@@ -197,6 +198,13 @@ export const createMonthlyDashboardWithAI = async (
     endDate,
   });
 
+  await softDeleteMonthlyDashboardByPeriod(
+    userId,
+    workspaceId,
+    new Date(startDate),
+    new Date(endDate)
+  );
+  
   // 3. DB 저장 (위에서 뽑은 userId 사용)
   const saved = await createMonthlyDashboard({
     userId,
