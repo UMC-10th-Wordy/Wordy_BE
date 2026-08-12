@@ -485,3 +485,28 @@ export const searchBySnapshotTitle = async (
     },
   });
 };
+
+export const findMatchingTags = async (
+  userId: string,
+  workspaceId: string,
+  keyword: string,
+  sort: "latest" | "oldest",
+) => {
+  return prisma.tag.findMany({
+    where: {
+      userId,
+      workspaceId,
+      deletedAt: null,
+      tagName: {
+        contains: keyword,
+      },
+    },
+    orderBy: {
+      createdAt: sort === "oldest" ? "asc" : "desc",
+    },
+    select: {
+      tagName: true,
+      color: true,
+    },
+  });
+};

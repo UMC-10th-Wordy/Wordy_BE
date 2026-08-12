@@ -11,6 +11,7 @@ import {
   searchByTag,
   countMatchingTags,
   searchBySnapshotTitle,
+  findMatchingTags,
 } from "./dailyentries.repository.js";
 
 import type { DailyEntryDetailScope } from "./dailyentries.repository.js";
@@ -516,11 +517,11 @@ export const searchDailyEntries = async (
     };
   }
 
-  const [titleEntries, snapshotEntries,tagEntries, tagCount] = await Promise.all([
+  const [titleEntries, snapshotEntries,tagEntries, matchingTags] = await Promise.all([
     searchByTitle(userId, workspaceId, trimmed, sort),
     searchBySnapshotTitle(userId, workspaceId, sort),
     searchByTag(userId, workspaceId, sort),
-    countMatchingTags(userId, workspaceId, trimmed),
+    findMatchingTags(userId, workspaceId, trimmed, sort),
   ]);
 
 // journalTab: 미변환 일지(현재 Task) + 변환된 일지(스냅샷) 합침
@@ -594,6 +595,16 @@ export const searchDailyEntries = async (
     }[];
   }
 >();
+
+// 키워드에 매칭되는 태그를 먼저 등록
+// 업무에 연결되지 않은 미사용 태그도 diaries: [] 상태로 유지
+for (const tag of matchingTags) {
+  tagMap.set(tag.tagName, {
+    tagName: tag.tagName,
+    color: tag.color,
+    diaries: [],
+  });
+}
 
 for (const entry of tagEntries) {
   const snapshot = entry.reflectionSnapshots[0];
