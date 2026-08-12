@@ -31,6 +31,7 @@ export interface DashboardTagInputDto {
 }
 
 export interface DashboardKpiInputDto {
+  tagId: string;
   kpiName:string;
   target:string;
   relatedPerformances:{
