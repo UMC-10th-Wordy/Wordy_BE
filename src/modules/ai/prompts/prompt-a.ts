@@ -57,6 +57,7 @@ export const promptAInstructions = `
   ],
   "followUpQuestions": [
     {
+      "taskId": "string",
       "question": "string",
       "reason": "string"
     }
