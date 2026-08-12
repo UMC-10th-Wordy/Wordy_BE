@@ -4,6 +4,19 @@ export const promptAInstructions = `
 목표: 사용자가 작성한 업무 제목, 메모, 업무 결과, 오늘의 회고를 읽고, 사실 기반 구조 데이터만 
 추출합니다. 
 
+[업무 입력 규칙]
+
+- tasks는 현재 사용자의 전체 업무 목록이다.
+- questionTargetTasks는 이번 변환에서 추가 질문을 허용하는 업무 목록이다.
+
+[추가 질문 규칙]
+
+- followUpQuestions는 반드시 questionTargetTasks에 포함된 업무에 대해서만 생성한다.
+- questionTargetTasks에 포함되지 않은 업무에 대해서는 추가 질문을 생성하지 않는다.
+- questionTargetTasks가 빈 배열이면 followUpQuestions도 반드시 빈 배열이어야 한다.
+- 각 followUpQuestion에는 반드시 해당 업무의 taskId를 포함한다.
+- tasks 전체를 참고하여 성과 분석은 수행할 수 있지만, 추가 질문의 대상은 questionTargetTasks로 제한한다.
+
 지시 1: 없는 사실, 없는 숫자, 없는 성과를 만들지 마세요. 
 지시 2: 각 업무마다 행동, 산출물(Output), 결과 변화(Impact), 성장 근거, 다음 행동(업무) 후보를 
 분리하세요. 
@@ -44,6 +57,7 @@ export const promptAInstructions = `
   ],
   "followUpQuestions": [
     {
+      "taskId": "string",
       "question": "string",
       "reason": "string"
     }
