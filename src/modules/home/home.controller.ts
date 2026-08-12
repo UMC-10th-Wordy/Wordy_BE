@@ -1,4 +1,4 @@
-import { Controller, Get, Route, Tags, Header, Example, Response } from 'tsoa';
+import { Controller, Get, Route, Tags, Header, Example, Response, Path } from 'tsoa';
 import { HomeService } from './home.service.js';
 import { HomeData, PlanType } from './home.dto.js';
 import { TaskPriority, TaskStatus } from '../tasks/task.dto.js';
@@ -6,7 +6,7 @@ import { ApiResponse } from '../../common/responses/api.response.js';
 import { success } from '../../common/responses/response.js';
 import { SuccessCode } from '../../common/responses/success.code.js';
 
-@Route('home')
+@Route('workspaces/{workspaceId}/home')
 @Tags('Home')
 export class HomeController extends Controller {
   private homeService = new HomeService();
@@ -169,8 +169,9 @@ export class HomeController extends Controller {
   })
   public async getHome(
     @Header('Authorization') authorization: string | undefined,
+    @Path() workspaceId: string,
   ): Promise<ApiResponse<HomeData>> {
-    const data = await this.homeService.getHome(authorization);
+    const data = await this.homeService.getHome(authorization, workspaceId);
 
     return success(SuccessCode.OK.code, '홈 화면 조회 성공', data);
   }
