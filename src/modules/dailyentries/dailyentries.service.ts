@@ -568,11 +568,26 @@ export const searchDailyEntries = async (
     for (const task of tag.tasks) {
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
+
+        // 변환된 일지면 스냅샷 제목, 아니면 현재 task 제목
+        let displayTitle = task.title;
+        if (d.reflectionSnapshots.length > 0) {
+          for (const snap of d.reflectionSnapshots) {
+            const matched = snap.reflectionTaskSnapshots.find(
+              (ts) => ts.taskId === task.taskId
+            );
+            if (matched) {
+              displayTitle = matched.title;
+              break;
+            }
+          }
+        }
+
         diaries.push({
           dailyEntryId: d.dailyEntryId,
           workspaceId: d.workspaceId,
           entryDate: toDateStr(d.entryDate),
-          title: task.title,
+          title: displayTitle,
         });
       }
     }

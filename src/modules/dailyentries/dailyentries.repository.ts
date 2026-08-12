@@ -342,6 +342,7 @@ export const searchByTag = async (
       tasks: {
         where: { deletedAt: null },
         select: {
+          taskId: true,
           title: true,   // ← 추가 (그 태그 붙은 업무 제목)
           reflectionTasks: {
             where: { dailyEntry: { deletedAt: null } },
@@ -352,6 +353,14 @@ export const searchByTag = async (
                   workspaceId: true,
                   entryDate: true,
                   title: true,
+                  reflectionSnapshots: {
+                    where: { status: { in: ["TEMP", "SAVED"] } },
+                    select: {
+                      reflectionTaskSnapshots: {
+                        select: { taskId: true, title: true },
+                      },
+                    },
+                  },
                 },
               },
             },
