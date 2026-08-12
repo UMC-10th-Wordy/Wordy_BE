@@ -551,11 +551,24 @@ export const searchDailyEntries = async (
     title: s.title,
   }));
 
-  const journalResults = [...activeResults, ...snapshotResults].sort((a, b) =>
-    sort === "oldest"
-      ? a.entryDate.localeCompare(b.entryDate)
-      : b.entryDate.localeCompare(a.entryDate)
+  // taskId 중복 제거 (같은 업무는 최신 것 하나만)
+  // 재변환/업무 이동으로 이전 스냅샷이 남아 같은 taskId가 여러 날짜에 걸릴 수 있으므로,
+  // 변환(snapshot) 우선 + 최신(entryDate 내림차순)을 채택
+  const snapshotLatestFirst = [...snapshotResults].sort((a, b) =>
+    b.entryDate.localeCompare(a.entryDate)
   );
+  const seenJournal = new Set<string>();
+  const journalResults = [...snapshotLatestFirst, ...activeResults]
+    .filter((r) => {
+      if (seenJournal.has(r.taskId)) return false;
+      seenJournal.add(r.taskId);
+      return true;
+    })
+    .sort((a, b) =>
+      sort === "oldest"
+        ? a.entryDate.localeCompare(b.entryDate)
+        : b.entryDate.localeCompare(a.entryDate)
+    );
 
   // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
   // 변환 일지 = 스냅샷(reflectionTaskSnapshots) 소스, 미변환 일지 = 현재 Task(reflectionTasks) 소스
@@ -567,15 +580,20 @@ export const searchDailyEntries = async (
       entryDate: string;
       title: string;
     }[] = [];
-    const seen = new Set<string>(); // dailyEntryId:taskId 중복 방지
+    const seen = new Set<string>(); // taskId 중복 방지 (같은 업무는 최신 것 하나만)
 
     for (const task of tag.tasks) {
       // 소스2: 변환 일지 (스냅샷 기준) — 우선. 스냅샷 title 사용
-      for (const snap of task.reflectionTaskSnapshots) {
+      // 재변환/업무 이동으로 이전 스냅샷이 남아있는 경우, 같은 taskId가 여러 날짜에
+      // 걸릴 수 있으므로 최신(entryDate 내림차순) 스냅샷만 채택
+      const snapsLatestFirst = [...task.reflectionTaskSnapshots].sort((a, b) =>
+        b.reflectionSnapshot.dailyEntry.entryDate.getTime() -
+        a.reflectionSnapshot.dailyEntry.entryDate.getTime()
+      );
+      for (const snap of snapsLatestFirst) {
         const d = snap.reflectionSnapshot.dailyEntry;
-        const key = `${d.dailyEntryId}:${task.taskId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
+        if (seen.has(task.taskId)) continue;
+        seen.add(task.taskId);
         diaries.push({
           dailyEntryId: d.dailyEntryId,
           taskId: task.taskId,
@@ -588,9 +606,8 @@ export const searchDailyEntries = async (
       // 소스1: 미변환 일지 (현재 Task 기준). 현재 task.title 사용
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
-        const key = `${d.dailyEntryId}:${task.taskId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
+        if (seen.has(task.taskId)) continue;
+        seen.add(task.taskId);
         diaries.push({
           dailyEntryId: d.dailyEntryId,
           taskId: task.taskId,
