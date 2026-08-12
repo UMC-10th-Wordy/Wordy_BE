@@ -557,8 +557,8 @@ export const searchDailyEntries = async (
       : b.entryDate.localeCompare(a.entryDate)
   );
 
-  // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
-// tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
+  // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
+  // 변환 일지 = 스냅샷(reflectionTaskSnapshots) 소스, 미변환 일지 = 현재 Task(reflectionTasks) 소스
   const tagResults = tagEntries.map((tag) => {
     const diaries: {
       dailyEntryId: string;
@@ -567,56 +567,37 @@ export const searchDailyEntries = async (
       entryDate: string;
       title: string;
     }[] = [];
+    const seen = new Set<string>(); // dailyEntryId:taskId 중복 방지
 
     for (const task of tag.tasks) {
+      // 소스2: 변환 일지 (스냅샷 기준) — 우선. 스냅샷 title 사용
+      for (const snap of task.reflectionTaskSnapshots) {
+        const d = snap.reflectionSnapshot.dailyEntry;
+        const key = `${d.dailyEntryId}:${task.taskId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        diaries.push({
+          dailyEntryId: d.dailyEntryId,
+          taskId: task.taskId,
+          workspaceId: d.workspaceId,
+          entryDate: toDateStr(d.entryDate),
+          title: snap.title,
+        });
+      }
+
+      // 소스1: 미변환 일지 (현재 Task 기준). 현재 task.title 사용
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
-
-        // 유효 변환 = (TEMP|SAVED) && promptBResult != null  (다른 조회와 동일 기준)
-        const converted = d.reflectionSnapshots.some(
-          (snap) =>
-            (snap.status === "TEMP" || snap.status === "SAVED") &&
-            snap.promptBResult != null
-        );
-
-        if (converted) {
-          // 변환된 일지: 스냅샷에 박제된 업무만 노출 (변환 후 추가된 Task 제외)
-          let snapshotTitle: string | null = null;
-          for (const snap of d.reflectionSnapshots) {
-            if (
-              (snap.status !== "TEMP" && snap.status !== "SAVED") ||
-              snap.promptBResult == null
-            )
-              continue;
-            const matched = snap.reflectionTaskSnapshots.find(
-              (ts) => ts.taskId === task.taskId
-            );
-            if (matched) {
-              snapshotTitle = matched.title;
-              break;
-            }
-          }
-          
-          // 스냅샷에 없는 Task(변환 이후 생성)면 이 태그 결과에서 제외
-          if (snapshotTitle === null) continue;
-
-          diaries.push({
-            dailyEntryId: d.dailyEntryId,
-            taskId: task.taskId,
-            workspaceId: d.workspaceId,
-            entryDate: toDateStr(d.entryDate),
-            title: snapshotTitle,
-          });
-        } else {
-          // 미변환 일지: 현재 Task 그대로
-          diaries.push({
-            dailyEntryId: d.dailyEntryId,
-            taskId: task.taskId,
-            workspaceId: d.workspaceId,
-            entryDate: toDateStr(d.entryDate),
-            title: task.title,
-          });
-        }
+        const key = `${d.dailyEntryId}:${task.taskId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        diaries.push({
+          dailyEntryId: d.dailyEntryId,
+          taskId: task.taskId,
+          workspaceId: d.workspaceId,
+          entryDate: toDateStr(d.entryDate),
+          title: task.title,
+        });
       }
     }
 
