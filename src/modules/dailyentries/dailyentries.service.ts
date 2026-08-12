@@ -531,6 +531,7 @@ export const searchDailyEntries = async (
 // journalTab: 미변환 일지(현재 Task) + 변환된 일지(스냅샷) 합침
   const activeResults = titleEntries.map((rt) => ({
     dailyEntryId: rt.dailyEntry.dailyEntryId,
+    taskId: rt.task.taskId,
     workspaceId: rt.dailyEntry.workspaceId,
     entryDate: toDateStr(rt.dailyEntry.entryDate),
     tags: rt.task.tag
@@ -541,6 +542,7 @@ export const searchDailyEntries = async (
 
   const snapshotResults = snapshotEntries.map((s) => ({
     dailyEntryId: s.reflectionSnapshot.dailyEntry.dailyEntryId,
+    taskId: s.taskId,
     workspaceId: s.reflectionSnapshot.dailyEntry.workspaceId,
     entryDate: toDateStr(s.reflectionSnapshot.dailyEntry.entryDate),
     tags: s.task.tag
@@ -555,38 +557,46 @@ export const searchDailyEntries = async (
       : b.entryDate.localeCompare(a.entryDate)
   );
 
-  // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
-// tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
+  // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
+  // 변환 일지 = 스냅샷(reflectionTaskSnapshots) 소스, 미변환 일지 = 현재 Task(reflectionTasks) 소스
   const tagResults = tagEntries.map((tag) => {
     const diaries: {
       dailyEntryId: string;
+      taskId: string;
       workspaceId: string | null;
       entryDate: string;
       title: string;
     }[] = [];
+    const seen = new Set<string>(); // dailyEntryId:taskId 중복 방지
 
     for (const task of tag.tasks) {
-      for (const rt of task.reflectionTasks) {
-        const d = rt.dailyEntry;
-
-        // 변환된 일지면 스냅샷 제목, 아니면 현재 task 제목
-        let displayTitle = task.title;
-        for (const snap of d.reflectionSnapshots) {
-          if (snap.status !== "TEMP" && snap.status !== "SAVED") continue;
-          const matched = snap.reflectionTaskSnapshots.find(
-            (ts) => ts.taskId === task.taskId
-          );
-          if (matched) {
-            displayTitle = matched.title;
-            break;
-          }
-        }
-
+      // 소스2: 변환 일지 (스냅샷 기준) — 우선. 스냅샷 title 사용
+      for (const snap of task.reflectionTaskSnapshots) {
+        const d = snap.reflectionSnapshot.dailyEntry;
+        const key = `${d.dailyEntryId}:${task.taskId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
         diaries.push({
           dailyEntryId: d.dailyEntryId,
+          taskId: task.taskId,
           workspaceId: d.workspaceId,
           entryDate: toDateStr(d.entryDate),
-          title: displayTitle,
+          title: snap.title,
+        });
+      }
+
+      // 소스1: 미변환 일지 (현재 Task 기준). 현재 task.title 사용
+      for (const rt of task.reflectionTasks) {
+        const d = rt.dailyEntry;
+        const key = `${d.dailyEntryId}:${task.taskId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        diaries.push({
+          dailyEntryId: d.dailyEntryId,
+          taskId: task.taskId,
+          workspaceId: d.workspaceId,
+          entryDate: toDateStr(d.entryDate),
+          title: task.title,
         });
       }
     }

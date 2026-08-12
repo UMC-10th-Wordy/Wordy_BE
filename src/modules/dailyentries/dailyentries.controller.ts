@@ -142,6 +142,7 @@ export class DailyEntriesController extends Controller {
       results: [
         {
           dailyEntryId: "550e8400-e29b-41d4-a716-446655440000",
+          taskId: "550e8400-e29b-41d4-a716-446655440001",
           workspaceId: "a3c59e7f-956d-11f1-871e-42010ab20002",  // 추가
           entryDate: "2026-06-21",
           tags: [{ tagName: "온보딩 리뉴얼", color: "#10B981" }],
@@ -158,6 +159,7 @@ export class DailyEntriesController extends Controller {
       diaries: [
         {
           dailyEntryId: "660e8400-e29b-41d4-a716-446655440001",
+          taskId: "660e8400-e29b-41d4-a716-446655440002",
           workspaceId: "a3c59e7f-956d-11f1-871e-42010ab20002",
           entryDate: "2026-08-09",
           title: "온보딩 입력 화면 개선",
