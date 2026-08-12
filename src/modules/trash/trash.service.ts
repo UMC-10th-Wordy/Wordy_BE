@@ -17,6 +17,9 @@ const MAX_SIZE = 50;
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { verifyAccessToken } from "../../auth.config.js";
+import { WorkspaceRepository } from "../workspace/workspace.repository.js";
+
+const workspaceRepository = new WorkspaceRepository();
 
 class UnauthorizedError extends ApiError {
   constructor() {
@@ -61,6 +64,18 @@ export const getTrashedDailyEntries = async (
 ): Promise<TrashDailyEntryListResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
 
+  const workspace = await workspaceRepository.findByIdAndUserId(
+    workspaceId,
+    userId
+  );
+  if (!workspace) {
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "워크스페이스를 찾을 수 없습니다."
+    );
+  }
+
   const safePage = Math.max(1, Math.floor(page));
   const safeSize = Math.min(MAX_SIZE, Math.max(1, Math.floor(size)));
   const skip = (safePage - 1) * safeSize;
@@ -89,11 +104,12 @@ export const getTrashedDailyEntries = async (
 
 export const getTrashedDailyEntryDetail = async (
   authorization: string | undefined,
+  workspaceId: string,
   dailyEntryId: string
 ): Promise<DailyEntriesDetailResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
 
-  const found = await findTrashedEntryById(userId, dailyEntryId);
+  const found = await findTrashedEntryById(userId, workspaceId, dailyEntryId);
 
   if (!found) {
     throw new ApiError(
@@ -113,11 +129,12 @@ export const getTrashedDailyEntryDetail = async (
 
 export const restoreDailyEntry = async (
   authorization: string | undefined,
+  workspaceId: string,
   dailyEntryId: string
 ): Promise<{ dailyEntryId: string }> => {
   const userId = getUserIdFromAuthorization(authorization);
 
-  const found = await findTrashedEntryById(userId, dailyEntryId);
+  const found = await findTrashedEntryById(userId, workspaceId, dailyEntryId);
   if (!found) {
     throw new ApiError(
       ErrorCode.NOT_FOUND.status,
@@ -133,11 +150,12 @@ export const restoreDailyEntry = async (
 // 영구 삭제
 export const deleteDailyEntryPermanently = async (
   authorization: string | undefined,
+  workspaceId: string,
   dailyEntryId: string
 ): Promise<{ dailyEntryId: string }> => {
   const userId = getUserIdFromAuthorization(authorization);
 
-  const found = await findTrashedEntryById(userId, dailyEntryId);
+  const found = await findTrashedEntryById(userId, workspaceId, dailyEntryId);
   if (!found) {
     throw new ApiError(
       ErrorCode.NOT_FOUND.status,

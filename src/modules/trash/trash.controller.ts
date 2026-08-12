@@ -25,7 +25,7 @@ import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
 
-@Route("trash/daily-entries")
+@Route("workspaces/{workspaceId}/trash/daily-entries")
 @Tags("Trash")
 export class TrashController extends Controller {
   /**
@@ -34,7 +34,7 @@ export class TrashController extends Controller {
    * @param page 페이지 번호 (1부터 시작, 기본값 1)
    * @param size 페이지당 항목 수 (기본값 10, 최대 50)
    */
-  @Get("workspace/{workspaceId}")
+  @Get()
   @Example<ApiResponse<TrashDailyEntryListResponse>>({
     success: true,
     code: "S200",
@@ -108,10 +108,12 @@ export class TrashController extends Controller {
   })
   public async getDetail(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<DailyEntriesDetailResponse>> {
     const data = await getTrashedDailyEntryDetail(
       authorization,
+      workspaceId,
       dailyEntryId
     );
 
@@ -136,9 +138,10 @@ export class TrashController extends Controller {
   })
   public async restore(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<{ dailyEntryId: string }>> {
-    const data = await restoreDailyEntry(authorization, dailyEntryId);
+    const data = await restoreDailyEntry(authorization, workspaceId, dailyEntryId);
     return success(
       SuccessCode.RESTORED.code,
       SuccessCode.RESTORED.message,
@@ -160,9 +163,10 @@ export class TrashController extends Controller {
   })
   public async deletePermanently(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<{ dailyEntryId: string }>> {
-    const data = await deleteDailyEntryPermanently(authorization, dailyEntryId);
+    const data = await deleteDailyEntryPermanently(authorization, workspaceId, dailyEntryId);
     return success(
       SuccessCode.DELETED.code,
       SuccessCode.DELETED.message,

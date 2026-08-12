@@ -28,10 +28,11 @@ export const countTrashedEntries = async (userId: string, workspaceId: string) =
 
 export const findTrashedEntryById = async (
   userId: string,
+  workspaceId: string,
   dailyEntryId: string
 ) => {
   return prisma.dailyEntry.findFirst({
-    where: { dailyEntryId, userId, deletedAt: { not: null } },
+    where: { dailyEntryId, userId, workspaceId, deletedAt: { not: null } },
     select: {
       dailyEntryId: true,
       workspaceId: true,
