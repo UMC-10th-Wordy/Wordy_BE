@@ -387,6 +387,7 @@ export class DashboardService {
         tagId: kpi.tagId,
         kpiName: kpi.kpiName,
         progress: kpi.progress,
+        relatedAchievement: kpi.relatedAchievement,
       })),
       tagAnalyses: Array.from(usedTags.values()).map((tag) => {
         const analysis = dashboardResult.tagAnalyses.find(
