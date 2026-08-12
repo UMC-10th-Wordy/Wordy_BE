@@ -572,14 +572,22 @@ export const searchDailyEntries = async (
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
 
-        // reflectionSnapshots는 repository에서 이미 status TEMP/SAVED만 걸러서 옴
-        // → 하나라도 있으면 "변환된 일지"
-        const converted = d.reflectionSnapshots.length > 0;
+        // 유효 변환 = (TEMP|SAVED) && promptBResult != null  (다른 조회와 동일 기준)
+        const converted = d.reflectionSnapshots.some(
+          (snap) =>
+            (snap.status === "TEMP" || snap.status === "SAVED") &&
+            snap.promptBResult != null
+        );
 
         if (converted) {
           // 변환된 일지: 스냅샷에 박제된 업무만 노출 (변환 후 추가된 Task 제외)
           let snapshotTitle: string | null = null;
           for (const snap of d.reflectionSnapshots) {
+            if (
+              (snap.status !== "TEMP" && snap.status !== "SAVED") ||
+              snap.promptBResult == null
+            )
+              continue;
             const matched = snap.reflectionTaskSnapshots.find(
               (ts) => ts.taskId === task.taskId
             );
@@ -588,6 +596,7 @@ export const searchDailyEntries = async (
               break;
             }
           }
+          
           // 스냅샷에 없는 Task(변환 이후 생성)면 이 태그 결과에서 제외
           if (snapshotTitle === null) continue;
 
