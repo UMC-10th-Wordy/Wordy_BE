@@ -571,15 +571,14 @@ export const searchDailyEntries = async (
 
         // 변환된 일지면 스냅샷 제목, 아니면 현재 task 제목
         let displayTitle = task.title;
-        if (d.reflectionSnapshots.length > 0) {
-          for (const snap of d.reflectionSnapshots) {
-            const matched = snap.reflectionTaskSnapshots.find(
-              (ts) => ts.taskId === task.taskId
-            );
-            if (matched) {
-              displayTitle = matched.title;
-              break;
-            }
+        for (const snap of d.reflectionSnapshots) {
+          if (snap.status !== "TEMP" && snap.status !== "SAVED") continue;
+          const matched = snap.reflectionTaskSnapshots.find(
+            (ts) => ts.taskId === task.taskId
+          );
+          if (matched) {
+            displayTitle = matched.title;
+            break;
           }
         }
 

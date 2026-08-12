@@ -356,6 +356,7 @@ export const searchByTag = async (
                   reflectionSnapshots: {
                     where: { status: { in: ["TEMP", "SAVED"] } },
                     select: {
+                      status: true,
                       reflectionTaskSnapshots: {
                         select: { taskId: true, title: true },
                       },
