@@ -87,7 +87,7 @@ export class HomeService {
       isConnected: this.isWithinStreak(day.date, streakStartStr, streakEndStr),
     }));
 
-    const recentDates = meaningfulEntryDistinctDates.slice(0, 2);
+    const recentDates = recordDatesDesc.slice(0, 2);
     const recentTaskRows = recentDates.length
       ? await this.homeRepository.findTasksForDates(userId, workspaceId, recentDates)
       : [];
