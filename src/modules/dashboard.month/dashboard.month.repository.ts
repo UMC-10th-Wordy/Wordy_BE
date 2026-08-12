@@ -36,8 +36,7 @@ export const findWeeklyDashboards = async (
 // 월간 대시보드 목록 조회
 export const findMonthlyDashboards = async (userId: string, workspaceId: string,) => {
   return prisma.dashboard.findMany({
-    where: { userId, workspaceId, deletedAt: null },
-    // TODO: type: "MONTHLY" 조건 추가
+    where: { userId, workspaceId, deletedAt: null, type: "MONTHLY" },
     orderBy: { startDate: "desc" },
   });
 };
@@ -114,6 +113,7 @@ export const createMonthlyDashboard = async (data: {
     data: {
       userId: data.userId,
       workspaceId: data.workspaceId,
+      type: "MONTHLY",
       startDate: data.startDate,
       endDate: data.endDate,
       summary: data.summary,
@@ -172,12 +172,14 @@ export const updateMonthlyReflection = async (
 };
 export const softDeleteMonthlyDashboardByPeriod = async (
   userId: string,
+  workspaceId: string,
   startDate: Date,
   endDate: Date
 ) => {
   return prisma.dashboard.updateMany({
     where: {
       userId,
+      workspaceId,
       startDate,
       endDate,
       type: "MONTHLY",
