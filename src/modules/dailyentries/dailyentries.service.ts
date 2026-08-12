@@ -10,6 +10,7 @@ import {
   searchByTitle,
   searchByTag,
   countMatchingTags,
+  searchBySnapshotTitle,
 } from "./dailyentries.repository.js";
 
 import type { DailyEntryDetailScope } from "./dailyentries.repository.js";
@@ -520,14 +521,15 @@ export const searchDailyEntries = async (
     };
   }
 
-  const [titleEntries, tagEntries, tagCount] = await Promise.all([
+  const [titleEntries, snapshotEntries,tagEntries, tagCount] = await Promise.all([
     searchByTitle(userId, workspaceId, trimmed, sort),
+    searchBySnapshotTitle(userId, workspaceId, trimmed, sort),
     searchByTag(userId, workspaceId, trimmed, sort),
     countMatchingTags(userId, workspaceId, trimmed),
   ]);
 
-  // journalTab: 매칭된 업무(Task) 단위
-  const journalResults = titleEntries.map((rt) => ({
+// journalTab: 미변환 일지(현재 Task) + 변환된 일지(스냅샷) 합침
+  const activeResults = titleEntries.map((rt) => ({
     dailyEntryId: rt.dailyEntry.dailyEntryId,
     workspaceId: rt.dailyEntry.workspaceId,
     entryDate: toDateStr(rt.dailyEntry.entryDate),
@@ -536,6 +538,22 @@ export const searchDailyEntries = async (
       : [],
     title: rt.task.title,
   }));
+
+  const snapshotResults = snapshotEntries.map((s) => ({
+    dailyEntryId: s.reflectionSnapshot.dailyEntry.dailyEntryId,
+    workspaceId: s.reflectionSnapshot.dailyEntry.workspaceId,
+    entryDate: toDateStr(s.reflectionSnapshot.dailyEntry.entryDate),
+    tags: s.task.tag
+      ? pickTags([{ tagName: s.task.tag.tagName, color: s.task.tag.color }])
+      : [],
+    title: s.title,
+  }));
+
+  const journalResults = [...activeResults, ...snapshotResults].sort((a, b) =>
+    sort === "oldest"
+      ? a.entryDate.localeCompare(b.entryDate)
+      : b.entryDate.localeCompare(a.entryDate)
+  );
 
   // tagTab: 기존 일지 단위 (2단계에서 태그 단위로 변경 예정)
 // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
@@ -550,11 +568,25 @@ export const searchDailyEntries = async (
     for (const task of tag.tasks) {
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
+
+        // 변환된 일지면 스냅샷 제목, 아니면 현재 task 제목
+        let displayTitle = task.title;
+        for (const snap of d.reflectionSnapshots) {
+          if (snap.status !== "TEMP" && snap.status !== "SAVED") continue;
+          const matched = snap.reflectionTaskSnapshots.find(
+            (ts) => ts.taskId === task.taskId
+          );
+          if (matched) {
+            displayTitle = matched.title;
+            break;
+          }
+        }
+
         diaries.push({
           dailyEntryId: d.dailyEntryId,
           workspaceId: d.workspaceId,
           entryDate: toDateStr(d.entryDate),
-          title: task.title,
+          title: displayTitle,
         });
       }
     }

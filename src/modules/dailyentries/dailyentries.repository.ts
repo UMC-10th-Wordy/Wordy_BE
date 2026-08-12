@@ -295,18 +295,22 @@ export const searchByTitle = async (
 ) => {
   return prisma.reflectionTask.findMany({
     where: {
-      dailyEntry: { userId, workspaceId, deletedAt: null },
+      dailyEntry: {
+        userId,
+        workspaceId,
+        deletedAt: null,
+        // 변환 안 된 일지만 (유효 스냅샷 없음)
+        reflectionSnapshots: {
+          none: {
+            status: { in: ["TEMP", "SAVED"] },
+          },
+        },
+      },
       task: { deletedAt: null, title: { contains: keyword } },
     },
     orderBy: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
     select: {
-      dailyEntry: {
-        select: {
-          dailyEntryId: true,
-          workspaceId: true,
-          entryDate: true,
-        },
-      },
+      dailyEntry: { select: { dailyEntryId: true, workspaceId: true, entryDate: true } },
       task: {
         select: {
           title: true,
@@ -338,6 +342,7 @@ export const searchByTag = async (
       tasks: {
         where: { deletedAt: null },
         select: {
+          taskId: true,
           title: true,   // ← 추가 (그 태그 붙은 업무 제목)
           reflectionTasks: {
             where: { dailyEntry: { deletedAt: null } },
@@ -348,10 +353,54 @@ export const searchByTag = async (
                   workspaceId: true,
                   entryDate: true,
                   title: true,
+                  reflectionSnapshots: {
+                    where: { status: { in: ["TEMP", "SAVED"] } },
+                    select: {
+                      status: true,
+                      reflectionTaskSnapshots: {
+                        select: { taskId: true, title: true },
+                      },
+                    },
+                  },
                 },
               },
             },
           },
+        },
+      },
+    },
+  });
+};
+
+export const searchBySnapshotTitle = async (
+  userId: string,
+  workspaceId: string,
+  keyword: string,
+  sort: "latest" | "oldest"
+) => {
+  return prisma.reflectionTaskSnapshot.findMany({
+    where: {
+      title: { contains: keyword },
+      reflectionSnapshot: {
+        status: { in: ["TEMP", "SAVED"] },
+        dailyEntry: { userId, workspaceId, deletedAt: null },
+      },
+    },
+    orderBy: {
+      reflectionSnapshot: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
+    },
+    select: {
+      title: true,
+      reflectionSnapshot: {
+        select: {
+          dailyEntry: {
+            select: { dailyEntryId: true, workspaceId: true, entryDate: true },
+          },
+        },
+      },
+      task: {
+        select: {
+          tag: { select: { tagName: true, color: true } },
         },
       },
     },
