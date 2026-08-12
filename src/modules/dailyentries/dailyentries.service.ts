@@ -551,11 +551,22 @@ export const searchDailyEntries = async (
     title: s.title,
   }));
 
-  const journalResults = [...activeResults, ...snapshotResults].sort((a, b) =>
-    sort === "oldest"
-      ? a.entryDate.localeCompare(b.entryDate)
-      : b.entryDate.localeCompare(a.entryDate)
-  );
+  // (dailyEntryId + taskId) 중복 제거
+  // 같은 업무가 여러 스냅샷/양쪽 소스(active+snapshot)에서 잡히는 경우 방지
+  // 변환(snapshot) 우선: 먼저 넣어 dedup에서 살아남게 함
+  const seenJournal = new Set<string>();
+  const journalResults = [...snapshotResults, ...activeResults]
+    .filter((r) => {
+      const key = `${r.dailyEntryId}:${r.taskId}`;
+      if (seenJournal.has(key)) return false;
+      seenJournal.add(key);
+      return true;
+    })
+    .sort((a, b) =>
+      sort === "oldest"
+        ? a.entryDate.localeCompare(b.entryDate)
+        : b.entryDate.localeCompare(a.entryDate)
+    );
 
   // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
   // 변환 일지 = 스냅샷(reflectionTaskSnapshots) 소스, 미변환 일지 = 현재 Task(reflectionTasks) 소스

@@ -4,7 +4,6 @@ import {
   findMonthlyDashboardById,
   existsDashboard,
   createMonthlyReflection,
-  createMonthlyDashboard,
   findMonthlyReflectionById,   // 추가
   updateMonthlyReflection,     // 추가
 } from "./dashboard.month.repository.js";
@@ -130,7 +129,13 @@ export const getMonthlyDashboardDetail = async (
       periodStart: t.periodStart ? toDateStr(t.periodStart) : null,
       periodEnd: t.periodEnd ? toDateStr(t.periodEnd) : null,
     })),
-    weeklyReflections: d.weeklyReflections,
+    weeklyReflections: d.weeklyReflections.map((r: typeof d.weeklyReflections[number]) => ({
+      weeklyReflectionId: r.weeklyReflectionId,
+      workSummary: r.workSummary,
+      resourcesUsed: r.resourcesUsed,
+      learning: r.learning,
+      createdAt: r.createdAt.toISOString(),
+    })),
     performances: d.performances.map((p: typeof d.performances[number]) => ({
       dailyEntryId: p.dailyPerformance.dailyEntryId,   //추가
       achievementRate: p.dailyPerformance.achievementRate,
@@ -197,21 +202,8 @@ export const createMonthlyDashboardWithAI = async (
     endDate,
   });
 
-  // 3. DB 저장 (위에서 뽑은 userId 사용)
-  const saved = await createMonthlyDashboard({
-    userId,
-    workspaceId,
-    startDate: new Date(startDate),
-    endDate: new Date(endDate),
-    summary: aiResult.summary,
-    journalDays: aiResult.performanceCount,
-    performanceCount: aiResult.performanceCount,
-    tagCount: aiResult.tagAnalyses.length,
-    kpis: aiResult.kpis,
-    tagAnalyses: aiResult.tagAnalyses,
-  });
-
-  return { dashboardId: saved.dashboardId };
+ // AI service가 이미 대시보드 생성/저장(재생성 시 update)하므로 여기서 중복 저장하지 않음
+  return { dashboardId: aiResult.dashboardId };
 };
 
 // 월간 회고 수정

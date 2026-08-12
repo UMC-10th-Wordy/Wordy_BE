@@ -176,14 +176,20 @@ export class TagAnalysis {
 }
 
 export class WeeklyReflection {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  weeklyReflectionId!: string;
+
   @Example("이번 주 주요 업무 진행 내용 정리")
   workSummary!: string | null;
 
   @Example("개발 시간 30시간 사용")
   resourcesUsed!: string | null;
 
-  @Example("새로운 기술과 설계 방식 학습")
+  @Example("이번 주 배운 점")
   learning!: string | null;
+
+  @Example("2026-08-13T10:00:00.000Z")
+  createdAt!: string;
 }
 
 // 주간 회고 작성 요청

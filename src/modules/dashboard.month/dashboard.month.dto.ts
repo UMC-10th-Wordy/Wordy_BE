@@ -197,6 +197,9 @@ export class MonthlyTagAnalysis {
 
 
 export class MonthlyReflectionItem {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  weeklyReflectionId!: string;
+
   @Example("이번 달 주요 개발 업무 정리")
   workSummary!: string | null;
 
@@ -205,6 +208,9 @@ export class MonthlyReflectionItem {
 
   @Example("대규모 데이터 처리 경험")
   learning!: string | null;
+
+  @Example("2026-08-13T10:00:00.000Z")
+  createdAt!: string;
 }
 
 
