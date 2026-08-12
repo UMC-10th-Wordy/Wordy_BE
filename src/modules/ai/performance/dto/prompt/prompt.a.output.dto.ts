@@ -15,6 +15,7 @@ export interface StructuredTaskDto {
 }
 
 export interface SupplementQuestionDto {
+  taskId: string;
   question: string;
   reason: string;
 }

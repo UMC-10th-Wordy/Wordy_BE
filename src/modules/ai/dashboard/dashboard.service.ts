@@ -123,7 +123,25 @@ export class DashboardService {
         },
       });
 
-    // 실제 사용된 태그 + 태그별 task 수집
+      const tasks = await this.prisma.task.findMany({
+        where: {
+          userId,
+          workspaceId,
+          taskDate: {
+            gte: startDate,
+            lt: endDate,
+          },
+          deletedAt: null,
+          tagId: {
+            not: null,
+          },
+        },
+        include: {
+          tag: true,
+        },
+      });
+
+    // 해당 기간에 실제 사용된 Task 기준으로 태그 및 Task 수집
     const usedTags = new Map<
       string,
       {
@@ -139,29 +157,27 @@ export class DashboardService {
 
     const tagTaskCountMap = new Map<string, number>();
 
-    for (const performance of performances) {
-      for (const item of performance.performanceItems) {
-        const tag = item.task.tag;
+    for (const task of tasks) {
+      const tag = task.tag;
 
-        if (!tag) continue;
+      if (!tag) continue;
 
-        // 실제 사용된 태그만 저장
-        usedTags.set(tag.tagId, {
-          tagId: tag.tagId,
-          tagName: tag.tagName,
-          color: tag.color,
-          projectName: tag.projectName,
-          projectPurpose: tag.projectPurpose,
-          expectedOutcome: tag.expectedOutcome,
-          kpis: tag.kpis,
-        });
+      // 실제 사용된 태그 저장
+      usedTags.set(tag.tagId, {
+        tagId: tag.tagId,
+        tagName: tag.tagName,
+        color: tag.color,
+        projectName: tag.projectName,
+        projectPurpose: tag.projectPurpose,
+        expectedOutcome: tag.expectedOutcome,
+        kpis: tag.kpis,
+      });
 
-        // 태그별 실제 task 수
-        tagTaskCountMap.set(
-          tag.tagId,
-          (tagTaskCountMap.get(tag.tagId) ?? 0) + 1,
-        );
-      }
+      // 태그별 실제 Task 수
+      tagTaskCountMap.set(
+        tag.tagId,
+        (tagTaskCountMap.get(tag.tagId) ?? 0) + 1,
+      );
     }
 
     // 기존 대시보드 존재 시 하위데이터 삭제

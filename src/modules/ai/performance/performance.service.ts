@@ -54,6 +54,7 @@ export class PerformanceService {
   private async findDailyEntryTasks(
     dailyEntryId: string,
     userId: string,
+    workspaceId: string,
   ): Promise<TaskDto[]> {
     const reflectionTasks =
       await this.prisma.reflectionTask.findMany({
@@ -61,6 +62,7 @@ export class PerformanceService {
           dailyEntryId,
           task: {
             userId,
+            workspaceId,
             deletedAt: null,
           },
         },
@@ -152,6 +154,118 @@ export class PerformanceService {
     }
   }
 
+  private async findLatestSavedSnapshot(
+    dailyEntryId: string,
+    userId: string,
+    workspaceId: string,
+  ) {
+    return this.prisma.reflectionSnapshot.findFirst({
+      where: {
+        dailyEntryId,
+        dailyEntry: {
+          userId,
+          workspaceId,
+          deletedAt: null,
+        },
+        status: "SAVED",
+      },
+      include: {
+        reflectionTaskSnapshots: {
+          include: {
+            resultSnapshots: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  private findChangedTasks(
+    currentTasks: TaskDto[],
+    previousSnapshot: {
+      reflectionTaskSnapshots: Array<{
+        taskId: string;
+        title: string;
+        priority: PrismaTaskPriority;
+        memo: string | null;
+        status: PrismaTaskStatus;
+        completedAt: Date | null;
+        resultSnapshots: Array<{
+          content: string;
+        }>;
+      }>;
+    } | null,
+  ): TaskDto[] {
+    // 최초 변환
+    if (!previousSnapshot) {
+      return currentTasks;
+    }
+
+    const previousTaskMap = new Map(
+      previousSnapshot.reflectionTaskSnapshots.map((task) => [
+        task.taskId,
+        task,
+      ]),
+    );
+
+    return currentTasks.filter((currentTask) => {
+      const previousTask = previousTaskMap.get(currentTask.taskId);
+
+      // 새로 추가된 업무
+      if (!previousTask) {
+        return true;
+      }
+
+      // title 변경
+      if (currentTask.title !== previousTask.title) {
+        return true;
+      }
+
+      // memo 변경
+      if ((currentTask.memo ?? null) !== previousTask.memo) {
+        return true;
+      }
+
+      // priority 변경
+      if (currentTask.priority !== this.toTaskPriority(previousTask.priority)) {
+        return true;
+      }
+
+      // status 변경
+      if (currentTask.status !== this.toTaskStatus(previousTask.status)) {
+        return true;
+      }
+
+      // completedAt 변경
+      const currentCompletedAt = currentTask.completedAt
+        ? new Date(currentTask.completedAt).getTime()
+        : null;
+
+      const previousCompletedAt = previousTask.completedAt
+        ? previousTask.completedAt.getTime()
+        : null;
+
+      if (currentCompletedAt !== previousCompletedAt) {
+        return true;
+      }
+
+      // taskResult.content 변경
+      const currentResultContent =
+        currentTask.taskResult?.content ?? null;
+
+      const previousResultContent =
+        previousTask.resultSnapshots[0]?.content ?? null;
+
+      if (currentResultContent !== previousResultContent) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
   // 첫 번째 호출
   async generatePerformancePreview(
     authorization: string | undefined,
@@ -189,11 +303,26 @@ export class PerformanceService {
       await this.findDailyEntryTasks(
         request.dailyEntryId,
         userId,
+        workspaceId,
       );
+
+    const previousSnapshot =
+      await this.findLatestSavedSnapshot(
+        request.dailyEntryId,
+        userId,
+        workspaceId,
+      );
+
+    const questionTargetTasks =
+        this.findChangedTasks(
+          serverTasks,
+          previousSnapshot,
+        );
 
     const promptARequest =
       this.promptManager.buildPromptA({
         tasks: serverTasks,
+        questionTargetTasks,
         reflection: request.reflectionContent,
         projectTag: request.projectTag,
         userJob: request.userJob,
@@ -227,17 +356,27 @@ export class PerformanceService {
     );
 
     // 보충 질문 판단
-    if (
-      this.ruleEngine.needFollowUpQuestion(
-        promptAResult,
-      )
-    ) {
+    const targetTaskIds = new Set(
+      questionTargetTasks.map(
+        (task) => task.taskId,
+      ),
+    );
+
+    const validFollowUpQuestions =
+      promptAResult.followUpQuestions.filter(
+        (question) =>
+          targetTaskIds.has(question.taskId),
+      );
+
+    if (validFollowUpQuestions.length > 0) {
+
       const {
         reflectionSnapshotId,
         supplementQuestions,
       } = await this.saveQuestionSnapshot(
         request.dailyEntryId,
         promptAResult,
+        questionTargetTasks,
       );
 
       return {
@@ -284,14 +423,29 @@ export class PerformanceService {
   private async saveQuestionSnapshot(
     dailyEntryId: string,
     promptAResult: PromptAOutputDto,
+    questionTargetTasks: TaskDto[],
   ) {
     return await this.prisma.$transaction(async (tx) => {
+      const targetTaskIds = new Set(
+        questionTargetTasks.map((task) => task.taskId),
+      );
+
+      const validQuestions =
+        promptAResult.followUpQuestions.filter(
+          (question) =>
+            targetTaskIds.has(question.taskId),
+        );
 
       const snapshot =
         await tx.reflectionSnapshot.create({
           data: {
             dailyEntryId,
-            promptAResult: JSON.parse(JSON.stringify(promptAResult)),
+            promptAResult: JSON.parse(
+              JSON.stringify({
+                ...promptAResult,
+                followUpQuestions: validQuestions,
+              }),
+            ),
             status: "TEMP",
           },
         });
@@ -305,13 +459,14 @@ export class PerformanceService {
 
         for (
           const [index, question]
-          of promptAResult.followUpQuestions.entries()
+          of validQuestions.entries()
         ) {
 
           const createdQuestion =
             await tx.aIQuestion.create({
               data:{
                 reflectionSnapshotId: snapshot.reflectionSnapshotId,
+                taskId: question.taskId,
                 questionContent: question.question,
                 reason: question.reason ?? null,
                 order:index + 1,
@@ -320,6 +475,7 @@ export class PerformanceService {
 
           supplementQuestions.push({
             aiQuestionId: createdQuestion.aiQuestionId,
+            taskId: question.taskId,
             question: createdQuestion.questionContent,
             reason: createdQuestion.reason ?? "",
           });
@@ -353,6 +509,23 @@ export class PerformanceService {
         },
       });
 
+    const dailyEntry = await this.prisma.dailyEntry.findFirst({
+      where: {
+        dailyEntryId: request.originalRequest.dailyEntryId,
+        userId,
+        workspaceId,
+        deletedAt: null,
+      },
+    });
+
+    if (!dailyEntry) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "업무일지를 찾을 수 없습니다.",
+      );
+    }
+
     if (!snapshot) {
       throw new ApiError(
         ErrorCode.NOT_FOUND.status,
@@ -360,22 +533,118 @@ export class PerformanceService {
         "성과 데이터를 찾을 수 없습니다.",
       );
     }
-    // AIQuestion 상태 업데이트
-    const questionStatus =
-      request.answers.length > 0  // 프론트에서 답변 건너뛰기 시 빈 배열을 보냄
-        ? AIQuestionStatus.ANSWERED
-        : AIQuestionStatus.SKIPPED;
 
-    if (request.answers.length > 0) {
-      for (const answer of request.answers) {
-        const question =
-          await this.prisma.aIQuestion.findFirst({
-            where: {
-              aiQuestionId: answer.aiQuestionId,
-              reflectionSnapshotId:
-                request.reflectionSnapshotId,
-            },
-          });
+    if (
+      snapshot.dailyEntryId !==
+      request.originalRequest.dailyEntryId
+    ) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "업무일지 정보가 일치하지 않습니다.",
+      );
+    }
+
+    if (snapshot.status !== "TEMP") {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "질문 답변을 처리할 수 없는 상태입니다.",
+      );
+    }
+    // AIQuestion 상태 업데이트
+    const questions = await this.prisma.aIQuestion.findMany({
+      where: {
+        reflectionSnapshotId: request.reflectionSnapshotId,
+      },
+      select: {
+        aiQuestionId: true,
+        taskId: true,
+        questionContent: true,
+        status: true,
+      },
+    });
+
+    const answerMap = new Map(
+      request.answers.map((answer) => [
+        answer.aiQuestionId,
+        answer,
+      ]),
+    );
+
+    for (const answer of request.answers) {
+      const question = questions.find(
+        (question) =>
+          question.aiQuestionId === answer.aiQuestionId,
+      );
+
+      if (!question) {
+        throw new ApiError(
+          ErrorCode.NOT_FOUND.status,
+          ErrorCode.NOT_FOUND.code,
+          "질문 데이터를 찾을 수 없습니다.",
+        );
+      }
+    }
+
+    const unansweredQuestions = questions.filter(
+      (question) => !answerMap.has(question.aiQuestionId),
+    );
+
+    if (unansweredQuestions.length > 0) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "모든 질문에 답변하거나 건너뛰어야 합니다.",
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const question of questions) {
+        const answer = answerMap.get(question.aiQuestionId)!;
+
+        await tx.aIQuestion.update({
+          where: {
+            aiQuestionId: question.aiQuestionId,
+          },
+          data: {
+            answer:
+              answer.status === "ANSWERED"
+                ? answer.answer
+                : null,
+            status:
+              answer.status === "ANSWERED"
+                ? AIQuestionStatus.ANSWERED
+                : AIQuestionStatus.SKIPPED,
+          },
+        });
+      }
+    });
+
+    const serverTasks =
+      await this.findDailyEntryTasks(
+        request.originalRequest.dailyEntryId,
+        userId,
+        workspaceId,
+      );
+
+    const targetTaskIds = new Set(
+      questions
+        .map((question) => question.taskId)
+        .filter((taskId): taskId is string => taskId !== null),
+    );
+
+    const questionTargetTasks = serverTasks.filter((task) =>
+      targetTaskIds.has(task.taskId),
+    );
+
+    const supplementAnswers = request.answers
+      .filter((answer) => answer.status === "ANSWERED")
+      .map((answer) => {
+        const question = questions.find(
+          (question) =>
+            question.aiQuestionId === answer.aiQuestionId,
+        );
 
         if (!question) {
           throw new ApiError(
@@ -385,42 +654,31 @@ export class PerformanceService {
           );
         }
 
-        await this.prisma.aIQuestion.update({
-          where: {
-            aiQuestionId: question.aiQuestionId,
-          },
-          data: {
-            answer: answer.answer,
-            status: questionStatus,
-          },
-        });
-      }
-    } else {
-      await this.prisma.aIQuestion.updateMany({
-        where: {
-          reflectionSnapshotId: snapshot.reflectionSnapshotId,
-        },
-        data: {
-          status: questionStatus,
-        },
-      });
-    }
+        if (!question.taskId) {
+          throw new ApiError(
+            ErrorCode.BAD_REQUEST.status,
+            ErrorCode.BAD_REQUEST.code,
+            "업무와 연결되지 않은 질문입니다.",
+          );
+        }
 
-    const serverTasks =
-    await this.findDailyEntryTasks(
-      request.originalRequest.dailyEntryId,
-      userId,
-    );
+        return {
+          taskId: question.taskId,
+          question: question.questionContent,
+          answer: answer.answer!,
+        };
+      });
 
     // 답변 포함해서 Prompt A 재호출
     const promptARequest =
       this.promptManager.buildPromptA({
         tasks: serverTasks,
+        questionTargetTasks,
         reflection: request.originalRequest.reflectionContent,
         projectTag: request.originalRequest.projectTag,
         userJob: request.originalRequest.userJob,
         yearsOfService: request.originalRequest.yearsOfService,
-        supplementAnswers: request.answers,
+        supplementAnswers,
       });
 
     const promptAResponse =
@@ -447,22 +705,15 @@ export class PerformanceService {
       promptAResult,
     );
 
-    const dailyEntry = await this.prisma.dailyEntry.findFirst({
-      where: {
-        dailyEntryId: request.originalRequest.dailyEntryId,
-        userId,
-        workspaceId,
-        deletedAt: null,
-      },
-    });
-
-    if (!dailyEntry) {
-      throw new ApiError(
-        ErrorCode.NOT_FOUND.status,
-        ErrorCode.NOT_FOUND.code,
-        "업무일지를 찾을 수 없습니다.",
+    const validFollowUpQuestions =
+      promptAResult.followUpQuestions.filter(
+        (question) => targetTaskIds.has(question.taskId),
       );
-    }
+
+    const filteredPromptAResult = {
+      ...promptAResult,
+      followUpQuestions: validFollowUpQuestions,
+    };
 
     await this.validateTasksInWorkspace(
       userId,
@@ -472,11 +723,11 @@ export class PerformanceService {
 
     const updatedSnapshot =
       await this.preparePerformanceSnapshot(
-        promptAResult,
+        filteredPromptAResult,
         request.originalRequest,
         serverTasks,
         request.reflectionSnapshotId,
-      );
+    );
 
     void this.runPromptB(
       updatedSnapshot.reflectionSnapshotId,
