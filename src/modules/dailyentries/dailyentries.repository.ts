@@ -295,18 +295,22 @@ export const searchByTitle = async (
 ) => {
   return prisma.reflectionTask.findMany({
     where: {
-      dailyEntry: { userId, workspaceId, deletedAt: null },
+      dailyEntry: {
+        userId,
+        workspaceId,
+        deletedAt: null,
+        // 변환 안 된 일지만 (유효 스냅샷 없음)
+        reflectionSnapshots: {
+          none: {
+            status: { in: ["TEMP", "SAVED"] },
+          },
+        },
+      },
       task: { deletedAt: null, title: { contains: keyword } },
     },
     orderBy: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
     select: {
-      dailyEntry: {
-        select: {
-          dailyEntryId: true,
-          workspaceId: true,
-          entryDate: true,
-        },
-      },
+      dailyEntry: { select: { dailyEntryId: true, workspaceId: true, entryDate: true } },
       task: {
         select: {
           title: true,
@@ -352,6 +356,41 @@ export const searchByTag = async (
               },
             },
           },
+        },
+      },
+    },
+  });
+};
+
+export const searchBySnapshotTitle = async (
+  userId: string,
+  workspaceId: string,
+  keyword: string,
+  sort: "latest" | "oldest"
+) => {
+  return prisma.reflectionTaskSnapshot.findMany({
+    where: {
+      title: { contains: keyword },
+      reflectionSnapshot: {
+        status: { in: ["TEMP", "SAVED"] },
+        dailyEntry: { userId, workspaceId, deletedAt: null },
+      },
+    },
+    orderBy: {
+      reflectionSnapshot: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
+    },
+    select: {
+      title: true,
+      reflectionSnapshot: {
+        select: {
+          dailyEntry: {
+            select: { dailyEntryId: true, workspaceId: true, entryDate: true },
+          },
+        },
+      },
+      task: {
+        select: {
+          tag: { select: { tagName: true, color: true } },
         },
       },
     },
