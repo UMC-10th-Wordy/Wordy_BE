@@ -15,6 +15,7 @@ export interface WeeklyDashboardInputDto {
 }
 
 export interface WeeklyKpiInputDto {
+  tagId: string;
   kpiName:string;
   progress:string;
 }

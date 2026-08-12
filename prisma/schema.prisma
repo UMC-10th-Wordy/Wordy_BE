@@ -520,6 +520,9 @@ model Dashboard {
   startDate        DateTime  @map("start_date") @db.Date
   endDate          DateTime  @map("end_date") @db.Date
   summary          String    @map("summary") @db.Text
+  keyAchievement   String?   @map("key_achievement") @db.Text
+  focusedTags      Json?     @map("focused_tags")
+
   journalDays      Int       @map("journal_days")
   performanceCount Int       @map("performance_count")
   tagCount         Int       @map("tag_count")
@@ -559,7 +562,9 @@ model DashboardKPI {
   dashboardKpiId String  @id @default(uuid()) @map("dashboard_kpi_id") @db.Char(36)
   kpiName        String? @map("kpi_name") @db.VarChar(100)
   progress       String? @db.Text
+  relatedAchievement String? @map("related_achievement") @db.Text
   dashboardId    String  @map("dashboard_id") @db.Char(36)
+  tagId          String? @map("tag_id") @db.Char(36)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [dashboardId])
 
