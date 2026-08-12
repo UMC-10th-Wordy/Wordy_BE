@@ -11,6 +11,7 @@ import {
   searchByTag,
   countMatchingTags,
   searchBySnapshotTitle,
+  findMatchingTags,
 } from "./dailyentries.repository.js";
 
 import type { DailyEntryDetailScope } from "./dailyentries.repository.js";
@@ -190,8 +191,7 @@ export const getMonthlyList = async (
     );
     const hasReflection = (e.reflectionContent ?? "").trim().length > 0;
     const converted = e.reflectionSnapshots.some(
-      (s) =>
-        (s.status === "TEMP" || s.status === "SAVED") && s.promptBResult != null
+      (s) => s.status === "SAVED" && s.promptBResult != null
     );
     if (!hasTask && !hasReflection && !converted) continue; // 빈 날 제외
 
@@ -258,11 +258,9 @@ export const getMonthlyEntries = async (
 
   return entries
     .map((e) => {
-      // 유효 스냅샷(TEMP/SAVED + promptBResult) 중 최신 (상세 조회와 동일 기준)
+      // 유효 스냅샷(SAVED + promptBResult) 중 최신 (상세 조회와 동일 기준)
       const snapshot = e.reflectionSnapshots.find(
-        (s) =>
-          (s.status === "TEMP" || s.status === "SAVED") &&
-          s.promptBResult != null
+        (s) => s.status === "SAVED" && s.promptBResult != null
       );
       const converted = !!snapshot;
 
@@ -401,12 +399,10 @@ export const getDailyEntriesDetail = async (
     reflectionContent: entry.reflectionContent,
   };
 
-  // 유효 스냅샷입니다. status가 TEMP 또는 SAVED이고 promptBResult가 있는 것 중 최신
+  // 유효 스냅샷입니다. status가 SAVED이고 promptBResult가 있는 것 중 최신
   // PROCESSING·FAILED·promptBResult 없는 중간저장은 "변환 전"으로 취급
   const snapshot = entry.reflectionSnapshots.find(
-    (s) =>
-      (s.status === "TEMP" || s.status === "SAVED") &&
-      s.promptBResult != null
+    (s) => s.status === "SAVED" && s.promptBResult != null
   );
 
   // 성과 미리보기 ID (변환됐고 성과가 있으면, 없으면 null)
@@ -521,11 +517,11 @@ export const searchDailyEntries = async (
     };
   }
 
-  const [titleEntries, snapshotEntries,tagEntries, tagCount] = await Promise.all([
+  const [titleEntries, snapshotEntries,tagEntries, matchingTags] = await Promise.all([
     searchByTitle(userId, workspaceId, trimmed, sort),
-    searchBySnapshotTitle(userId, workspaceId, trimmed, sort),
-    searchByTag(userId, workspaceId, trimmed, sort),
-    countMatchingTags(userId, workspaceId, trimmed),
+    searchBySnapshotTitle(userId, workspaceId, sort),
+    searchByTag(userId, workspaceId, sort),
+    findMatchingTags(userId, workspaceId, trimmed, sort),
   ]);
 
 // journalTab: 미변환 일지(현재 Task) + 변환된 일지(스냅샷) 합침
@@ -540,16 +536,29 @@ export const searchDailyEntries = async (
     title: rt.task.title,
   }));
 
-  const snapshotResults = snapshotEntries.map((s) => ({
-    dailyEntryId: s.reflectionSnapshot.dailyEntry.dailyEntryId,
-    taskId: s.taskId,
-    workspaceId: s.reflectionSnapshot.dailyEntry.workspaceId,
-    entryDate: toDateStr(s.reflectionSnapshot.dailyEntry.entryDate),
-    tags: s.task.tag
-      ? pickTags([{ tagName: s.task.tag.tagName, color: s.task.tag.color }])
-      : [],
-    title: s.title,
-  }));
+  const snapshotResults = snapshotEntries.flatMap((entry) => {
+    const snapshot = entry.reflectionSnapshots[0];
+
+    if (!snapshot) return [];
+
+    return snapshot.reflectionTaskSnapshots
+      .filter((taskSnapshot) => taskSnapshot.title.includes(trimmed))
+      .map((taskSnapshot) => ({
+        dailyEntryId: entry.dailyEntryId,
+        taskId: taskSnapshot.taskId,
+        workspaceId: entry.workspaceId,
+        entryDate: toDateStr(entry.entryDate),
+        tags: taskSnapshot.task?.tag
+          ? pickTags([
+              {
+                tagName: taskSnapshot.task.tag.tagName,
+                color: taskSnapshot.task.tag.color,
+              },
+            ])
+          : [],
+        title: taskSnapshot.title,
+      }));
+  });
 
   // (dailyEntryId + taskId) 중복 제거
   // 같은 업무가 여러 스냅샷/양쪽 소스(active+snapshot)에서 잡히는 경우 방지
@@ -558,7 +567,9 @@ export const searchDailyEntries = async (
   const journalResults = [...snapshotResults, ...activeResults]
     .filter((r) => {
       const key = `${r.dailyEntryId}:${r.taskId}`;
+
       if (seenJournal.has(key)) return false;
+
       seenJournal.add(key);
       return true;
     })
@@ -570,61 +581,102 @@ export const searchDailyEntries = async (
 
   // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
   // 변환 일지 = 스냅샷(reflectionTaskSnapshots) 소스, 미변환 일지 = 현재 Task(reflectionTasks) 소스
-  const tagResults = tagEntries.map((tag) => {
-    const diaries: {
+  const tagMap = new Map<
+  string,
+  {
+    tagName: string;
+    color: string | null;
+    diaries: {
       dailyEntryId: string;
       taskId: string;
       workspaceId: string | null;
       entryDate: string;
       title: string;
-    }[] = [];
-    const seen = new Set<string>(); // dailyEntryId:taskId 중복 방지
+    }[];
+  }
+>();
 
-    for (const task of tag.tasks) {
-      // 소스2: 변환 일지 (스냅샷 기준) — 우선. 스냅샷 title 사용
-      for (const snap of task.reflectionTaskSnapshots) {
-        const d = snap.reflectionSnapshot.dailyEntry;
-        const key = `${d.dailyEntryId}:${task.taskId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        diaries.push({
-          dailyEntryId: d.dailyEntryId,
-          taskId: task.taskId,
-          workspaceId: d.workspaceId,
-          entryDate: toDateStr(d.entryDate),
-          title: snap.title,
-        });
-      }
-
-      // 소스1: 미변환 일지 (현재 Task 기준). 현재 task.title 사용
-      for (const rt of task.reflectionTasks) {
-        const d = rt.dailyEntry;
-        const key = `${d.dailyEntryId}:${task.taskId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        diaries.push({
-          dailyEntryId: d.dailyEntryId,
-          taskId: task.taskId,
-          workspaceId: d.workspaceId,
-          entryDate: toDateStr(d.entryDate),
-          title: task.title,
-        });
-      }
-    }
-
-    // entryDate 기준 정렬 (sort 파라미터 반영)
-    diaries.sort((a, b) =>
-      sort === "oldest"
-        ? a.entryDate.localeCompare(b.entryDate)
-        : b.entryDate.localeCompare(a.entryDate)
-    );
-
-    return {
-      tagName: tag.tagName,
-      color: tag.color,
-      diaries,
-    };
+// 키워드에 매칭되는 태그를 먼저 등록
+// 업무에 연결되지 않은 미사용 태그도 diaries: [] 상태로 유지
+for (const tag of matchingTags) {
+  tagMap.set(tag.tagName, {
+    tagName: tag.tagName,
+    color: tag.color,
+    diaries: [],
   });
+}
+
+for (const entry of tagEntries) {
+  const snapshot = entry.reflectionSnapshots[0];
+
+  if (snapshot) {
+    // 소스1: 변환 일지
+    // DailyEntry의 최신 SAVED snapshot만 대상으로 검색
+    for (const taskSnapshot of snapshot.reflectionTaskSnapshots) {
+      const tag = taskSnapshot.task?.tag;
+
+      if (!tag || !tag.tagName.includes(trimmed)) continue;
+
+      if (!tagMap.has(tag.tagName)) {
+        tagMap.set(tag.tagName, {
+          tagName: tag.tagName,
+          color: tag.color,
+          diaries: [],
+        });
+      }
+
+      tagMap.get(tag.tagName)!.diaries.push({
+        dailyEntryId: entry.dailyEntryId,
+        taskId: taskSnapshot.taskId,
+        workspaceId: entry.workspaceId,
+        entryDate: toDateStr(entry.entryDate),
+        title: taskSnapshot.title,
+      });
+    }
+  } else {
+    // 소스2: 미변환 일지
+    // 유효한 SAVED snapshot이 없는 경우 현재 Task 기준
+    for (const reflectionTask of entry.reflectionTasks) {
+      const task = reflectionTask.task;
+
+      if (
+        !task ||
+        task.deletedAt ||
+        !task.tag ||
+        !task.tag.tagName.includes(trimmed)
+      ) {
+        continue;
+      }
+
+      const tag = task.tag;
+
+      if (!tagMap.has(tag.tagName)) {
+        tagMap.set(tag.tagName, {
+          tagName: tag.tagName,
+          color: tag.color,
+          diaries: [],
+        });
+      }
+
+      tagMap.get(tag.tagName)!.diaries.push({
+        dailyEntryId: entry.dailyEntryId,
+        taskId: task.taskId,
+        workspaceId: entry.workspaceId,
+        entryDate: toDateStr(entry.entryDate),
+        title: task.title,
+      });
+    }
+  }
+}
+
+const tagResults = [...tagMap.values()].map((tag) => ({
+  ...tag,
+  diaries: tag.diaries.sort((a, b) =>
+    sort === "oldest"
+      ? a.entryDate.localeCompare(b.entryDate)
+      : b.entryDate.localeCompare(a.entryDate),
+  ),
+}));
 
   return {
     keyword: trimmed,
