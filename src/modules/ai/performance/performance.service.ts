@@ -785,6 +785,10 @@ export class PerformanceService {
         });
       }
 
+      const taskIds = serverTasks.map(
+        (task) => task.taskId,
+      );
+
       // 기존 Task Result Snapshot 삭제
       await tx.reflectionTaskResultSnapshot.deleteMany({
         where: {
@@ -798,6 +802,32 @@ export class PerformanceService {
       await tx.reflectionTaskSnapshot.deleteMany({
         where: {
           reflectionSnapshotId: snapshot.reflectionSnapshotId,
+        },
+      });
+
+      // 현재 snapshot을 제외한 기존 동일 task의 Result Snapshot 삭제
+      await tx.reflectionTaskResultSnapshot.deleteMany({
+        where: {
+          reflectionTaskSnapshot: {
+            taskId: {
+              in: taskIds,
+            },
+            reflectionSnapshotId: {
+              not: snapshot.reflectionSnapshotId,
+            },
+          },
+        },
+      });
+
+      // 현재 snapshot을 제외한 기존 동일 task Snapshot 삭제
+      await tx.reflectionTaskSnapshot.deleteMany({
+        where: {
+          taskId: {
+            in: taskIds,
+          },
+          reflectionSnapshotId: {
+            not: snapshot.reflectionSnapshotId,
+          },
         },
       });
 
