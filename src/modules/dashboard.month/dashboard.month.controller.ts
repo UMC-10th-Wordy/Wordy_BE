@@ -68,10 +68,10 @@ export class MonthlyDashboardController extends Controller {
   const data = await getMonthlyEligibility(userId, workspaceId, baseDate);
   return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   } 
-  /**
-   * @summary 월간 대시보드 목록 조회
-   */
-  @Get()
+    /**
+     * @summary 월간 대시보드 목록 조회
+     */
+  @Get("list")
   @Example<ApiResponse<MonthlyDashboardListItem[]>>({
     success: true,
     code: "S200",
