@@ -35,7 +35,7 @@ export class HomeService {
     }
   }
 
-  public async getHome(authorization: string | undefined): Promise<HomeData> {
+  public async getHome(authorization: string | undefined, workspaceId: string): Promise<HomeData> {
     const userId = this.extractUserId(authorization);
 
     const plan = await this.homeRepository.findPlanByUserId(userId);
@@ -51,10 +51,10 @@ export class HomeService {
     const [userName, todayTaskRows, weekTaskRows, taskDistinctDates, meaningfulEntryDistinctDates] =
       await Promise.all([
         this.homeRepository.findUserName(userId),
-        this.homeRepository.findTasksByDate(userId, today),
-        this.homeRepository.findTasksInRange(userId, weekStart, weekEnd),
-        this.homeRepository.findDistinctTaskDatesDesc(userId),
-        this.homeRepository.findDistinctMeaningfulEntryDatesDesc(userId),
+        this.homeRepository.findTasksByDate(userId, workspaceId, today),
+        this.homeRepository.findTasksInRange(userId, workspaceId, weekStart, weekEnd),
+        this.homeRepository.findDistinctTaskDatesDesc(userId, workspaceId),
+        this.homeRepository.findDistinctMeaningfulEntryDatesDesc(userId, workspaceId),
       ]);
 
     const recordDatesDesc = this.mergeDatesDesc(taskDistinctDates, meaningfulEntryDistinctDates);
@@ -74,7 +74,7 @@ export class HomeService {
 
     const recentDates = recordDatesDesc.slice(0, 2);
     const recentTaskRows = recentDates.length
-      ? await this.homeRepository.findTasksForDates(userId, recentDates)
+      ? await this.homeRepository.findTasksForDates(userId, workspaceId, recentDates)
       : [];
     const recentRecord = this.groupTasksByDate(recentDates, recentTaskRows as TaskRow[]);
 
