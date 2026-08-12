@@ -19,17 +19,19 @@ import {
 } from "./trash.service.js";
 
 import { TrashDailyEntryListResponse } from "./trash.dto.js";
-import { DailyEntriesDetailResponse } from "../dailyentries/dailyentries.dto.js";
 
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
+import { DailyEntriesDetailResponse } from "../dailyentries/dailyentries.dto.js";
 
-@Route("trash/daily-entries")
+@Route("workspaces/{workspaceId}/trash/daily-entries")
 @Tags("Trash")
 export class TrashController extends Controller {
   /**
    * @summary 휴지통 목록 조회
+   * @param authorization
+   * @param workspaceId 워크스페이스 ID
    * @param page 페이지 번호 (1부터 시작, 기본값 1)
    * @param size 페이지당 항목 수 (기본값 10, 최대 50)
    */
@@ -57,10 +59,11 @@ export class TrashController extends Controller {
   })
   public async getTrash(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() page?: number,
     @Query() size?: number
   ): Promise<ApiResponse<TrashDailyEntryListResponse>> {
-    const data = await getTrashedDailyEntries(authorization, page, size);
+    const data = await getTrashedDailyEntries(authorization, workspaceId, page, size);
     return success(
       SuccessCode.GET_SUCCESS.code,
       SuccessCode.GET_SUCCESS.message,
@@ -106,10 +109,12 @@ export class TrashController extends Controller {
   })
   public async getDetail(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<DailyEntriesDetailResponse>> {
     const data = await getTrashedDailyEntryDetail(
       authorization,
+      workspaceId,
       dailyEntryId
     );
 
@@ -134,9 +139,10 @@ export class TrashController extends Controller {
   })
   public async restore(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<{ dailyEntryId: string }>> {
-    const data = await restoreDailyEntry(authorization, dailyEntryId);
+    const data = await restoreDailyEntry(authorization, workspaceId, dailyEntryId);
     return success(
       SuccessCode.RESTORED.code,
       SuccessCode.RESTORED.message,
@@ -158,9 +164,10 @@ export class TrashController extends Controller {
   })
   public async deletePermanently(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() dailyEntryId: string
   ): Promise<ApiResponse<{ dailyEntryId: string }>> {
-    const data = await deleteDailyEntryPermanently(authorization, dailyEntryId);
+    const data = await deleteDailyEntryPermanently(authorization, workspaceId, dailyEntryId);
     return success(
       SuccessCode.DELETED.code,
       SuccessCode.DELETED.message,

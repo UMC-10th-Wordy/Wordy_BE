@@ -254,6 +254,9 @@ export class SearchResultItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
 
+  @Example("550e8400-e29b-41d4-a716-446655440001")
+  taskId!: string;   // 추가 (React key 식별용)
+
   @Example("a3c59e7f-956d-11f1-871e-42010ab20002")
   workspaceId!: string | null;   // 추가
 
@@ -287,6 +290,9 @@ export class DailyEntriesSearchResponse {
 export class TagDiaryItem {
   @Example("550e8400-e29b-41d4-a716-446655440000")
   dailyEntryId!: string;
+
+  @Example("550e8400-e29b-41d4-a716-446655440001")
+  taskId!: string;   // 추가 (React key 식별용)
 
   @Example("a3c59e7f-956d-11f1-871e-42010ab20002")
   workspaceId!: string | null;

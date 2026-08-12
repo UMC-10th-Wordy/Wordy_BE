@@ -35,18 +35,19 @@ export class HomeRepository {
     return profile?.userName ?? null;
   }
 
-  public async findTasksByDate(userId: string, taskDate: Date) {
+  public async findTasksByDate(userId: string, workspaceId: string, taskDate: Date) {
     return prisma.task.findMany({
-      where: { userId, taskDate, deletedAt: null },
+      where: { userId, workspaceId, taskDate, deletedAt: null },
       select: taskSelect,
       orderBy: { createdAt: 'asc' },
     });
   }
 
-  public async findTasksInRange(userId: string, startDate: Date, endDate: Date) {
+  public async findTasksInRange(userId: string, workspaceId: string, startDate: Date, endDate: Date) {
     return prisma.task.findMany({
       where: {
         userId,
+        workspaceId,
         deletedAt: null,
         taskDate: { gte: startDate, lte: endDate },
       },
@@ -55,9 +56,9 @@ export class HomeRepository {
     });
   }
 
-  public async findDistinctTaskDatesDesc(userId: string) {
+  public async findDistinctTaskDatesDesc(userId: string, workspaceId: string) {
     const rows = await prisma.task.findMany({
-      where: { userId, deletedAt: null },
+      where: { userId, workspaceId, deletedAt: null },
       distinct: ['taskDate'],
       select: { taskDate: true },
       orderBy: { taskDate: 'desc' },
@@ -65,9 +66,9 @@ export class HomeRepository {
     return rows.map((row) => row.taskDate);
   }
 
-  public async findDistinctMeaningfulEntryDatesDesc(userId: string) {
+  public async findDistinctMeaningfulEntryDatesDesc(userId: string, workspaceId: string) {
     const rows = await prisma.dailyEntry.findMany({
-      where: { userId, deletedAt: null },
+      where: { userId, workspaceId, deletedAt: null },
       distinct: ['entryDate'],
       select: {
         entryDate: true,
@@ -89,9 +90,9 @@ export class HomeRepository {
       .map((row) => row.entryDate);
   }
 
-  public async findTasksForDates(userId: string, dates: Date[]) {
+  public async findTasksForDates(userId: string, workspaceId: string, dates: Date[]) {
     return prisma.task.findMany({
-      where: { userId, deletedAt: null, taskDate: { in: dates } },
+      where: { userId, workspaceId, deletedAt: null, taskDate: { in: dates } },
       select: taskSelect,
       orderBy: [{ taskDate: 'desc' }, { createdAt: 'asc' }],
     });

@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js";
+import { Prisma } from "../../generated/prisma/client.js";
 
 // ============================================================
 // 요약 카드용
@@ -299,10 +300,11 @@ export const searchByTitle = async (
         userId,
         workspaceId,
         deletedAt: null,
-        // 변환 안 된 일지만 (유효 스냅샷 없음)
+        // 변환 안 된 일지만 (유효 스냅샷 없음: TEMP/SAVED + promptBResult)
         reflectionSnapshots: {
           none: {
             status: { in: ["TEMP", "SAVED"] },
+            promptBResult: { not: Prisma.AnyNull },
           },
         },
       },
@@ -313,6 +315,7 @@ export const searchByTitle = async (
       dailyEntry: { select: { dailyEntryId: true, workspaceId: true, entryDate: true } },
       task: {
         select: {
+          taskId: true,
           title: true,
           tag: { select: { tagName: true, color: true } },
         },
@@ -343,24 +346,42 @@ export const searchByTag = async (
         where: { deletedAt: null },
         select: {
           taskId: true,
-          title: true,   // ← 추가 (그 태그 붙은 업무 제목)
+          title: true,   // 미변환 일지에서 쓸 현재 업무 제목
+          // 소스1: 미변환 일지 (유효 변환 스냅샷 없는 dailyEntry) — 현재 Task 기준
           reflectionTasks: {
-            where: { dailyEntry: { deletedAt: null } },
+            where: {
+              dailyEntry: {
+                deletedAt: null,
+                reflectionSnapshots: {
+                  none: {
+                    status: { in: ["TEMP", "SAVED"] },
+                    promptBResult: { not: Prisma.AnyNull },
+                  },
+                },
+              },
+            },
             select: {
               dailyEntry: {
+                select: { dailyEntryId: true, workspaceId: true, entryDate: true },
+              },
+            },
+          },
+          // 소스2: 변환 일지 (유효 변환 스냅샷 소속) — 스냅샷 기준
+          // Task가 다른 날짜로 이동해 현재 reflectionTask 연결이 끊겨도 스냅샷으로 잡힘
+          reflectionTaskSnapshots: {
+            where: {
+              reflectionSnapshot: {
+                status: { in: ["TEMP", "SAVED"] },
+                promptBResult: { not: Prisma.AnyNull },
+                dailyEntry: { deletedAt: null },
+              },
+            },
+            select: {
+              title: true,
+              reflectionSnapshot: {
                 select: {
-                  dailyEntryId: true,
-                  workspaceId: true,
-                  entryDate: true,
-                  title: true,
-                  reflectionSnapshots: {
-                    where: { status: { in: ["TEMP", "SAVED"] } },
-                    select: {
-                      status: true,
-                      reflectionTaskSnapshots: {
-                        select: { taskId: true, title: true },
-                      },
-                    },
+                  dailyEntry: {
+                    select: { dailyEntryId: true, workspaceId: true, entryDate: true },
                   },
                 },
               },
@@ -383,6 +404,7 @@ export const searchBySnapshotTitle = async (
       title: { contains: keyword },
       reflectionSnapshot: {
         status: { in: ["TEMP", "SAVED"] },
+        promptBResult: { not: Prisma.AnyNull },
         dailyEntry: { userId, workspaceId, deletedAt: null },
       },
     },
@@ -390,6 +412,7 @@ export const searchBySnapshotTitle = async (
       reflectionSnapshot: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
     },
     select: {
+      taskId: true,
       title: true,
       reflectionSnapshot: {
         select: {
