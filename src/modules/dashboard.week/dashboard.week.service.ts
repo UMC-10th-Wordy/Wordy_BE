@@ -162,7 +162,13 @@ export const getDashboardDetail = async (
       periodStart: t.periodStart ? toDateStr(t.periodStart) : null,
       periodEnd: t.periodEnd ? toDateStr(t.periodEnd) : null,
     })),
-    weeklyReflections: d.weeklyReflections,
+    weeklyReflections: d.weeklyReflections.map((r: typeof d.weeklyReflections[number]) => ({
+      weeklyReflectionId: r.weeklyReflectionId,
+      workSummary: r.workSummary,
+      resourcesUsed: r.resourcesUsed,
+      learning: r.learning,
+      createdAt: r.createdAt.toISOString(),
+    })),
     performances: d.performances.map((p: typeof d.performances[number]) => ({
       dailyEntryId: p.dailyPerformance.dailyEntryId,   //추가
       achievementRate: p.dailyPerformance.achievementRate,

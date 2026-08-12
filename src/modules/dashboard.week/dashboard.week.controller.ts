@@ -129,9 +129,11 @@ export class DashboardController extends Controller {
       ],
       weeklyReflections: [
         {
+          weeklyReflectionId: "550e8400-e29b-41d4-a716-446655440000",
           workSummary: "주요 기능 개발 완료",
           resourcesUsed: "개발 시간 30시간",
           learning: "Prisma relation 설계 경험",
+          createdAt: "2026-08-13T10:00:00.000Z",
         },
       ],
       performances: [
@@ -205,10 +207,12 @@ export class DashboardController extends Controller {
     code: "S200",
     message: "수정에 성공했습니다.",
     result: {
-      workSummary: "수정된 업무 정리",
-      resourcesUsed: "인터뷰 데이터 분석 및 개발 시간 20시간",
-      learning: "사용자 관점의 중요성 학습",
-    },
+          weeklyReflectionId: "550e8400-e29b-41d4-a716-446655440000",
+          workSummary: "주요 기능 개발 완료",
+          resourcesUsed: "개발 시간 30시간",
+          learning: "Prisma relation 설계 경험",
+          createdAt: "2026-08-13T10:00:00.000Z",
+        },
   })
   public async updateReflection(
     @Header("Authorization") authorization: string | undefined,

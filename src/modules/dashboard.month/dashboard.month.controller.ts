@@ -132,9 +132,11 @@ export class MonthlyDashboardController extends Controller {
       ],
       weeklyReflections: [
         {
+          weeklyReflectionId: "550e8400-e29b-41d4-a716-446655440000",
           workSummary: "6월 온보딩 리뉴얼 완료",
           resourcesUsed: "사용자 인터뷰, 로그 분석",
           learning: "데이터 기반 의사결정의 중요성",
+          createdAt: "2026-08-13T10:00:00.000Z",
         },
       ],
       performances: [
@@ -173,10 +175,12 @@ export class MonthlyDashboardController extends Controller {
     code: "S201",
     message: "생성에 성공했습니다.",
     result: {
-      workSummary: "6월 한 달간 온보딩 리뉴얼 완료",
-      resourcesUsed: "사용자 인터뷰와 로그 데이터 분석",
-      learning: "데이터 기반 의사결정의 중요성을 배웠다",
-    },
+          weeklyReflectionId: "550e8400-e29b-41d4-a716-446655440000",
+          workSummary: "6월 온보딩 리뉴얼 완료",
+          resourcesUsed: "사용자 인터뷰, 로그 분석",
+          learning: "데이터 기반 의사결정의 중요성",
+          createdAt: "2026-08-13T10:00:00.000Z",
+        },
   })
   public async createReflection(
     @Header("Authorization") authorization: string | undefined,
@@ -237,9 +241,11 @@ export class MonthlyDashboardController extends Controller {
 
       weeklyReflections: [
         {
-          workSummary: "6월 주요 업무 정리",
-          resourcesUsed: "사용자 인터뷰 및 로그 분석",
-          learning: "데이터 기반 의사결정 경험",
+          weeklyReflectionId: "550e8400-e29b-41d4-a716-446655440000",
+          workSummary: "6월 온보딩 리뉴얼 완료",
+          resourcesUsed: "사용자 인터뷰, 로그 분석",
+          learning: "데이터 기반 의사결정의 중요성",
+          createdAt: "2026-08-13T10:00:00.000Z",
         },
       ],
 
@@ -287,10 +293,12 @@ export class MonthlyDashboardController extends Controller {
     code: "S200",
     message: "수정에 성공했습니다.",
     result: {
-      workSummary: "수정된 업무 정리",
-      resourcesUsed: "인터뷰 데이터 분석 및 개발 시간 20시간",
-      learning: "사용자 관점의 중요성 학습",
-    },
+          weeklyReflectionId: "550e8400-e29b-41d4-a716-446655440000",
+          workSummary: "6월 온보딩 리뉴얼 완료",
+          resourcesUsed: "사용자 인터뷰, 로그 분석",
+          learning: "데이터 기반 의사결정의 중요성",
+          createdAt: "2026-08-13T10:00:00.000Z",
+        },
   })
   public async updateReflection(
     @Header("Authorization") authorization: string | undefined,
