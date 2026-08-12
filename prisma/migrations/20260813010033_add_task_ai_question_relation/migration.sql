@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `aiquestion` ADD COLUMN `task_id` CHAR(36) NOT NULL;
+ALTER TABLE `AiQuestion` ADD COLUMN `task_id` CHAR(36) NULL;
 
 -- CreateIndex
 CREATE INDEX `AIQuestion_task_id_idx` ON `AIQuestion`(`task_id`);
