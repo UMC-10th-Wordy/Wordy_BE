@@ -3,6 +3,7 @@ import { HomeRepository } from './home.repository.js';
 import { DayRecord, DayTasks, HomeData, PlanType, TaskSummary } from './home.dto.js';
 import { ApiError } from '../../common/errors/api.error.js';
 import { ErrorCode } from '../../common/errors/error.code.js';
+import { WorkspaceRepository } from '../workspace/workspace.repository.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -23,6 +24,7 @@ interface TaskRow {
 
 export class HomeService {
   private homeRepository = new HomeRepository();
+  private workspaceRepository = new WorkspaceRepository();
 
   private extractUserId(authorization: string | undefined): string {
     const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
@@ -37,6 +39,19 @@ export class HomeService {
 
   public async getHome(authorization: string | undefined, workspaceId: string): Promise<HomeData> {
     const userId = this.extractUserId(authorization);
+
+    const workspace = await this.workspaceRepository.findByIdAndUserId(
+      workspaceId,
+      userId,
+    );
+
+    if (!workspace) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        '워크스페이스를 찾을 수 없습니다.',
+      );
+    }
 
     const plan = await this.homeRepository.findPlanByUserId(userId);
     if (!plan) {
