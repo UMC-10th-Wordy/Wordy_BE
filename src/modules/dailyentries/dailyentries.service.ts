@@ -531,6 +531,7 @@ export const searchDailyEntries = async (
 // journalTab: 미변환 일지(현재 Task) + 변환된 일지(스냅샷) 합침
   const activeResults = titleEntries.map((rt) => ({
     dailyEntryId: rt.dailyEntry.dailyEntryId,
+    taskId: rt.task.taskId,
     workspaceId: rt.dailyEntry.workspaceId,
     entryDate: toDateStr(rt.dailyEntry.entryDate),
     tags: rt.task.tag
@@ -541,6 +542,7 @@ export const searchDailyEntries = async (
 
   const snapshotResults = snapshotEntries.map((s) => ({
     dailyEntryId: s.reflectionSnapshot.dailyEntry.dailyEntryId,
+    taskId: s.taskId,
     workspaceId: s.reflectionSnapshot.dailyEntry.workspaceId,
     entryDate: toDateStr(s.reflectionSnapshot.dailyEntry.entryDate),
     tags: s.task.tag
@@ -560,6 +562,7 @@ export const searchDailyEntries = async (
   const tagResults = tagEntries.map((tag) => {
     const diaries: {
       dailyEntryId: string;
+      taskId: string;
       workspaceId: string | null;
       entryDate: string;
       title: string;
@@ -569,25 +572,42 @@ export const searchDailyEntries = async (
       for (const rt of task.reflectionTasks) {
         const d = rt.dailyEntry;
 
-        // 변환된 일지면 스냅샷 제목, 아니면 현재 task 제목
-        let displayTitle = task.title;
-        for (const snap of d.reflectionSnapshots) {
-          if (snap.status !== "TEMP" && snap.status !== "SAVED") continue;
-          const matched = snap.reflectionTaskSnapshots.find(
-            (ts) => ts.taskId === task.taskId
-          );
-          if (matched) {
-            displayTitle = matched.title;
-            break;
-          }
-        }
+        // reflectionSnapshots는 repository에서 이미 status TEMP/SAVED만 걸러서 옴
+        // → 하나라도 있으면 "변환된 일지"
+        const converted = d.reflectionSnapshots.length > 0;
 
-        diaries.push({
-          dailyEntryId: d.dailyEntryId,
-          workspaceId: d.workspaceId,
-          entryDate: toDateStr(d.entryDate),
-          title: displayTitle,
-        });
+        if (converted) {
+          // 변환된 일지: 스냅샷에 박제된 업무만 노출 (변환 후 추가된 Task 제외)
+          let snapshotTitle: string | null = null;
+          for (const snap of d.reflectionSnapshots) {
+            const matched = snap.reflectionTaskSnapshots.find(
+              (ts) => ts.taskId === task.taskId
+            );
+            if (matched) {
+              snapshotTitle = matched.title;
+              break;
+            }
+          }
+          // 스냅샷에 없는 Task(변환 이후 생성)면 이 태그 결과에서 제외
+          if (snapshotTitle === null) continue;
+
+          diaries.push({
+            dailyEntryId: d.dailyEntryId,
+            taskId: task.taskId,
+            workspaceId: d.workspaceId,
+            entryDate: toDateStr(d.entryDate),
+            title: snapshotTitle,
+          });
+        } else {
+          // 미변환 일지: 현재 Task 그대로
+          diaries.push({
+            dailyEntryId: d.dailyEntryId,
+            taskId: task.taskId,
+            workspaceId: d.workspaceId,
+            entryDate: toDateStr(d.entryDate),
+            title: task.title,
+          });
+        }
       }
     }
 

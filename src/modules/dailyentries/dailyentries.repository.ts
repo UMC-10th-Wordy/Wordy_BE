@@ -313,6 +313,7 @@ export const searchByTitle = async (
       dailyEntry: { select: { dailyEntryId: true, workspaceId: true, entryDate: true } },
       task: {
         select: {
+          taskId: true,
           title: true,
           tag: { select: { tagName: true, color: true } },
         },
@@ -390,6 +391,7 @@ export const searchBySnapshotTitle = async (
       reflectionSnapshot: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
     },
     select: {
+      taskId: true,
       title: true,
       reflectionSnapshot: {
         select: {
