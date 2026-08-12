@@ -55,6 +55,7 @@ const toDateStr = (d: Date) => {
 //  목록 조회
 export const getTrashedDailyEntries = async (
   authorization: string | undefined,
+  workspaceId: string,
   page: number = DEFAULT_PAGE,
   size: number = DEFAULT_SIZE
 ): Promise<TrashDailyEntryListResponse> => {
@@ -65,8 +66,8 @@ export const getTrashedDailyEntries = async (
   const skip = (safePage - 1) * safeSize;
 
   const [entries, totalCount] = await Promise.all([
-    findTrashedEntries(userId, skip, safeSize),
-    countTrashedEntries(userId),
+    findTrashedEntries(userId, workspaceId, skip, safeSize),
+    countTrashedEntries(userId, workspaceId),
   ]);
 
   const totalPages = Math.ceil(totalCount / safeSize);

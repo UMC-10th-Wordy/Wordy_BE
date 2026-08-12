@@ -2,11 +2,12 @@ import { prisma } from "../../db.config.js";
 
 export const findTrashedEntries = async (
   userId: string,
+  workspaceId: string,
   skip: number,
   take: number
 ) => {
   return prisma.dailyEntry.findMany({
-    where: { userId, deletedAt: { not: null } },
+    where: { userId, workspaceId, deletedAt: { not: null } },
     orderBy: { deletedAt: "desc" },
     skip,
     take,
@@ -19,9 +20,9 @@ export const findTrashedEntries = async (
   });
 };
 
-export const countTrashedEntries = async (userId: string) => {
+export const countTrashedEntries = async (userId: string, workspaceId: string) => {
   return prisma.dailyEntry.count({
-    where: { userId, deletedAt: { not: null } },
+    where: { userId, workspaceId, deletedAt: { not: null } },
   });
 };
 

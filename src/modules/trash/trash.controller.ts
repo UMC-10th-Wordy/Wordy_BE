@@ -30,10 +30,11 @@ import { SuccessCode } from "../../common/responses/success.code.js";
 export class TrashController extends Controller {
   /**
    * @summary 휴지통 목록 조회
+   * @param workspaceId 워크스페이스 ID
    * @param page 페이지 번호 (1부터 시작, 기본값 1)
    * @param size 페이지당 항목 수 (기본값 10, 최대 50)
    */
-  @Get()
+  @Get("workspace/{workspaceId}")
   @Example<ApiResponse<TrashDailyEntryListResponse>>({
     success: true,
     code: "S200",
@@ -57,10 +58,11 @@ export class TrashController extends Controller {
   })
   public async getTrash(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() page?: number,
     @Query() size?: number
   ): Promise<ApiResponse<TrashDailyEntryListResponse>> {
-    const data = await getTrashedDailyEntries(authorization, page, size);
+    const data = await getTrashedDailyEntries(authorization, workspaceId, page, size);
     return success(
       SuccessCode.GET_SUCCESS.code,
       SuccessCode.GET_SUCCESS.message,
