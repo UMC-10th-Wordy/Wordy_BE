@@ -518,8 +518,8 @@ export const searchDailyEntries = async (
 
   const [titleEntries, snapshotEntries,tagEntries, tagCount] = await Promise.all([
     searchByTitle(userId, workspaceId, trimmed, sort),
-    searchBySnapshotTitle(userId, workspaceId, trimmed, sort),
-    searchByTag(userId, workspaceId, trimmed, sort),
+    searchBySnapshotTitle(userId, workspaceId, sort),
+    searchByTag(userId, workspaceId, sort),
     countMatchingTags(userId, workspaceId, trimmed),
   ]);
 
@@ -535,34 +535,29 @@ export const searchDailyEntries = async (
     title: rt.task.title,
   }));
 
-  const latestSnapshotByTaskKey = new Map<
-    string,
-    (typeof snapshotEntries)[number]
-  >();
+  const snapshotResults = snapshotEntries.flatMap((entry) => {
+    const snapshot = entry.reflectionSnapshots[0];
 
-  for (const snapshot of snapshotEntries) {
-    const key = `${snapshot.reflectionSnapshot.dailyEntry.dailyEntryId}:${snapshot.taskId}`;
-    const existing = latestSnapshotByTaskKey.get(key);
+    if (!snapshot) return [];
 
-    if (
-      !existing ||
-      snapshot.reflectionSnapshot.createdAt >
-        existing.reflectionSnapshot.createdAt
-    ) {
-      latestSnapshotByTaskKey.set(key, snapshot);
-    }
-  }
-
-  const snapshotResults = [...latestSnapshotByTaskKey.values()].map((s) => ({
-    dailyEntryId: s.reflectionSnapshot.dailyEntry.dailyEntryId,
-    taskId: s.taskId,
-    workspaceId: s.reflectionSnapshot.dailyEntry.workspaceId,
-    entryDate: toDateStr(s.reflectionSnapshot.dailyEntry.entryDate),
-    tags: s.task.tag
-      ? pickTags([{ tagName: s.task.tag.tagName, color: s.task.tag.color }])
-      : [],
-    title: s.title,
-  }));
+    return snapshot.reflectionTaskSnapshots
+      .filter((taskSnapshot) => taskSnapshot.title.includes(trimmed))
+      .map((taskSnapshot) => ({
+        dailyEntryId: entry.dailyEntryId,
+        taskId: taskSnapshot.taskId,
+        workspaceId: entry.workspaceId,
+        entryDate: toDateStr(entry.entryDate),
+        tags: taskSnapshot.task?.tag
+          ? pickTags([
+              {
+                tagName: taskSnapshot.task.tag.tagName,
+                color: taskSnapshot.task.tag.color,
+              },
+            ])
+          : [],
+        title: taskSnapshot.title,
+      }));
+  });
 
   // (dailyEntryId + taskId) 중복 제거
   // 같은 업무가 여러 스냅샷/양쪽 소스(active+snapshot)에서 잡히는 경우 방지
@@ -585,61 +580,92 @@ export const searchDailyEntries = async (
 
   // tagTab: 태그 단위 (미사용 태그 포함, 각 태그에 diaries)
   // 변환 일지 = 스냅샷(reflectionTaskSnapshots) 소스, 미변환 일지 = 현재 Task(reflectionTasks) 소스
-  const tagResults = tagEntries.map((tag) => {
-    const diaries: {
+  const tagMap = new Map<
+  string,
+  {
+    tagName: string;
+    color: string | null;
+    diaries: {
       dailyEntryId: string;
       taskId: string;
       workspaceId: string | null;
       entryDate: string;
       title: string;
-    }[] = [];
-    const seen = new Set<string>(); // dailyEntryId:taskId 중복 방지
+    }[];
+  }
+>();
 
-    for (const task of tag.tasks) {
-      // 소스2: 변환 일지 (스냅샷 기준) — 우선. 스냅샷 title 사용
-      for (const snap of task.reflectionTaskSnapshots) {
-        const d = snap.reflectionSnapshot.dailyEntry;
-        const key = `${d.dailyEntryId}:${task.taskId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        diaries.push({
-          dailyEntryId: d.dailyEntryId,
-          taskId: task.taskId,
-          workspaceId: d.workspaceId,
-          entryDate: toDateStr(d.entryDate),
-          title: snap.title,
+for (const entry of tagEntries) {
+  const snapshot = entry.reflectionSnapshots[0];
+
+  if (snapshot) {
+    // 소스1: 변환 일지
+    // DailyEntry의 최신 SAVED snapshot만 대상으로 검색
+    for (const taskSnapshot of snapshot.reflectionTaskSnapshots) {
+      const tag = taskSnapshot.task?.tag;
+
+      if (!tag || !tag.tagName.includes(trimmed)) continue;
+
+      if (!tagMap.has(tag.tagName)) {
+        tagMap.set(tag.tagName, {
+          tagName: tag.tagName,
+          color: tag.color,
+          diaries: [],
         });
       }
 
-      // 소스1: 미변환 일지 (현재 Task 기준). 현재 task.title 사용
-      for (const rt of task.reflectionTasks) {
-        const d = rt.dailyEntry;
-        const key = `${d.dailyEntryId}:${task.taskId}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        diaries.push({
-          dailyEntryId: d.dailyEntryId,
-          taskId: task.taskId,
-          workspaceId: d.workspaceId,
-          entryDate: toDateStr(d.entryDate),
-          title: task.title,
-        });
-      }
+      tagMap.get(tag.tagName)!.diaries.push({
+        dailyEntryId: entry.dailyEntryId,
+        taskId: taskSnapshot.taskId,
+        workspaceId: entry.workspaceId,
+        entryDate: toDateStr(entry.entryDate),
+        title: taskSnapshot.title,
+      });
     }
+  } else {
+    // 소스2: 미변환 일지
+    // 유효한 SAVED snapshot이 없는 경우 현재 Task 기준
+    for (const reflectionTask of entry.reflectionTasks) {
+      const task = reflectionTask.task;
 
-    // entryDate 기준 정렬 (sort 파라미터 반영)
-    diaries.sort((a, b) =>
-      sort === "oldest"
-        ? a.entryDate.localeCompare(b.entryDate)
-        : b.entryDate.localeCompare(a.entryDate)
-    );
+      if (
+        !task ||
+        task.deletedAt ||
+        !task.tag ||
+        !task.tag.tagName.includes(trimmed)
+      ) {
+        continue;
+      }
 
-    return {
-      tagName: tag.tagName,
-      color: tag.color,
-      diaries,
-    };
-  });
+      const tag = task.tag;
+
+      if (!tagMap.has(tag.tagName)) {
+        tagMap.set(tag.tagName, {
+          tagName: tag.tagName,
+          color: tag.color,
+          diaries: [],
+        });
+      }
+
+      tagMap.get(tag.tagName)!.diaries.push({
+        dailyEntryId: entry.dailyEntryId,
+        taskId: task.taskId,
+        workspaceId: entry.workspaceId,
+        entryDate: toDateStr(entry.entryDate),
+        title: task.title,
+      });
+    }
+  }
+}
+
+const tagResults = [...tagMap.values()].map((tag) => ({
+  ...tag,
+  diaries: tag.diaries.sort((a, b) =>
+    sort === "oldest"
+      ? a.entryDate.localeCompare(b.entryDate)
+      : b.entryDate.localeCompare(a.entryDate),
+  ),
+}));
 
   return {
     keyword: trimmed,

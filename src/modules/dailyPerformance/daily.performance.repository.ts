@@ -308,14 +308,12 @@ export class DailyPerformanceRepository {
 
   async findDailyPerformanceByDailyEntry(
     dailyEntryId: string,
-    reflectionSnapshotId: string,
     userId: string,
     workspaceId: string,
   ): Promise<DailyPerformance | null> {
     return this.prisma.dailyPerformance.findFirst({
       where: {
         dailyEntryId,
-        reflectionSnapshotId,
         userId,
         workspaceId,
       },

@@ -110,7 +110,6 @@ export class DailyPerformanceService {
     const existingPerformance =
       await this.repository.findDailyPerformanceByDailyEntry(
         snapshot.dailyEntryId,
-        snapshot.reflectionSnapshotId,
         userId,
         workspaceId,
       );
