@@ -44,11 +44,13 @@ export class PerformanceController extends Controller {
       supplementQuestions: [
         {
           aiQuestionId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad01",
+          taskId: "a1f83c62-4d49-4c8e-9a1b-123456789002",
           question: "이번 작업에서 가장 어려웠던 점은 무엇인가요?",
           reason: "성과 분석을 위해 업무 과정에 대한 추가 정보가 필요합니다.",
         },
         {
           aiQuestionId: "f3a1e4c2-31b5-46f4-b134-a0e238a1ad92",
+          taskId: "a1f83c62-4d49-4c8e-9a1b-123456789002",
           question: "이 작업이 프로젝트에 어떤 영향을 주었나요?",
           reason: "업무 결과의 영향도를 정확히 분석하기 위한 정보입니다.",
         },
