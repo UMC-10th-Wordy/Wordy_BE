@@ -79,13 +79,20 @@ export const getEligibility = async (userId: string, workspaceId: string, baseDa
 
   const { start, end } = getWeekRange(base);
 
+  // 그 주의 실제 일수 (월 경계로 절단된 주는 3일 미만일 수 있음)
+  // → 요구 일수를 min(REQUIRED_DAYS, 실제 일수)로 제한
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const daysInWeek =
+    Math.floor((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
+  const requiredDays = Math.min(REQUIRED_DAYS, daysInWeek);
+
   const entries = await findDailyEntries(userId, workspaceId, start, end);
 
   return {
     workspaceId,
-    eligible: entries.length >= REQUIRED_DAYS,
+    eligible: entries.length >= requiredDays,
     journalDays: entries.length,
-    requiredDays: REQUIRED_DAYS,
+    requiredDays: requiredDays,
     weekStart: toDateStr(start),
     weekEnd: toDateStr(end),
     entries: entries.map((e: typeof entries[number]) => ({
