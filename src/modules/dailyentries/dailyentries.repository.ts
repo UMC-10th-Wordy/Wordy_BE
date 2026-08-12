@@ -84,7 +84,12 @@ export const findEntriesByMonth = async (
       entryDate: true,
       reflectionContent: true,
       reflectionSnapshots: {
+        where: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
         orderBy: { createdAt: "desc" },
+        take: 1,
         select: {
           status: true,
           promptBResult: true,
@@ -94,7 +99,12 @@ export const findEntriesByMonth = async (
               priority: true,
               task: {
                 select: {
-                  tag: { select: { tagName: true, color: true } },
+                  tag: {
+                    select: {
+                      tagName: true,
+                      color: true,
+                    },
+                  },
                 },
               },
             },
@@ -161,20 +171,33 @@ export const findEntryDetail = async (
     include: {
       // 변환됨: 스냅샷 (그 시점 박제) + 성과 미리보기 ID
       reflectionSnapshots: {
+        where: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
         orderBy: { createdAt: "desc" },
+        take: 1,
         include: {
           dailyPerformances: {
             orderBy: { createdAt: "desc" },
-            select: { dailyPerformanceId: true },
+            select: {
+              dailyPerformanceId: true,
+            },
           },
           reflectionTaskSnapshots: {
             include: {
-              task: { include: { tag: true } },
+              task: {
+                include: {
+                  tag: true,
+                },
+              },
               resultSnapshots: {
                 include: {
                   taskResult: {
                     include: {
-                      attachments: { where: { deletedAt: null } },
+                      attachments: {
+                        where: { deletedAt: null },
+                      },
                     },
                   },
                 },
@@ -303,7 +326,7 @@ export const searchByTitle = async (
         // 변환 안 된 일지만 (유효 스냅샷 없음: TEMP/SAVED + promptBResult)
         reflectionSnapshots: {
           none: {
-            status: { in: ["TEMP", "SAVED"] },
+            status: "SAVED",
             promptBResult: { not: Prisma.AnyNull },
           },
         },
@@ -354,7 +377,7 @@ export const searchByTag = async (
                 deletedAt: null,
                 reflectionSnapshots: {
                   none: {
-                    status: { in: ["TEMP", "SAVED"] },
+                    status: "SAVED",
                     promptBResult: { not: Prisma.AnyNull },
                   },
                 },
@@ -371,9 +394,14 @@ export const searchByTag = async (
           reflectionTaskSnapshots: {
             where: {
               reflectionSnapshot: {
-                status: { in: ["TEMP", "SAVED"] },
+                status: "SAVED",
                 promptBResult: { not: Prisma.AnyNull },
                 dailyEntry: { deletedAt: null },
+              },
+            },
+            orderBy: {
+              reflectionSnapshot: {
+                createdAt: "desc",
               },
             },
             select: {
@@ -403,7 +431,7 @@ export const searchBySnapshotTitle = async (
     where: {
       title: { contains: keyword },
       reflectionSnapshot: {
-        status: { in: ["TEMP", "SAVED"] },
+        status: "SAVED",
         promptBResult: { not: Prisma.AnyNull },
         dailyEntry: { userId, workspaceId, deletedAt: null },
       },
@@ -416,6 +444,7 @@ export const searchBySnapshotTitle = async (
       title: true,
       reflectionSnapshot: {
         select: {
+          createdAt: true,
           dailyEntry: {
             select: { dailyEntryId: true, workspaceId: true, entryDate: true },
           },

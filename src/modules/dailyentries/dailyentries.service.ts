@@ -190,8 +190,7 @@ export const getMonthlyList = async (
     );
     const hasReflection = (e.reflectionContent ?? "").trim().length > 0;
     const converted = e.reflectionSnapshots.some(
-      (s) =>
-        (s.status === "TEMP" || s.status === "SAVED") && s.promptBResult != null
+      (s) => s.status === "SAVED" && s.promptBResult != null
     );
     if (!hasTask && !hasReflection && !converted) continue; // 빈 날 제외
 
@@ -258,11 +257,9 @@ export const getMonthlyEntries = async (
 
   return entries
     .map((e) => {
-      // 유효 스냅샷(TEMP/SAVED + promptBResult) 중 최신 (상세 조회와 동일 기준)
+      // 유효 스냅샷(SAVED + promptBResult) 중 최신 (상세 조회와 동일 기준)
       const snapshot = e.reflectionSnapshots.find(
-        (s) =>
-          (s.status === "TEMP" || s.status === "SAVED") &&
-          s.promptBResult != null
+        (s) => s.status === "SAVED" && s.promptBResult != null
       );
       const converted = !!snapshot;
 
@@ -401,12 +398,10 @@ export const getDailyEntriesDetail = async (
     reflectionContent: entry.reflectionContent,
   };
 
-  // 유효 스냅샷입니다. status가 TEMP 또는 SAVED이고 promptBResult가 있는 것 중 최신
+  // 유효 스냅샷입니다. status가 SAVED이고 promptBResult가 있는 것 중 최신
   // PROCESSING·FAILED·promptBResult 없는 중간저장은 "변환 전"으로 취급
   const snapshot = entry.reflectionSnapshots.find(
-    (s) =>
-      (s.status === "TEMP" || s.status === "SAVED") &&
-      s.promptBResult != null
+    (s) => s.status === "SAVED" && s.promptBResult != null
   );
 
   // 성과 미리보기 ID (변환됐고 성과가 있으면, 없으면 null)
@@ -540,7 +535,25 @@ export const searchDailyEntries = async (
     title: rt.task.title,
   }));
 
-  const snapshotResults = snapshotEntries.map((s) => ({
+  const latestSnapshotByTaskKey = new Map<
+    string,
+    (typeof snapshotEntries)[number]
+  >();
+
+  for (const snapshot of snapshotEntries) {
+    const key = `${snapshot.reflectionSnapshot.dailyEntry.dailyEntryId}:${snapshot.taskId}`;
+    const existing = latestSnapshotByTaskKey.get(key);
+
+    if (
+      !existing ||
+      snapshot.reflectionSnapshot.createdAt >
+        existing.reflectionSnapshot.createdAt
+    ) {
+      latestSnapshotByTaskKey.set(key, snapshot);
+    }
+  }
+
+  const snapshotResults = [...latestSnapshotByTaskKey.values()].map((s) => ({
     dailyEntryId: s.reflectionSnapshot.dailyEntry.dailyEntryId,
     taskId: s.taskId,
     workspaceId: s.reflectionSnapshot.dailyEntry.workspaceId,
@@ -558,7 +571,9 @@ export const searchDailyEntries = async (
   const journalResults = [...snapshotResults, ...activeResults]
     .filter((r) => {
       const key = `${r.dailyEntryId}:${r.taskId}`;
+
       if (seenJournal.has(key)) return false;
+
       seenJournal.add(key);
       return true;
     })
