@@ -30,6 +30,7 @@ import { SuccessCode } from "../../common/responses/success.code.js";
 export class TrashController extends Controller {
   /**
    * @summary 휴지통 목록 조회
+   * @param authorization
    * @param workspaceId 워크스페이스 ID
    * @param page 페이지 번호 (1부터 시작, 기본값 1)
    * @param size 페이지당 항목 수 (기본값 10, 최대 50)
