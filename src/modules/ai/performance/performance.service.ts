@@ -629,7 +629,9 @@ export class PerformanceService {
       );
 
     const targetTaskIds = new Set(
-      questions.map((question) => question.taskId),
+      questions
+        .map((question) => question.taskId)
+        .filter((taskId): taskId is string => taskId !== null),
     );
 
     const questionTargetTasks = serverTasks.filter((task) =>
@@ -649,6 +651,14 @@ export class PerformanceService {
             ErrorCode.NOT_FOUND.status,
             ErrorCode.NOT_FOUND.code,
             "질문 데이터를 찾을 수 없습니다.",
+          );
+        }
+
+        if (!question.taskId) {
+          throw new ApiError(
+            ErrorCode.BAD_REQUEST.status,
+            ErrorCode.BAD_REQUEST.code,
+            "업무와 연결되지 않은 질문입니다.",
           );
         }
 
