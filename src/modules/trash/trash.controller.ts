@@ -19,7 +19,7 @@ import {
 } from "./trash.service.js";
 
 import { TrashDailyEntryListResponse } from "./trash.dto.js";
-import { DailyEntriesDetailResponse } from "../dailyentries/dailyentries.dto.js";
+import { DailyEntriesDetailResponse } from "../dailyEntries/dailyentries.dto.js";
 
 import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
