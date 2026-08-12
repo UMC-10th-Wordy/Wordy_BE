@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js";
+import { Prisma } from "../../generated/prisma/client.js";
 
 // ============================================================
 // 요약 카드용
@@ -299,10 +300,11 @@ export const searchByTitle = async (
         userId,
         workspaceId,
         deletedAt: null,
-        // 변환 안 된 일지만 (유효 스냅샷 없음)
+        // 변환 안 된 일지만 (유효 스냅샷 없음: TEMP/SAVED + promptBResult)
         reflectionSnapshots: {
           none: {
             status: { in: ["TEMP", "SAVED"] },
+            promptBResult: { not: Prisma.AnyNull },
           },
         },
       },
@@ -385,6 +387,7 @@ export const searchBySnapshotTitle = async (
       title: { contains: keyword },
       reflectionSnapshot: {
         status: { in: ["TEMP", "SAVED"] },
+        promptBResult: { not: Prisma.AnyNull },
         dailyEntry: { userId, workspaceId, deletedAt: null },
       },
     },
