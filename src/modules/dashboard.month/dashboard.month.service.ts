@@ -123,10 +123,8 @@ export const getMonthlyDashboardDetail = async (
     journalDays: d.journalDays,
     performanceCount: d.performanceCount,
     tagCount: d.tagCount,
-    insights: d.insights.map((i: typeof d.insights[number]) => ({
-      ...i,
-      completionRate,
-    })),
+    completionRate,
+    insights: d.insights,
     kpis: d.kpis,
     tagAnalyses: d.tagAnalyses.map((t: typeof d.tagAnalyses[number]) => ({
       ...t,
