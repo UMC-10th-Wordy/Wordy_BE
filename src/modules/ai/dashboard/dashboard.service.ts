@@ -565,9 +565,10 @@ export class DashboardService {
           },
         },
         include:{
-          kpis:true,
-          tagAnalyses:true,
-          weeklyReflections:true,
+          kpis: true,
+          tagAnalyses: true,
+          weeklyReflections: true,
+          performances: true,
         },
       });
 
@@ -584,10 +585,17 @@ export class DashboardService {
       0,
     );
 
-    const performanceCount = weeklyDashboards.reduce(
-      (sum, dashboard) => sum + dashboard.performanceCount,
-      0,
-    );
+    const dailyPerformanceIds = [
+      ...new Set(
+        weeklyDashboards.flatMap((dashboard) =>
+          dashboard.performances.map(
+            (performance) => performance.dailyPerformanceId,
+          ),
+        ),
+      ),
+    ];
+
+    const performanceCount = dailyPerformanceIds.length;
 
     // 2. Prompt D Input 생성
     const promptDInput:PromptDInputDto = {
@@ -729,6 +737,12 @@ export class DashboardService {
 
         if (existingDashboard) {
           // 기존 Dashboard의 하위 데이터 삭제
+          await tx.dashboardPerformance.deleteMany({
+            where: {
+              dashboardId: existingDashboard.dashboardId,
+            },
+          });
+
           await tx.dashboardKPI.deleteMany({
             where: {
               dashboardId: existingDashboard.dashboardId,
@@ -790,7 +804,15 @@ export class DashboardService {
           });
         }
 
-        // 공통 하위 데이터 생성
+        // 월간 Dashboard에 DailyPerformance 연결
+        await tx.dashboardPerformance.createMany({
+          data: dailyPerformanceIds.map((dailyPerformanceId) => ({
+            dashboardId: dashboard.dashboardId,
+            dailyPerformanceId,
+          })),
+        });
+
+        // 나머지 하위 데이터
         await tx.dashboardKPI.createMany({
           data: monthlyResult.kpis.map((kpi) => ({
             dashboardId: dashboard.dashboardId,
