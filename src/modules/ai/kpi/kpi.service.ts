@@ -10,7 +10,7 @@ import { ErrorCode } from "../../../common/errors/error.code.js";
 import { KpiRequestDto }from "./dto/api/kpi.request.dto.js";
 import { KpiResponseDto }from "./dto/api/kpi.response.dto.js";
 import { KpiOutputDto }from "./dto/prompt/kpi.output.dto.js";
-import { PrismaClient, PromptType, AiRunStatus, Prisma } from "../../../generated/prisma/client.js";
+import { PrismaClient, PromptType, AiRunStatus } from "../../../generated/prisma/client.js";
 
 export class KpiService {
   constructor(
@@ -47,6 +47,52 @@ export class KpiService {
       );
     }
   }
+
+  private validateRequest(
+    request: KpiRequestDto,
+  ): void {
+    if (!request || typeof request !== "object") {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "요청 데이터가 올바르지 않습니다.",
+      );
+    }
+
+    const requiredFields = [
+      "tagName",
+      "projectName",
+      "goal",
+      "expectedOutcome",
+      "userJob",
+    ] as const;
+
+    for (const field of requiredFields) {
+      const value = request[field];
+
+      if (
+        typeof value !== "string" ||
+        value.trim().length === 0
+      ) {
+        throw new ApiError(
+          ErrorCode.BAD_REQUEST.status,
+          ErrorCode.BAD_REQUEST.code,
+          `${field}은(는) 필수 입력값입니다.`,
+        );
+      }
+    }
+
+    if (
+      request.period !== undefined &&
+      typeof request.period !== "string"
+    ) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "period는 문자열이어야 합니다.",
+      );
+    }
+  }
   
   // KPI 추천
   async generateKpiRecommendation(
@@ -55,6 +101,8 @@ export class KpiService {
   ): Promise<KpiResponseDto> {
 
     this.extractUserId(authorization);
+
+    this.validateRequest(request);
     
     const prompt =
       this.promptManager.buildKpiPrompt(

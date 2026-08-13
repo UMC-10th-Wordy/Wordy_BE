@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Example, Get, Header, Patch, Path, Post, Route, Tags } from "tsoa";
 
-import { verifyAccessToken } from "../../auth.config.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
 import { ApiResponse } from "../../common/responses/api.response.js";
@@ -42,10 +41,9 @@ export class WorkspaceController extends Controller {
     @Header("Authorization") authorization: string | undefined,
     @Body() request: CreateWorkspaceRequestDto,
   ): Promise<ApiResponse<WorkspaceResponseDto>> {
-    const userId = this.getUserId(authorization);
 
     const result = await this.workspaceService.createWorkspace(
-      userId,
+      authorization,
       request,
     );
 
@@ -84,10 +82,9 @@ export class WorkspaceController extends Controller {
   public async getWorkspaces(
     @Header("Authorization") authorization: string | undefined,
   ): Promise<ApiResponse<WorkspaceResponseDto[]>> {
-    const userId = this.getUserId(authorization);
 
     const result =
-      await this.workspaceService.getWorkspaces(userId);
+      await this.workspaceService.getWorkspaces(authorization);
 
     return success(
       SuccessCode.OK.code,
@@ -117,10 +114,9 @@ export class WorkspaceController extends Controller {
     @Path() workspaceId: string,
     @Body() request: UpdateWorkspaceRequestDto,
   ): Promise<ApiResponse<WorkspaceResponseDto>> {
-    const userId = this.getUserId(authorization);
 
     const result = await this.workspaceService.updateWorkspaceName(
-      userId,
+      authorization,
       workspaceId,
       request.name,
     );
@@ -146,10 +142,9 @@ export class WorkspaceController extends Controller {
     @Header("Authorization") authorization: string | undefined,
     @Path() workspaceId: string,
   ): Promise<ApiResponse<null>> {
-    const userId = this.getUserId(authorization);
 
     await this.workspaceService.deleteWorkspace(
-      userId,
+      authorization,
       workspaceId,
     );
 
@@ -158,18 +153,5 @@ export class WorkspaceController extends Controller {
       "워크스페이스 삭제에 성공했습니다.",
       null,
     );
-  }
-
-  private getUserId(
-    authorization: string | undefined,
-  ): string {
-    if (!authorization) {
-      throw new Error("Authorization header is missing.");
-    }
-
-    const token = authorization.replace("Bearer ", "");
-    const payload = verifyAccessToken(token);
-
-    return payload.userId;
   }
 }
