@@ -64,18 +64,45 @@ export class TagService {
     this.validateDateRange(body.expectedStartDate, body.expectedEndDate);
   }
 
-  private validateDateRange(startDate?: string, endDate?: string): void {
-    if (!startDate || !endDate) return;
+  private validateDateRange(
+    startDate?: string,
+    endDate?: string,
+  ): void {
+    const parseDate = (date: string): Date => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        throw new InvalidTagError(
+          '예상 기간의 날짜 형식이 올바르지 않습니다.',
+        );
+      }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+      const parsed = new Date(
+        `${date}T00:00:00.000Z`,
+      );
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      throw new InvalidTagError('예상 기간의 날짜 형식이 올바르지 않습니다.');
-    }
+      if (
+        Number.isNaN(parsed.getTime()) ||
+        parsed.toISOString().slice(0, 10) !== date
+      ) {
+        throw new InvalidTagError(
+          '예상 기간의 날짜 형식이 올바르지 않습니다.',
+        );
+      }
 
-    if (start > end) {
-      throw new InvalidTagError('예상 시작일은 예상 종료일보다 늦을 수 없습니다.');
+      return parsed;
+    };
+
+    const start = startDate
+      ? parseDate(startDate)
+      : null;
+
+    const end = endDate
+      ? parseDate(endDate)
+      : null;
+
+    if (start && end && start > end) {
+      throw new InvalidTagError(
+        '예상 시작일은 예상 종료일보다 늦을 수 없습니다.',
+      );
     }
   }
 
