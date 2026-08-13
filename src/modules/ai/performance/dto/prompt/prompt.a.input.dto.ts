@@ -5,6 +5,7 @@ export interface PromptAInputDto {
   userJob: string;
   yearsOfService: string;
   supplementAnswers?: SupplementAnswerDto[];
+  questionTargetTasks: PromptTaskDto[];
 }
 
 export interface PromptTaskDto {
@@ -25,6 +26,7 @@ export interface PromptProjectDto {
 }
 
 export interface SupplementAnswerDto {
+  taskId: string;
   question:string;
   answer:string;
 }

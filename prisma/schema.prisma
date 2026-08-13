@@ -289,6 +289,7 @@ model Task {
   reflectionTasks         ReflectionTask[]
   reflectionTaskSnapshots ReflectionTaskSnapshot[]
   performanceItems        PerformanceItem[]
+  aiQuestions             AIQuestion[]
 
   @@index([userId, taskDate])
   @@index([workspaceId, taskDate])
@@ -422,10 +423,13 @@ model AIQuestion {
   status               AIQuestionStatus @default(WAITING)
   createdAt            DateTime         @default(now()) @map("created_at") @db.DateTime(0)
   reflectionSnapshotId String           @map("reflection_snapshot_id") @db.Char(36)
+  taskId               String?          @map("task_id") @db.Char(36)
 
   reflectionSnapshot ReflectionSnapshot @relation(fields: [reflectionSnapshotId], references: [reflectionSnapshotId])
+    task             Task?              @relation(fields: [taskId], references: [taskId])
 
   @@index([reflectionSnapshotId])
+  @@index([taskId])
   @@map("AIQuestion")
 }
 

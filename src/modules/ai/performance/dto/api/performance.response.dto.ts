@@ -34,6 +34,9 @@ export class SupplementQuestionDto {
   @Example("3fa85f64-5717-4562-b3fc-2c963f66afa6")
   aiQuestionId!: string;
 
+  @Example("f3a1e4c2-4d27-49b5-9e31-7c05a8d21496")
+  taskId!: string;
+
   @Example("이 업무에서 가장 어려웠던 점은 무엇인가요?")
   question!: string;
 
