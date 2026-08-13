@@ -39,9 +39,10 @@ export class DashboardDraftController extends Controller {
     @Header("Authorization") authorization: string | undefined,
     @Path() workspaceId: string,
     @Query() type: DraftType,
+    @Query() baseDate: string,
     @Body() body: SaveDraftRequest
   ): Promise<ApiResponse<DraftResponse>> {
-    const data = await saveDraft(authorization, workspaceId, type, body);
+    const data = await saveDraft(authorization, workspaceId, type, baseDate, body);
     return success(SuccessCode.OK.code, "임시 저장되었습니다.", data);
   }
 
@@ -69,9 +70,10 @@ export class DashboardDraftController extends Controller {
   public async get(
     @Header("Authorization") authorization: string | undefined,
     @Path() workspaceId: string,
-    @Query() type: DraftType
+    @Query() type: DraftType,
+    @Query() baseDate: string
   ): Promise<ApiResponse<DraftResponse | null>> {
-    const data = await getDraft(authorization, workspaceId, type);
+    const data = await getDraft(authorization, workspaceId, type, baseDate);
     return success(SuccessCode.GET_SUCCESS.code, SuccessCode.GET_SUCCESS.message, data);
   }
 }
