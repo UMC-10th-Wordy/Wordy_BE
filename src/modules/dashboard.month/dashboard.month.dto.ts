@@ -78,6 +78,17 @@ export class MonthlyDashboardDetail {
   @Example("이번 달 업무 성과 및 회고 요약")
   summary!: string;
 
+  @Example("온보딩 리뉴얼을 완료하여 주요 사용자 이탈 구간을 개선했습니다.")
+  keyAchievement!: string | null;
+
+  @Example([
+    {
+      tagId: "550e8400-e29b-41d4-a716-446655440000",
+      tagName: "온보딩 리뉴얼",
+    },
+  ])
+  focusedTags!: MonthlyFocusedTag[];
+
   @Example(20)
   journalDays!: number;
 
@@ -141,6 +152,13 @@ export class MonthlyDashboardDetail {
   performances!: MonthlyPerformanceDto[];
 }
 
+export class MonthlyFocusedTag {
+  @Example("550e8400-e29b-41d4-a716-446655440000")
+  tagId!: string;
+
+  @Example("온보딩 리뉴얼")
+  tagName!: string;
+}
 
 export class MonthlyInsight {
   @Example(20)
