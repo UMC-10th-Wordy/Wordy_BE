@@ -13,8 +13,8 @@ ALTER TABLE `ReflectionDraft` ADD COLUMN `period_start` DATE NULL;
 UPDATE `ReflectionDraft`
 SET `period_start` = CASE
   WHEN `type` = 'MONTHLY'
-    THEN DATE_FORMAT(`created_at`, '%Y-%m-01')
-  ELSE DATE_SUB(DATE(`created_at`), INTERVAL DAYOFWEEK(`created_at`) - 1 DAY)
+    THEN DATE_FORMAT(`updated_at`, '%Y-%m-01')
+  ELSE DATE_SUB(DATE(`updated_at`), INTERVAL DAYOFWEEK(`updated_at`) - 1 DAY)
 END
 WHERE `period_start` IS NULL;
 

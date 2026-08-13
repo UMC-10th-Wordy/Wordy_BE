@@ -21,7 +21,11 @@ const getUserId = (authorization: string | undefined): string => {
 // baseDate 형식/유효성 검증 (YYYY-MM-DD, 실제 존재하는 날짜)
 const parseBaseDate = (baseDate: string): Date => {
   const parsed = new Date(baseDate);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(baseDate) || isNaN(parsed.getTime())) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(baseDate) ||
+    isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== baseDate
+  ) {
     throw new ApiError(
       ErrorCode.BAD_REQUEST.status,
       ErrorCode.BAD_REQUEST.code,
