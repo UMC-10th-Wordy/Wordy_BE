@@ -112,6 +112,13 @@ export class MonthlyDashboardController extends Controller {
       startDate: "2026-06-01",
       endDate: "2026-06-30",
       summary: "6월은 온보딩 개선에 집중한 달이었습니다.",
+      keyAchievement: "온보딩 리뉴얼을 완료하여 주요 사용자 이탈 구간을 개선했습니다.",
+      focusedTags: [
+        {
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
+          tagName: "온보딩 리뉴얼",
+        },
+      ],
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
@@ -212,7 +219,13 @@ export class MonthlyDashboardController extends Controller {
       startDate: "2026-06-01",
       endDate: "2026-06-30",
       summary: "AI가 생성한 6월 월간 업무 성과 요약",
-
+      keyAchievement: "온보딩 리뉴얼을 완료하여 주요 사용자 이탈 구간을 개선했습니다.",
+      focusedTags: [
+        {
+          tagId: "550e8400-e29b-41d4-a716-446655440000",
+          tagName: "온보딩 리뉴얼",
+        },
+      ],
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
