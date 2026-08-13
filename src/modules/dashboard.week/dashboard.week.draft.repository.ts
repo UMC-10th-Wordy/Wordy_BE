@@ -6,6 +6,7 @@ export const upsertDraft = async (
   userId: string,
   workspaceId: string,
   type: DraftType,
+  periodStart: Date,
   data: {
     workSummary?: string | null;
     resourcesUsed?: string | null;
@@ -17,7 +18,9 @@ export const upsertDraft = async (
   const taskPlansValue = (data.taskPlans ?? []) as Prisma.InputJsonValue;
 
   return prisma.reflectionDraft.upsert({
-    where: { userId_workspaceId_type: { userId, workspaceId, type } },   // @@unique([userId, type])
+    where: {
+      userId_workspaceId_type_periodStart: { userId, workspaceId, type, periodStart },
+    },
     update: {
       workSummary: data.workSummary ?? null,
       resourcesUsed: data.resourcesUsed ?? null,
@@ -28,6 +31,7 @@ export const upsertDraft = async (
       userId,
       workspaceId,
       type,
+      periodStart,
       workSummary: data.workSummary ?? null,
       resourcesUsed: data.resourcesUsed ?? null,
       learning: data.learning ?? null,
@@ -37,8 +41,15 @@ export const upsertDraft = async (
 };
 
 // draft 조회 (유저 + type 기준, 없으면 null)
-export const findDraft = async (userId: string, workspaceId: string, type: DraftType) => {
+export const findDraft = async (
+  userId: string,
+  workspaceId: string,
+  type: DraftType,
+  periodStart: Date
+) => {
   return prisma.reflectionDraft.findUnique({
-    where: { userId_workspaceId_type: { userId, workspaceId, type } },
+    where: {
+      userId_workspaceId_type_periodStart: { userId, workspaceId, type, periodStart },
+    },
   });
 };

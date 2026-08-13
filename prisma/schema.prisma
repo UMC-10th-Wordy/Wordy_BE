@@ -629,6 +629,7 @@ model ReflectionDraft {
   userId            String    @map("user_id") @db.Char(36)
   workspaceId       String?    @map("workspace_id") @db.Char(36)
   type              DraftType
+  periodStart       DateTime  @map("period_start") @db.Date
   workSummary       String?   @map("work_summary") @db.Text
   resourcesUsed     String?   @map("resources_used") @db.Text
   learning          String?   @db.Text
@@ -639,7 +640,7 @@ model ReflectionDraft {
   user User @relation(fields: [userId], references: [userId])
   workspace Workspace? @relation(fields: [workspaceId], references: [workspaceId])
 
-  @@unique([userId, workspaceId, type])
+  @@unique([userId, workspaceId, type, periodStart])
   @@index([userId])
   @@index([workspaceId])
   @@map("ReflectionDraft")

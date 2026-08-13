@@ -18,11 +18,21 @@ const getUserId = (authorization: string | undefined): string => {
   return verifyAccessToken(token).userId;
 };
 
+// baseDate가 속한 주의 시작일(일요일, 날짜만) → draft 주차 식별 키
+const getWeekStart = (base: Date): Date => {
+  const d = new Date(
+    Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate())
+  );
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay()); // 그 주 일요일로 이동
+  return d;
+};
+
 // draft 저장 (임시저장)
 export const saveDraft = async (
   authorization: string | undefined,
   workspaceId: string,
   type: DraftType,
+  baseDate: string,
   body: {
     workSummary?: string;
     resourcesUsed?: string;
@@ -31,8 +41,9 @@ export const saveDraft = async (
   }
 ) => {
   const userId = getUserId(authorization);
+  const periodStart = getWeekStart(new Date(baseDate));
 
-  const draft = await upsertDraft(userId, workspaceId, type, {
+  const draft = await upsertDraft(userId, workspaceId, type, periodStart, {
     workSummary: body.workSummary ?? null,
     resourcesUsed: body.resourcesUsed ?? null,
     learning: body.learning ?? null,
@@ -55,11 +66,13 @@ export const saveDraft = async (
 export const getDraft = async (
   authorization: string | undefined,
   workspaceId: string,
-  type: DraftType
+  type: DraftType,
+  baseDate: string
 ) => {
   const userId = getUserId(authorization);
+  const periodStart = getWeekStart(new Date(baseDate));
 
-  const draft = await findDraft(userId, workspaceId, type);
+  const draft = await findDraft(userId, workspaceId, type, periodStart);
   if (!draft) {
     return null;   // 저장된 draft 없음
   }
