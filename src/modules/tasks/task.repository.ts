@@ -37,6 +37,87 @@ export class TaskRepository {
     });
   }
 
+  private async removeTaskFromReflectionSnapshot(
+    tx: Prisma.TransactionClient,
+    taskId: string,
+    userId: string,
+    workspaceId: string,
+    previousTaskDate: Date,
+  ) {
+    const dailyEntry = await tx.dailyEntry.findFirst({
+      where: {
+        userId,
+        workspaceId,
+        entryDate: previousTaskDate,
+      },
+      select: {
+        dailyEntryId: true,
+      },
+    });
+
+    if (!dailyEntry) {
+      return;
+    }
+
+    const reflectionSnapshots =
+      await tx.reflectionSnapshot.findMany({
+        where: {
+          dailyEntryId: dailyEntry.dailyEntryId,
+        },
+        select: {
+          reflectionSnapshotId: true,
+        },
+      });
+
+    if (reflectionSnapshots.length === 0) {
+      return;
+    }
+
+    const reflectionSnapshotIds =
+      reflectionSnapshots.map(
+        (snapshot) => snapshot.reflectionSnapshotId,
+      );
+
+    const taskSnapshots =
+      await tx.reflectionTaskSnapshot.findMany({
+        where: {
+          taskId,
+          reflectionSnapshotId: {
+            in: reflectionSnapshotIds,
+          },
+        },
+        select: {
+          reflectionTaskSnapshotId: true,
+        },
+      });
+
+    if (taskSnapshots.length === 0) {
+      return;
+    }
+
+    const reflectionTaskSnapshotIds =
+      taskSnapshots.map(
+        (snapshot) => snapshot.reflectionTaskSnapshotId,
+      );
+
+    // 자식부터 삭제
+    await tx.reflectionTaskResultSnapshot.deleteMany({
+      where: {
+        reflectionTaskSnapshotId: {
+          in: reflectionTaskSnapshotIds,
+        },
+      },
+    });
+
+    await tx.reflectionTaskSnapshot.deleteMany({
+      where: {
+        reflectionTaskSnapshotId: {
+          in: reflectionTaskSnapshotIds,
+        },
+      },
+    });
+  }
+
   private async syncReflectionTask(
     tx: Prisma.TransactionClient,
     taskId: string,
@@ -276,6 +357,22 @@ export class TaskRepository {
   sortOrder?: number,
 ) {
   return prisma.$transaction(async (tx) => {
+    const currentTask = await tx.task.findUnique({
+      where: {
+        taskId,
+        userId,
+        workspaceId,
+        deletedAt: null,
+      },
+      select: {
+        taskDate: true,
+      },
+    });
+
+    if (!currentTask) {
+      throw new Error('Task not found');
+    }
+
     const shouldComplete =
       body.status === TaskStatus.COMPLETED;
 
@@ -283,6 +380,15 @@ export class TaskRepository {
       body.status !== undefined &&
       body.status !== TaskStatus.COMPLETED;
 
+    const nextTaskDate =
+      body.taskDate !== undefined
+        ? new Date(body.taskDate)
+        : currentTask.taskDate;
+
+    const dateChanged =
+      nextTaskDate.getTime() !==
+      currentTask.taskDate.getTime();
+    
     const task = await tx.task.update({
       where: {
         taskId,
@@ -335,6 +441,16 @@ export class TaskRepository {
         },
       },
     });
+
+    if (dateChanged) {
+      await this.removeTaskFromReflectionSnapshot(
+        tx,
+        taskId,
+        userId,
+        workspaceId,
+        currentTask.taskDate,
+      );
+    }
 
     await this.syncReflectionTask(
       tx,

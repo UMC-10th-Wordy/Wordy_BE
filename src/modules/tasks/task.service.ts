@@ -13,6 +13,7 @@ import {
 import { ApiError } from '../../common/errors/api.error.js';
 import { ErrorCode } from '../../common/errors/error.code.js';
 import { verifyAccessToken } from '../../auth.config.js';
+import { Prisma } from '../../generated/prisma/client.js';
 
 class UnauthorizedError extends ApiError {
   constructor() {
