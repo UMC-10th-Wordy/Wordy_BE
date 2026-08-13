@@ -42,6 +42,20 @@ RegisterRoutes(apiRouter);
 app.use('/api/v1', apiRouter);
 
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+  if (
+    err instanceof SyntaxError &&
+    'status' in err &&
+    (err as { status?: number }).status === 400 &&
+    'body' in err
+  ) {
+    return res.status(ErrorCode.BAD_REQUEST.status).json({
+      success: false,
+      code: ErrorCode.BAD_REQUEST.code,
+      message: '요청 본문의 JSON 형식이 올바르지 않습니다.',
+      result: null,
+    });
+  }
+
   if (err instanceof MulterError) {
     return res.status(ErrorCode.BAD_REQUEST.status).json({
       success: false,
