@@ -75,6 +75,9 @@ export class TaskResultService {
       throw new BadRequestError('업무 결과 내용은 필수입니다.');
     }
 
+    const attachmentIdsToRemove =
+      this.parseRemovedAttachmentIds(removedAttachmentIds);
+
     const taskResult = await this.taskResultRepository.upsert(
       taskId,
       trimmedContent,
@@ -82,7 +85,7 @@ export class TaskResultService {
 
     await this.taskResultRepository.softDeleteAttachments(
       taskResult.taskResultId,
-      this.parseRemovedAttachmentIds(removedAttachmentIds),
+      attachmentIdsToRemove,
     );
 
     const newAttachments = await this.saveAttachments(files);
