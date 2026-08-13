@@ -1,3 +1,4 @@
+import { verifyAccessToken } from "../../auth.config.js";
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { CreateWorkspaceRequestDto, WorkspaceResponseDto } from "./workspace.dto.js";
@@ -9,11 +10,39 @@ export class WorkspaceService {
     private readonly workspaceRepository: WorkspaceRepository,
   ) {}
 
+  private extractUserId(
+    authorization: string | undefined,
+  ): string {
+    const token = authorization?.startsWith("Bearer ")
+      ? authorization.slice(7)
+      : null;
+
+    if (!token) {
+      throw new ApiError(
+        ErrorCode.UNAUTHORIZED.status,
+        ErrorCode.UNAUTHORIZED.code,
+        "인증이 필요합니다.",
+      );
+    }
+
+    try {
+      return verifyAccessToken(token).userId;
+    } catch {
+      throw new ApiError(
+        ErrorCode.UNAUTHORIZED.status,
+        ErrorCode.UNAUTHORIZED.code,
+        "인증이 필요합니다.",
+      );
+    }
+  }
+
   // 기본 생성
   async createWorkspace(
-    userId: string,
+    authorization: string | undefined,
     dto: CreateWorkspaceRequestDto,
   ): Promise<WorkspaceResponseDto> {
+    const userId = this.extractUserId(authorization);
+
     const workspaceCount =
       await this.workspaceRepository.countByUserId(userId);
 
@@ -36,9 +65,11 @@ export class WorkspaceService {
 
   // 프로필 최초 등록 시 기본 Workspace 생성
   async createDefaultWorkspace(
-    userId: string,
+    authorization: string | undefined,
     userName: string,
   ): Promise<WorkspaceResponseDto> {
+    const userId = this.extractUserId(authorization);
+
     const existingDefault =
       await this.workspaceRepository.findDefaultByUserId(userId);
 
@@ -57,8 +88,10 @@ export class WorkspaceService {
 
   // 목록 조회
   async getWorkspaces(
-    userId: string,
+    authorization: string | undefined,
   ): Promise<WorkspaceResponseDto[]> {
+    const userId = this.extractUserId(authorization);
+
     const workspaces =
       await this.workspaceRepository.findAllByUserId(userId);
 
@@ -69,9 +102,11 @@ export class WorkspaceService {
 
   // 프로필 닉네임 변경 시 기본 Workspace 이름 변경
   async updateDefaultWorkspaceName(
-    userId: string,
+    authorization: string | undefined,
     userName: string,
   ): Promise<void> {
+    const userId = this.extractUserId(authorization);
+
     const workspace =
       await this.workspaceRepository.findDefaultByUserId(userId);
 
@@ -88,10 +123,12 @@ export class WorkspaceService {
 
   // 워크스페이스 이름 수정
   async updateWorkspaceName(
-    userId: string,
+    authorization: string | undefined,
     workspaceId: string,
     name: string,
   ): Promise<WorkspaceResponseDto> {
+    const userId = this.extractUserId(authorization);
+
     const workspace =
       await this.workspaceRepository.findByIdAndUserId(
         workspaceId,
@@ -139,9 +176,11 @@ export class WorkspaceService {
 
   // 워크스페이스 삭제
   async deleteWorkspace(
-    userId: string,
+    authorization: string | undefined,
     workspaceId: string,
   ): Promise<void> {
+    const userId = this.extractUserId(authorization);
+    
     const workspace =
       await this.workspaceRepository.findByIdAndUserId(
         workspaceId,

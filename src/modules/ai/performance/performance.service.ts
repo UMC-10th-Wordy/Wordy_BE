@@ -124,6 +124,23 @@ export class PerformanceService {
     }
   }
 
+  private validateDate(
+    date: string,
+    fieldName: string,
+  ): Date {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        `${fieldName} 날짜 형식이 올바르지 않습니다.`,
+      );
+    }
+
+    return parsedDate;
+  }
+
   private async validateTasksInWorkspace(
     userId: string,
     workspaceId: string,
