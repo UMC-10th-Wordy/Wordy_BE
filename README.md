@@ -1,37 +1,165 @@
 # Wordy Backend
 
-Wordy 백엔드 리포지토리입니다.
+> **업무 기록을 AI 기반 성과 데이터로 전환하고, 일지와 주간·월간 대시보드를 통해 업무 성장 흐름을 관리하는 Wordy의 Backend API Server입니다.**
 
-업무 기록을 기반으로 AI가 성과를 구조화하고, 일지 및 성과 데이터를 대시보드로 제공하는 서비스입니다.
+Wordy는 사용자가 매일 기록한 업무와 업무 결과를 기반으로 회고를 작성하고,
+AI가 이를 구조화된 성과 데이터로 변환하여 주간·월간 단위로 확인할 수 있도록 지원합니다.
 
 ---
 
-## ⚙️ 기술 스택
+## 🔗 Service Links
 
-| 구분 | 기술 / 버전 |
+| 구분 | 링크 |
 |---|---|
-| Runtime | Node.js 22.19.0 |
-| Package Manager | npm 10.9.3 |
+| 🌐 Web Service | https://wordy-site.vercel.app/ |
+| ⚙️ API Server | https://wordy-be.p-e.kr/ |
+| 📚 Swagger API Docs | https://wordy-be.p-e.kr/api-docs |
+| 🗄️ ERD | https://www.erdcloud.com/d/a2BohuKYasrsPHg2e |
+| 💻 GitHub Repository | https://github.com/UMC-10th-Wordy/Wordy_BE |
+
+---
+
+## ✨ 주요 기능
+
+### ✅ 업무 관리
+- 날짜별 업무카드 생성 / 조회 / 수정 / 삭제
+- `Must do / Should do / Could do` 기반 우선순위 관리
+- Drag & Drop 기반 업무 순서 변경
+- 업무 완료 상태 관리
+- 완료 업무의 업무 결과 및 첨부파일 기록
+
+### 🏷️ 프로젝트 태그
+- 업무별 프로젝트 태그 관리
+- 프로젝트 목적 및 기대 성과 설정
+- 예상 프로젝트 기간 관리
+- KPI 설정을 통한 프로젝트 성과 추적
+
+### 📝 업무 일지
+- 날짜별 업무 및 회고 저장
+- 월별 업무 일지 조회
+- 업무 및 프로젝트 태그 기반 검색
+- 일지 삭제 및 휴지통 복구
+
+### 🤖 AI 성과 변환
+- 완료 업무 및 업무 결과를 기반으로 성과 분석
+- 변환 시점의 업무 데이터를 Snapshot으로 보존
+- 업무 변경 이후에도 변환 당시 성과 데이터 유지
+- AI 기반 성과 Summary / Growth Insight / Next Action 생성
+
+### 📊 성과 대시보드
+- 주간 / 월간 성과 대시보드 제공
+- 업무 완료율 및 성과 데이터 집계
+- KPI 기반 성과 분석
+- 프로젝트 태그 기반 업무 흐름 분석
+- AI 기반 주간·월간 인사이트 제공
+
+### 👤 사용자 및 인증
+- 이메일 인증 기반 회원가입
+- JWT 기반 인증
+- Google OAuth 2.0 로그인
+- 사용자 프로필 관리
+- Workspace 기반 데이터 관리
+- 알림 기능
+
+---
+
+## 🏗️ Backend Architecture
+
+```text
+사용자
+  │
+  │ HTTPS
+  ▼
+Nginx
+(SSL / Reverse Proxy)
+  │
+  │ :3000
+  ▼
+Node.js API Server
+├── Express + TypeScript
+├── TSOA / Swagger
+├── Prisma ORM
+└── PM2
+     │
+     ├── MySQL
+     ├── Google Cloud Storage
+     ├── Google OAuth 2.0
+     └── OpenAI API
+```
+
+### Infrastructure
+
+- **Google Cloud Compute Engine** — Backend Application Server
+- **Nginx** — Reverse Proxy / HTTPS
+- **PM2** — Node.js Process Manager
+- **MySQL** — Application Database
+- **Google Cloud Storage** — Profile Image / Attachment Storage
+- **GitHub Actions** — CI / CD
+- **Google OAuth 2.0** — Social Login
+- **OpenAI API** — AI 성과 분석
+
+---
+
+## 🔄 CI / CD
+
+### CI
+
+`dev`, `main` 대상 Pull Request와 `dev` 브랜치 변경사항에 대해
+GitHub Actions에서 다음 과정을 검증합니다.
+
+```text
+npm ci
+→ prisma generate
+→ tsoa spec-and-routes
+→ TypeScript Build
+```
+
+CI 과정에서 실제 운영 DB에 접속하지 않고 Prisma Client 생성 및 TypeScript Build 가능 여부를 검증합니다.
+
+### Production Deployment
+
+검증된 `main` 브랜치의 코드를 GitHub Actions의 수동 배포 Workflow를 통해 운영 서버에 반영합니다.
+
+```text
+GitHub main
+→ GitHub Actions
+→ SSH Deploy
+→ origin/main 동기화
+→ npm ci
+→ prisma generate
+→ build
+→ prisma migrate deploy
+→ PM2 restart
+→ Health Check
+```
+
+배포 완료 후 운영 서버 `https://wordy-be.p-e.kr/`에 대한 Health Check를 수행합니다.
+
+---
+
+## ⚙️ Tech Stack
+
+| Category | Technology |
+|---|---|
+| Runtime | Node.js 22.23.1 |
 | Language | TypeScript 6.0.3 |
 | Server | Express 5.2.1 |
 | ORM | Prisma 7.9.0 |
-| Prisma Client | `@prisma/client` 7.9.0 |
 | Database | MySQL |
-| API Spec | TSOA 7.0.0-alpha.0 |
-| API Docs | Swagger UI |
-| Authentication | JWT, Google Auth |
+| API Specification | TSOA |
+| API Documentation | Swagger UI |
+| Authentication | JWT / Google OAuth 2.0 |
 | AI | OpenAI SDK |
 | File Storage | Google Cloud Storage |
-| Code Quality | ESLint, Prettier |
-
-> [!IMPORTANT]
-> Prisma CLI와 `@prisma/client`의 버전이 다르면 생성되는 Prisma Client 타입이 달라져
-> 로컬 환경마다 TypeScript 오류 발생 여부가 달라질 수 있습니다.
-> 의존성 설치 후 반드시 Prisma 버전을 확인하고 `prisma generate`를 실행해 주세요.
+| Infrastructure | Google Cloud Compute Engine |
+| Web Server | Nginx |
+| Process Manager | PM2 |
+| CI / CD | GitHub Actions |
+| Code Quality | ESLint / Prettier |
 
 ---
 
-## 📁 주요 프로젝트 구조
+## 📁 Project Structure
 
 ```text
 .
@@ -40,21 +168,33 @@ Wordy 백엔드 리포지토리입니다.
 │   └── schema.prisma
 │
 ├── src
-│   ├── modules
-│   │   ├── auth
-│   │   ├── users
-│   │   ├── profiles
-│   │   ├── tags
-│   │   ├── tasks
-│   │   ├── dailyentries
-│   │   ├── dailyPerformance
-│   │   ├── ai
-│   │   └── dashboard
-│   │
 │   ├── common
-│   ├── config
+│   ├── modules
+│   │   ├── ai
+│   │   ├── auth
+│   │   ├── dailyPerformance
+│   │   ├── dailyentries
+│   │   ├── dashboard.month
+│   │   ├── dashboard.week
+│   │   ├── home
+│   │   ├── notifications
+│   │   ├── tags
+│   │   ├── task-results
+│   │   ├── tasks
+│   │   ├── trash
+│   │   ├── users
+│   │   └── workspace
+│   │
+│   ├── auth.config.ts
+│   ├── db.config.ts
 │   └── index.ts
 │
+├── .github
+│   └── workflows
+│       ├── ci.yml
+│       └── cd.yml
+│
+├── .env.example
 ├── package.json
 ├── prisma.config.ts
 ├── tsoa.json
@@ -62,28 +202,38 @@ Wordy 백엔드 리포지토리입니다.
 └── README.md
 ```
 
-> 위 구조는 주요 디렉터리만 표시한 것으로, 실제 파일 구성은 각 모듈에 따라 다를 수 있습니다.
-
 ---
 
-## 🚀 로컬 실행 방법
+## 🚀 Getting Started
 
-### 1. 의존성 설치
+### Requirements
+
+- Node.js 22
+- npm
+- MySQL
+
+### 1. Repository Clone
 
 ```bash
-npm install
+git clone https://github.com/UMC-10th-Wordy/Wordy_BE.git
+cd Wordy_BE
 ```
 
-팀원 간 동일한 의존성 구성을 위해 `package-lock.json`을 함께 관리합니다.
+### 2. Install Dependencies
 
-### 2. 환경 변수 설정
+```bash
+npm ci
+```
 
-프로젝트 실행에 필요한 환경 변수를 `.env`에 설정합니다.
+`package-lock.json`을 기준으로 동일한 dependency 환경을 구성합니다.
 
-> `.env`의 실제 값은 Git에 커밋하지 않습니다.  
-> 필요한 환경 변수 값은 팀에서 공유된 개발 환경 설정을 사용합니다.
+### 3. Environment Variables
 
-### 3. Prisma Client 생성
+`.env.example`을 참고하여 프로젝트 루트에 `.env` 파일을 생성합니다.
+
+> 실제 Secret 및 인증 정보는 Git Repository에 Commit하지 않습니다.
+
+### 4. Generate Prisma Client
 
 ```bash
 npx prisma generate
@@ -95,37 +245,47 @@ npx prisma generate
 npm run prisma:generate
 ```
 
-### 4. 기존 Migration 적용
+### 5. Apply Migration
 
-이미 생성되어 Git에 반영된 Migration을 로컬 DB에 적용할 때:
+기존 Migration을 로컬 DB에 적용합니다.
 
 ```bash
 npx prisma migrate deploy
 ```
 
-### 5. 개발 서버 실행
+Schema 변경을 포함한 개발용 Migration은 다음 명령을 사용합니다.
+
+```bash
+npm run prisma:migrate
+```
+
+### 6. Development Server
 
 ```bash
 npm run dev
 ```
 
-`npm run dev` 실행 시 TSOA spec/routes 생성 후 개발 서버가 실행됩니다.
+개발 서버 실행 시 TSOA Spec / Route 생성 후 서버가 실행됩니다.
 
-### 6. TypeScript 타입 검사
+기본 포트:
 
-PR 생성 전 아래 명령으로 컴파일 오류가 없는지 확인합니다.
-
-```bash
-npx tsc --noEmit
+```text
+http://localhost:3000
 ```
 
-### 7. 빌드
+Swagger:
+
+```text
+http://localhost:3000/api-docs
+```
+
+### 7. Build
 
 ```bash
 npm run build
 ```
 
-### 8. 프로덕션 실행
+### 8. Production Start
 
 ```bash
 npm run start
@@ -133,295 +293,62 @@ npm run start
 
 ---
 
-## 🔍 개발 환경 확인
+## 📦 npm Scripts
 
-문제가 발생했을 때 아래 명령으로 주요 버전을 먼저 확인합니다.
-
-### Node.js / npm
-
-```bash
-node -v
-npm -v
-```
-
-### Prisma
-
-```bash
-npx prisma -v
-```
-
-`prisma`와 `@prisma/client` 버전이 일치하는지 확인합니다.
-
-예시:
-
-```text
-prisma         : 7.9.0
-@prisma/client : 7.9.0
-```
-
-### 주요 패키지
-
-```bash
-npm ls typescript express prisma @prisma/client tsoa --depth=0
-```
-
----
-
-## 🗄️ Prisma / DB 작업 규칙
-
-Prisma Schema와 Migration은 팀 전체 개발 환경에 영향을 주므로 아래 규칙을 지킵니다.
-
-### Schema 변경 전
-
-- `prisma/schema.prisma` 수정이 필요한 경우 먼저 백엔드 팀에 변경 내용을 공유합니다.
-- 다른 팀원이 동시에 Schema 또는 Migration을 수정하고 있는지 확인합니다.
-- 최신 `dev`를 반영한 뒤 작업합니다.
-
-```bash
-git switch dev
-git pull --ff-only origin dev
-```
-
-### 새로운 Schema 변경 작업
-
-Schema 수정 후 새로운 Migration이 필요한 경우:
-
-```bash
-npx prisma migrate dev --name <migration_name>
-npx prisma generate
-```
-
-Migration 파일과 `schema.prisma`를 함께 커밋합니다.
-
-### Migration 주의사항
-
-- 이미 공유된 Migration 파일을 임의로 수정하거나 삭제하지 않습니다.
-- 공용/배포 DB에서 `prisma migrate reset`을 사용하지 않습니다.
-- Migration 충돌 또는 drift가 발생하면 임의로 초기화하지 말고 팀에 먼저 공유합니다.
-- 서버 배포 환경에서는 기존 Migration 적용을 위해 `prisma migrate deploy`를 사용합니다.
-
----
-
-## 🌿 브랜치 전략
-
-```text
-main
-└── dev
-    ├── feature/*
-    ├── fix/*
-    └── refactor/*
-```
-
-| 브랜치 | 용도 |
+| Command | Description |
 |---|---|
-| `main` | 배포 브랜치 |
-| `dev` | 개발 통합 브랜치 |
-| `feature/*` | 새로운 기능 개발 |
-| `fix/*` | 버그 및 오류 수정 |
-| `refactor/*` | 기능 변경 없는 구조 개선 |
-
-작업은 원칙적으로 `dev`에서 직접 진행하지 않고 목적에 맞는 작업 브랜치를 생성합니다.
-
-예시:
-
-```bash
-git switch dev
-git pull --ff-only origin dev
-git switch -c feature/task-result
-```
-
-이미 `dev`에서 수정한 내용이 커밋되지 않은 상태라면 새 브랜치를 생성해 현재 변경사항을 그대로 옮길 수 있습니다.
-
-```bash
-git switch -c fix/example
-```
-
----
-
-## 🧩 Git 작업 흐름
-
-### 1. Issue 생성
-
-기능 개발, 버그 수정, 리팩토링 등의 작업을 시작하기 전 관련 Issue를 생성합니다.
-
-### 2. 최신 dev 반영
-
-```bash
-git switch dev
-git pull --ff-only origin dev
-```
-
-### 3. 작업 브랜치 생성
-
-```bash
-git switch -c feature/<기능명>
-```
-
-또는:
-
-```bash
-git switch -c fix/<수정명>
-git switch -c refactor/<작업명>
-```
-
-### 4. 작업 및 검증
-
-최소한 아래 항목을 확인합니다.
-
-```bash
-npx prisma generate
-npx tsc --noEmit
-```
-
-TSOA Controller 또는 API 명세가 변경된 경우:
-
-```bash
-npx tsoa spec-and-routes
-```
-
-### 5. Commit / Push
-
-```bash
-git add <변경 파일>
-git commit -m "feat: 기능 설명"
-git push -u origin <브랜치명>
-```
-
-### 6. PR 생성
-
-작업 브랜치에서 `dev`를 대상으로 PR을 생성합니다.
-
----
-
-## 🔖 커밋 컨벤션
-
-커밋 메시지는 다음 형식을 사용합니다.
-
-```text
-<type>: <header>
-
-<body>
-
-<footer>
-```
-
-### Type
-
-| Type | 설명 |
-|---|---|
-| `feat` | 새로운 기능 추가 또는 기능 변경 |
-| `fix` | 버그 및 오류 수정 |
-| `refactor` | 기능 변경 없는 코드 구조 개선 |
-| `docs` | 문서 작성 및 수정 |
-| `style` | 포맷팅, 세미콜론 등 코드 스타일 변경 |
-| `test` | 테스트 코드 작성 및 수정 |
-| `chore` | 설정 파일 및 기타 작업 |
-
-### 작성 예시
-
-```text
-feat: 로그인 API 추가
-
-JWT 기반 로그인 기능을 구현했습니다.
-
-Closes #12
-```
-
-Header는 변경 내용을 알 수 있도록 간결하고 명확하게 작성합니다.
-
----
-
-## 🔀 PR 컨벤션
-
-### PR 대상 브랜치
-
-```text
-feature/*  ─┐
-fix/*      ─┼─> dev
-refactor/* ─┘
-
-dev ─────────> main
-```
-
-### PR 제목
-
-다음 형식을 사용합니다.
-
-```text
-[Feat] 로그인 API 구현
-[Fix] 일지 상세 조회 Prisma relation 수정
-[Refactor] 사용자 인증 로직 개선
-```
-
-### PR 본문
-
-PR에는 최소한 다음 내용을 작성합니다.
-
-- 작업 내용
-- 주요 변경 사항
-- 테스트 / 검증 결과
-- Schema 또는 Migration 변경 여부
-- 다른 기능이나 API에 영향을 주는 변경 사항
-
-예시:
-
-```md
-## 🧩 작업 내용
-- 일지 상세 조회 Prisma relation 수정
-
-## 📌 변경 사항
-- ReflectionSnapshot relation명을 현재 Prisma Schema와 일치하도록 수정
-
-## 🗄️ DB / Migration
-- Schema 변경 없음
-- Migration 없음
-
-## ✅ 테스트
-- npx prisma generate
-- npx tsc --noEmit
-- TypeScript compile error 0건 확인
-```
-
-### Merge 규칙
-
-- PR은 최소 1명의 Approve를 받은 뒤 Merge합니다.
-- 리뷰에서 요청된 수정 사항과 Conversation을 해결한 뒤 Merge합니다.
-- Merge 전 최신 `dev`와 충돌 여부를 확인합니다.
-- 기본 Merge 방식은 **Squash and Merge**를 사용합니다.
-- Merge 완료 후 작업 브랜치는 삭제합니다.
-
----
-
-## ✅ PR 전 체크리스트
-
-```text
-[ ] 최신 dev를 기준으로 작업했는가?
-[ ] 불필요한 파일이 포함되지 않았는가?
-[ ] Prisma Schema 변경 시 팀에 공유했는가?
-[ ] Migration이 필요한 변경인지 확인했는가?
-[ ] npx prisma generate를 실행했는가?
-[ ] npx tsc --noEmit 결과가 0 errors인가?
-[ ] API 변경 시 TSOA spec/routes를 갱신했는가?
-[ ] PR 본문에 변경 사항과 테스트 결과를 작성했는가?
-```
-
----
-
-## 📦 주요 npm scripts
-
-| 명령어 | 설명 |
-|---|---|
-| `npm run dev` | TSOA spec/routes 생성 후 개발 서버 실행 |
-| `npm run build` | TSOA spec/routes 생성 후 TypeScript 빌드 |
-| `npm run start` | 빌드된 서버 실행 |
+| `npm run dev` | TSOA Spec / Route 생성 후 개발 서버 실행 |
+| `npm run build` | TSOA Spec / Route 생성 후 TypeScript Build |
+| `npm run start` | 빌드된 Node.js 서버 실행 |
 | `npm run prisma:generate` | Prisma Client 생성 |
-| `npm run prisma:migrate` | Prisma 개발용 Migration 실행 |
+| `npm run prisma:migrate` | 개발용 Prisma Migration 실행 |
 
 ---
 
-## ⚠️ 주의사항
+## 🌿 Development Workflow
 
-- `.env` 및 인증 정보는 Git에 커밋하지 않습니다.
-- Schema, Migration, 공통 응답 구조, 인증 방식처럼 여러 모듈에 영향을 주는 변경은 작업 전 팀에 공유합니다.
-- 배포 서버의 DB Migration을 임의로 초기화하지 않습니다.
-- 생성 파일 또는 의존성 변경이 의도된 작업인지 `git status`, `git diff`로 확인한 뒤 Commit합니다.
+```text
+Issue 생성
+→ 최신 dev 반영
+→ feature / fix / refactor / docs 브랜치 생성
+→ 구현
+→ 로컬 검증
+→ Pull Request
+→ Code Review
+→ GitHub Actions CI
+→ Merge
+```
+
+### Branch
+
+| Branch | Purpose |
+|---|---|
+| `main` | Production |
+| `dev` | Development Integration |
+| `feature/*` | Feature Development |
+| `fix/*` | Bug Fix |
+| `refactor/*` | Refactoring |
+| `docs/*` | Documentation |
+
+- 작업은 `dev`에서 직접 진행하지 않고 목적에 맞는 브랜치에서 진행합니다.
+- PR은 리뷰와 CI 확인 후 Merge합니다.
+- 운영 배포가 필요한 변경사항은 `dev → main` Release PR을 통해 반영합니다.
+
+---
+
+## 🔐 Security
+
+- `.env` 및 서비스 인증 정보는 Repository에 Commit하지 않습니다.
+- 운영 서버 SSH Private Key와 배포 관련 정보는 GitHub Secrets로 관리합니다.
+- JWT 기반 API 인증을 적용합니다.
+- Google OAuth 2.0을 통한 소셜 로그인을 지원합니다.
+- 첨부파일과 프로필 이미지는 Google Cloud Storage에 저장합니다.
+- 운영 DB에서는 `prisma migrate reset`을 사용하지 않고 `prisma migrate deploy`를 사용합니다.
+
+---
+
+## 📌 API Documentation
+
+전체 API 명세와 Request / Response Schema는 운영 Swagger에서 확인할 수 있습니다.
+
+**Swagger:** https://wordy-be.p-e.kr/api-docs
