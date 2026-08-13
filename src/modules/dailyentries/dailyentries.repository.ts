@@ -84,7 +84,12 @@ export const findEntriesByMonth = async (
       entryDate: true,
       reflectionContent: true,
       reflectionSnapshots: {
+        where: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
         orderBy: { createdAt: "desc" },
+        take: 1,
         select: {
           status: true,
           promptBResult: true,
@@ -94,7 +99,12 @@ export const findEntriesByMonth = async (
               priority: true,
               task: {
                 select: {
-                  tag: { select: { tagName: true, color: true } },
+                  tag: {
+                    select: {
+                      tagName: true,
+                      color: true,
+                    },
+                  },
                 },
               },
             },
@@ -161,20 +171,33 @@ export const findEntryDetail = async (
     include: {
       // 변환됨: 스냅샷 (그 시점 박제) + 성과 미리보기 ID
       reflectionSnapshots: {
+        where: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
         orderBy: { createdAt: "desc" },
+        take: 1,
         include: {
           dailyPerformances: {
             orderBy: { createdAt: "desc" },
-            select: { dailyPerformanceId: true },
+            select: {
+              dailyPerformanceId: true,
+            },
           },
           reflectionTaskSnapshots: {
             include: {
-              task: { include: { tag: true } },
+              task: {
+                include: {
+                  tag: true,
+                },
+              },
               resultSnapshots: {
                 include: {
                   taskResult: {
                     include: {
-                      attachments: { where: { deletedAt: null } },
+                      attachments: {
+                        where: { deletedAt: null },
+                      },
                     },
                   },
                 },
@@ -303,7 +326,7 @@ export const searchByTitle = async (
         // 변환 안 된 일지만 (유효 스냅샷 없음: TEMP/SAVED + promptBResult)
         reflectionSnapshots: {
           none: {
-            status: { in: ["TEMP", "SAVED"] },
+            status: "SAVED",
             promptBResult: { not: Prisma.AnyNull },
           },
         },
@@ -328,61 +351,70 @@ export const searchByTitle = async (
 export const searchByTag = async (
   userId: string,
   workspaceId: string,
-  keyword: string,
-  sort: "latest" | "oldest"
+  sort: "latest" | "oldest",
 ) => {
-  return prisma.tag.findMany({
+  return prisma.dailyEntry.findMany({
     where: {
       userId,
       workspaceId,
       deletedAt: null,
-      tagName: { contains: keyword },
     },
-    orderBy: { createdAt: sort === "oldest" ? "asc" : "desc" },
+
+    orderBy: {
+      entryDate: sort === "oldest" ? "asc" : "desc",
+    },
+
     select: {
-      tagName: true,
-      color: true,
-      tasks: {
-        where: { deletedAt: null },
+      dailyEntryId: true,
+      workspaceId: true,
+      entryDate: true,
+
+      // 소스1: 변환된 일지
+      // DailyEntry별 유효한 SAVED snapshot 중 최신 1개만 조회
+      // 이전 snapshot의 태그가 검색 결과에 섞이지 않도록
+      // 최신 snapshot을 먼저 확정한 뒤 service에서 태그를 검색함
+      reflectionSnapshots: {
+        where: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
         select: {
-          taskId: true,
-          title: true,   // 미변환 일지에서 쓸 현재 업무 제목
-          // 소스1: 미변환 일지 (유효 변환 스냅샷 없는 dailyEntry) — 현재 Task 기준
-          reflectionTasks: {
-            where: {
-              dailyEntry: {
-                deletedAt: null,
-                reflectionSnapshots: {
-                  none: {
-                    status: { in: ["TEMP", "SAVED"] },
-                    promptBResult: { not: Prisma.AnyNull },
+          reflectionTaskSnapshots: {
+            select: {
+              taskId: true,
+              title: true,
+              task: {
+                select: {
+                  tag: {
+                    select: {
+                      tagName: true,
+                      color: true,
+                    },
                   },
                 },
               },
             },
-            select: {
-              dailyEntry: {
-                select: { dailyEntryId: true, workspaceId: true, entryDate: true },
-              },
-            },
           },
-          // 소스2: 변환 일지 (유효 변환 스냅샷 소속) — 스냅샷 기준
-          // Task가 다른 날짜로 이동해 현재 reflectionTask 연결이 끊겨도 스냅샷으로 잡힘
-          reflectionTaskSnapshots: {
-            where: {
-              reflectionSnapshot: {
-                status: { in: ["TEMP", "SAVED"] },
-                promptBResult: { not: Prisma.AnyNull },
-                dailyEntry: { deletedAt: null },
-              },
-            },
+        },
+      },
+
+      // 소스2: 미변환 일지
+      // 유효한 변환 snapshot이 없는 경우 현재 ReflectionTask 기준으로 조회
+      reflectionTasks: {
+        select: {
+          task: {
             select: {
+              taskId: true,
               title: true,
-              reflectionSnapshot: {
+              deletedAt: true,
+              tag: {
                 select: {
-                  dailyEntry: {
-                    select: { dailyEntryId: true, workspaceId: true, entryDate: true },
-                  },
+                  tagName: true,
+                  color: true,
                 },
               },
             },
@@ -396,36 +428,85 @@ export const searchByTag = async (
 export const searchBySnapshotTitle = async (
   userId: string,
   workspaceId: string,
-  keyword: string,
   sort: "latest" | "oldest"
 ) => {
-  return prisma.reflectionTaskSnapshot.findMany({
+  return prisma.dailyEntry.findMany({
     where: {
-      title: { contains: keyword },
-      reflectionSnapshot: {
-        status: { in: ["TEMP", "SAVED"] },
-        promptBResult: { not: Prisma.AnyNull },
-        dailyEntry: { userId, workspaceId, deletedAt: null },
+      userId,
+      workspaceId,
+      deletedAt: null,
+
+      // 유효한 SAVED snapshot이 하나라도 있는 일지만 조회
+      reflectionSnapshots: {
+        some: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
       },
     },
     orderBy: {
-      reflectionSnapshot: { dailyEntry: { entryDate: sort === "oldest" ? "asc" : "desc" } },
+      entryDate: sort === "oldest" ? "asc" : "desc",
     },
     select: {
-      taskId: true,
-      title: true,
-      reflectionSnapshot: {
+      dailyEntryId: true,
+      workspaceId: true,
+      entryDate: true,
+
+      // DailyEntry별 최신 SAVED snapshot 딱 하나만 선택
+      reflectionSnapshots: {
+        where: {
+          status: "SAVED",
+          promptBResult: { not: Prisma.AnyNull },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
         select: {
-          dailyEntry: {
-            select: { dailyEntryId: true, workspaceId: true, entryDate: true },
+          createdAt: true,
+          reflectionTaskSnapshots: {
+            select: {
+              taskId: true,
+              title: true,
+              task: {
+                select: {
+                  tag: {
+                    select: {
+                      tagName: true,
+                      color: true,
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
-      task: {
-        select: {
-          tag: { select: { tagName: true, color: true } },
-        },
+    },
+  });
+};
+
+export const findMatchingTags = async (
+  userId: string,
+  workspaceId: string,
+  keyword: string,
+  sort: "latest" | "oldest",
+) => {
+  return prisma.tag.findMany({
+    where: {
+      userId,
+      workspaceId,
+      deletedAt: null,
+      tagName: {
+        contains: keyword,
       },
+    },
+    orderBy: {
+      createdAt: sort === "oldest" ? "asc" : "desc",
+    },
+    select: {
+      tagName: true,
+      color: true,
     },
   });
 };
