@@ -83,6 +83,106 @@ export class DashboardService {
     }
   }
 
+  private async validateWorkspace(
+    userId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: {
+        workspaceId: workspaceId,
+      },
+      select: {
+        id: true,
+        userId: true,
+      },
+    });
+
+    if (!workspace) {
+      throw new ApiError(
+        ErrorCode.NOT_FOUND.status,
+        ErrorCode.NOT_FOUND.code,
+        "워크스페이스를 찾을 수 없습니다.",
+      );
+    }
+
+    if (workspace.userId !== userId) {
+      throw new ApiError(
+        ErrorCode.FORBIDDEN.status,
+        ErrorCode.FORBIDDEN.code,
+        "해당 워크스페이스에 접근할 권한이 없습니다.",
+      );
+    }
+  }
+
+  private validateDateRange(
+    startDateInput: string | undefined,
+    endDateInput: string | undefined,
+  ): {
+    startDate: Date;
+    endDate: Date;
+  } {
+    if (!startDateInput || !endDateInput) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "startDate와 endDate는 필수입니다.",
+      );
+    }
+
+    // YYYY-MM-DD 형식만 허용
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (
+      !dateRegex.test(startDateInput) ||
+      !dateRegex.test(endDateInput)
+    ) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "날짜는 YYYY-MM-DD 형식이어야 합니다.",
+      );
+    }
+
+    const startDate = new Date(`${startDateInput}T00:00:00.000Z`);
+    const endDate = new Date(`${endDateInput}T00:00:00.000Z`);
+
+    if (
+      Number.isNaN(startDate.getTime()) ||
+      Number.isNaN(endDate.getTime())
+    ) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "올바르지 않은 날짜입니다.",
+      );
+    }
+
+    // JS Date가 자동 보정하는 문제 방지
+    if (
+      startDate.toISOString().slice(0, 10) !== startDateInput ||
+      endDate.toISOString().slice(0, 10) !== endDateInput
+    ) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "올바르지 않은 날짜입니다.",
+      );
+    }
+
+    if (startDate > endDate) {
+      throw new ApiError(
+        ErrorCode.BAD_REQUEST.status,
+        ErrorCode.BAD_REQUEST.code,
+        "startDate는 endDate보다 클 수 없습니다.",
+      );
+    }
+
+    return {
+      startDate,
+      endDate,
+    };
+  }
+
   // 주간 대시보드 AI 생성
   async generateWeeklyDashboard(
     authorization: string | undefined,
@@ -93,10 +193,21 @@ export class DashboardService {
     const userId = this.extractUserId(authorization);
 
     // 1. 주간 성과 조회
-    const startDate = new Date(request.startDate);
+    // workspace 존재 여부 및 소유권 검증
+    await this.validateWorkspace(userId, workspaceId);
 
-    const endDate = new Date(request.endDate);
-    endDate.setDate(endDate.getDate() + 1);
+    // 날짜 검증
+    const {
+      startDate,
+      endDate: requestedEndDate,
+    } = this.validateDateRange(
+      request.startDate,
+      request.endDate,
+    );
+
+    // 조회용 endDate는 다음 날 00시
+    const endDate = new Date(requestedEndDate);
+    endDate.setUTCDate(endDate.getUTCDate() + 1);
 
     const performances =
       await this.prisma.dailyPerformance.findMany({
@@ -187,8 +298,8 @@ export class DashboardService {
           userId,
           workspaceId,
           type: "WEEKLY",
-          startDate: new Date(request.startDate),
-          endDate: new Date(request.endDate),
+          startDate,
+          endDate: requestedEndDate,
         },
       });
 
@@ -251,142 +362,173 @@ export class DashboardService {
     );
 
     // 8. Dashboard 저장
-    const dashboard = await this.prisma.$transaction(
-      async (tx) => {
-        let dashboardId: string;
+    let dashboard;
 
-        if (existingDashboard) {
-          // 기존 Dashboard의 하위 데이터 삭제
-          await tx.dashboardPerformance.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
-          });
+    try {
+      dashboard = await this.prisma.$transaction(
+        async (tx) => {
+          let dashboardId: string;
 
-          await tx.dashboardKPI.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
-          });
-
-          await tx.dashboardInsight.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
-          });
-
-          await tx.dashboardTagAnalysis.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
-          });
-
-          dashboardId = existingDashboard.dashboardId;
-        } else {
-          // 새 Dashboard ID 생성
-          dashboardId = crypto.randomUUID();
-        }
-
-        // 기존 Dashboard면 update,
-        // 없으면 create
-        const dashboard = existingDashboard
-          ? await tx.dashboard.update({
+          if (existingDashboard) {
+            // 기존 Dashboard의 하위 데이터 삭제
+            await tx.dashboardPerformance.deleteMany({
               where: {
-                dashboardId,
-              },
-              data: {
-                summary: dashboardResult.summary,
-                keyAchievement: dashboardResult.keyAchievement,
-                focusedTags: dashboardResult.focusedTags.map((tag) => ({
-                  tagId: tag.tagId,
-                  tagName: tag.tagName,
-                })) as Prisma.InputJsonValue,
-                journalDays: performances.length,
-                performanceCount: performances.length,
-                tagCount: usedTags.size,
-              },
-            })
-          : await tx.dashboard.create({
-              data: {
-                dashboardId,
-                userId,
-                workspaceId,
-                type: "WEEKLY",
-                startDate: new Date(request.startDate),
-                endDate: new Date(request.endDate),
-
-                summary: dashboardResult.summary,
-                keyAchievement: dashboardResult.keyAchievement,
-                focusedTags: dashboardResult.focusedTags.map((tag) => ({
-                  tagId: tag.tagId,
-                  tagName: tag.tagName,
-                })) as Prisma.InputJsonValue,
-
-                journalDays: performances.length,
-                performanceCount: performances.length,
-                tagCount: usedTags.size,
+                dashboardId: existingDashboard.dashboardId,
               },
             });
 
-        // 공통 하위 데이터 생성
-        await tx.dashboardPerformance.createMany({
-          data: performances.map((performance) => ({
-            dashboardId,
-            dailyPerformanceId:
-              performance.dailyPerformanceId,
-          })),
-        });
+            await tx.dashboardKPI.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
 
-        await tx.dashboardKPI.createMany({
-          data: dashboardResult.kpis.map((kpi) => ({
-            dashboardId,
-            tagId: kpi.tagId,
-            kpiName: kpi.kpiName,
-            progress: kpi.progress,
-            relatedAchievement: kpi.relatedAchievement,
-          })),
-        });
+            await tx.dashboardInsight.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
 
-        await tx.dashboardInsight.create({
-          data: {
-            dashboardId,
-            journalDays: performances.length,
-            performanceCount: performances.length,
-            tagCount: usedTags.size,
-          },
-        });
+            await tx.dashboardTagAnalysis.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
 
-        await tx.dashboardTagAnalysis.createMany({
-          data: Array.from(usedTags.values()).map((tag) => {
-            const analysis = dashboardResult.tagAnalyses.find(
-              (item) => item.tagId === tag.tagId,
+            dashboardId = existingDashboard.dashboardId;
+          } else {
+            // 새 Dashboard ID 생성
+            dashboardId = crypto.randomUUID();
+          }
+
+          // 기존 Dashboard면 update,
+          // 없으면 create
+          const dashboard = existingDashboard
+            ? await tx.dashboard.update({
+                where: {
+                  dashboardId,
+                },
+                data: {
+                  summary: dashboardResult.summary,
+                  keyAchievement: dashboardResult.keyAchievement,
+                  focusedTags: dashboardResult.focusedTags.map((tag) => ({
+                    tagId: tag.tagId,
+                    tagName: tag.tagName,
+                  })) as Prisma.InputJsonValue,
+                  journalDays: performances.length,
+                  performanceCount: performances.length,
+                  tagCount: usedTags.size,
+                },
+              })
+            : await tx.dashboard.create({
+                data: {
+                  dashboardId,
+                  userId,
+                  workspaceId,
+                  type: "WEEKLY",
+                  startDate,
+                  endDate: requestedEndDate,
+
+                  summary: dashboardResult.summary,
+                  keyAchievement: dashboardResult.keyAchievement,
+                  focusedTags: dashboardResult.focusedTags.map((tag) => ({
+                    tagId: tag.tagId,
+                    tagName: tag.tagName,
+                  })) as Prisma.InputJsonValue,
+
+                  journalDays: performances.length,
+                  performanceCount: performances.length,
+                  tagCount: usedTags.size,
+                },
+              });
+
+          // 공통 하위 데이터 생성
+          await tx.dashboardPerformance.createMany({
+            data: performances.map((performance) => ({
+              dashboardId,
+              dailyPerformanceId:
+                performance.dailyPerformanceId,
+            })),
+          });
+
+          await tx.dashboardKPI.createMany({
+            data: dashboardResult.kpis.map((kpi) => ({
+              dashboardId,
+              tagId: kpi.tagId,
+              kpiName: kpi.kpiName,
+              progress: kpi.progress,
+              relatedAchievement: kpi.relatedAchievement,
+            })),
+          });
+
+          await tx.dashboardInsight.create({
+            data: {
+              dashboardId,
+              journalDays: performances.length,
+              performanceCount: performances.length,
+              tagCount: usedTags.size,
+            },
+          });
+
+          await tx.dashboardTagAnalysis.createMany({
+            data: Array.from(usedTags.values()).map((tag) => {
+              const analysis = dashboardResult.tagAnalyses.find(
+                (item) => item.tagId === tag.tagId,
+              );
+
+              return {
+                dashboardId,
+
+                tagId: tag.tagId,
+                tagName: tag.tagName,
+                color: tag.color ?? "",
+
+                goal: analysis?.objective ?? tag.projectPurpose ?? "",
+                expectedOutcome:
+                  analysis?.expectedOutcome ?? tag.expectedOutcome ?? "",
+                achievementStatus:
+                  analysis?.achievementStatus ?? "",
+                insight: analysis?.insight ?? "",
+
+                taskCount: tagTaskCountMap.get(tag.tagId) ?? 0,
+
+                periodStart: startDate,
+                periodEnd: requestedEndDate,
+              };
+            }),
+          });
+
+          return dashboard;
+        },
+      );
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case "P2002":
+            throw new ApiError(
+              ErrorCode.CONFLICT.status,
+              ErrorCode.CONFLICT.code,
+              "이미 존재하는 대시보드입니다.",
             );
 
-            return {
-              dashboardId,
+          case "P2025":
+            throw new ApiError(
+              ErrorCode.NOT_FOUND.status,
+              ErrorCode.NOT_FOUND.code,
+              "대시보드 데이터를 찾을 수 없습니다.",
+            );
 
-              tagId: tag.tagId,
-              tagName: tag.tagName,
-              color: tag.color ?? "",
+          default:
+            throw new ApiError(
+              ErrorCode.INTERNAL_SERVER_ERROR.status,
+              ErrorCode.INTERNAL_SERVER_ERROR.code,
+              "대시보드 처리 중 오류가 발생했습니다.",
+            );
+        }
+      }
 
-              goal: analysis?.objective ?? tag.projectPurpose ?? "",
-              expectedOutcome:
-                analysis?.expectedOutcome ?? tag.expectedOutcome ?? "",
-              achievementStatus:
-                analysis?.achievementStatus ?? "",
-              insight: analysis?.insight ?? "",
-
-              taskCount: tagTaskCountMap.get(tag.tagId) ?? 0,
-
-              periodStart: new Date(request.startDate),
-              periodEnd: new Date(request.endDate),
-            };
-          }),
-        });
-
-        return dashboard;
-      },
-    );
+      throw error;
+    }
 
     // 12. Response 반환
     return {
@@ -550,6 +692,16 @@ export class DashboardService {
 
     const userId = this.extractUserId(authorization);
 
+    await this.validateWorkspace(userId, workspaceId);
+
+    const {
+      startDate,
+      endDate: requestedEndDate,
+    } = this.validateDateRange(
+      request.startDate,
+      request.endDate,
+    );
+
     // 1. 주간 대시보드 조회
     const weeklyDashboards =
       await this.prisma.dashboard.findMany({
@@ -558,10 +710,10 @@ export class DashboardService {
           workspaceId,
           type:"WEEKLY",
           startDate:{
-            gte:new Date(request.startDate),
+            gte: new Date(request.startDate),
           },
           endDate:{
-            lte:new Date(request.endDate),
+            lte: new Date(request.endDate),
           },
         },
         include:{
@@ -725,141 +877,170 @@ export class DashboardService {
           userId,
           workspaceId,
           type: "MONTHLY",
-          startDate: new Date(request.startDate),
-          endDate: new Date(request.endDate),
+          startDate,
+          endDate: requestedEndDate,
         },
       });
 
     // 8. Dashboard 저장
-    const dashboard = await this.prisma.$transaction(
-      async (tx) => {
-        let dashboard;
+    let dashboard;
 
-        if (existingDashboard) {
-          // 기존 Dashboard의 하위 데이터 삭제
-          await tx.dashboardPerformance.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
+    try {
+      dashboard = await this.prisma.$transaction(
+        async (tx) => {
+          let dashboard;
+
+          if (existingDashboard) {
+            // 기존 Dashboard의 하위 데이터 삭제
+            await tx.dashboardPerformance.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
+
+            await tx.dashboardKPI.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
+
+            await tx.dashboardInsight.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
+
+            await tx.dashboardTagAnalysis.deleteMany({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+            });
+
+            // 기존 Dashboard 본체 갱신
+            dashboard = await tx.dashboard.update({
+              where: {
+                dashboardId: existingDashboard.dashboardId,
+              },
+              data: {
+                summary: monthlyResult.summary,
+                keyAchievement: monthlyResult.keyAchievement,
+                focusedTags: monthlyResult.focusedTags.map((tag) => ({
+                  tagId: tag.tagId,
+                  tagName: tag.tagName,
+                })) as Prisma.InputJsonValue,
+
+                journalDays,
+                performanceCount,
+                tagCount,
+              },
+            });
+          } else {
+            // 기존 Dashboard가 없으면 새로 생성
+            dashboard = await tx.dashboard.create({
+              data: {
+                userId,
+                workspaceId,
+                type: "MONTHLY",
+
+                startDate,
+                endDate: requestedEndDate,
+
+                summary: monthlyResult.summary,
+                keyAchievement: monthlyResult.keyAchievement,
+                focusedTags: monthlyResult.focusedTags.map((tag) => ({
+                  tagId: tag.tagId,
+                  tagName: tag.tagName,
+                })) as Prisma.InputJsonValue,
+
+                journalDays,
+                performanceCount,
+                tagCount,
+              },
+            });
+          }
+
+          await tx.dashboardPerformance.createMany({
+            data: dailyPerformanceIds.map((dailyPerformanceId) => ({
+              dashboardId: dashboard.dashboardId,
+              dailyPerformanceId,
+            })),
           });
 
-          await tx.dashboardKPI.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
+          await tx.dashboardKPI.createMany({
+            data: monthlyResult.kpis.map((kpi) => ({
+              dashboardId: dashboard.dashboardId,
+              tagId: kpi.tagId,
+              kpiName: kpi.kpiName,
+              progress: kpi.progress,
+              relatedAchievement: kpi.relatedAchievement,
+            })),
           });
 
-          await tx.dashboardInsight.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
-          });
-
-          await tx.dashboardTagAnalysis.deleteMany({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
-          });
-
-          // 기존 Dashboard 본체 갱신
-          dashboard = await tx.dashboard.update({
-            where: {
-              dashboardId: existingDashboard.dashboardId,
-            },
+          await tx.dashboardInsight.create({
             data: {
-              summary: monthlyResult.summary,
-              keyAchievement: monthlyResult.keyAchievement,
-              focusedTags: monthlyResult.focusedTags.map((tag) => ({
-                tagId: tag.tagId,
-                tagName: tag.tagName,
-              })) as Prisma.InputJsonValue,
-
+              dashboardId: dashboard.dashboardId,
               journalDays,
               performanceCount,
               tagCount,
             },
           });
-        } else {
-          // 기존 Dashboard가 없으면 새로 생성
-          dashboard = await tx.dashboard.create({
-            data: {
-              userId,
-              workspaceId,
-              type: "MONTHLY",
 
-              startDate: new Date(request.startDate),
-              endDate: new Date(request.endDate),
+          await tx.dashboardTagAnalysis.createMany({
+            data: Array.from(tagInfoMap.values()).map((tagInfo) => {
+              const analysis = monthlyResult.tagAnalyses.find(
+                (tag) => tag.tagId === tagInfo.tagId,
+              );
 
-              summary: monthlyResult.summary,
-              keyAchievement: monthlyResult.keyAchievement,
-              focusedTags: monthlyResult.focusedTags.map((tag) => ({
-                tagId: tag.tagId,
-                tagName: tag.tagName,
-              })) as Prisma.InputJsonValue,
+              return {
+                dashboardId: dashboard.dashboardId,
+                tagId: tagInfo.tagId,
+                tagName: tagInfo.tagName,
+                color: tagInfo.color,
 
-              journalDays,
-              performanceCount,
-              tagCount,
-            },
+                goal: tagInfo.goal,
+                expectedOutcome: tagInfo.expectedOutcome,
+                achievementStatus: analysis?.achievementStatus ?? "",
+                insight: analysis?.insight ?? "",
+
+                taskCount: tagTaskCountMap.get(tagInfo.tagId) ?? 0,
+
+                periodStart: startDate,
+                periodEnd: requestedEndDate,
+              };
+            }),
           });
-        }
 
-        // 월간 Dashboard에 DailyPerformance 연결
-        await tx.dashboardPerformance.createMany({
-          data: dailyPerformanceIds.map((dailyPerformanceId) => ({
-            dashboardId: dashboard.dashboardId,
-            dailyPerformanceId,
-          })),
-        });
-
-        // 나머지 하위 데이터
-        await tx.dashboardKPI.createMany({
-          data: monthlyResult.kpis.map((kpi) => ({
-            dashboardId: dashboard.dashboardId,
-            tagId: kpi.tagId,
-            kpiName: kpi.kpiName,
-            progress: kpi.progress,
-            relatedAchievement: kpi.relatedAchievement,
-          })),
-        });
-
-        await tx.dashboardInsight.create({
-          data: {
-            dashboardId: dashboard.dashboardId,
-            journalDays,
-            performanceCount,
-            tagCount,
-          },
-        });
-
-        await tx.dashboardTagAnalysis.createMany({
-          data: Array.from(tagInfoMap.values()).map((tagInfo) => {
-            const analysis = monthlyResult.tagAnalyses.find(
-              (tag) => tag.tagId === tagInfo.tagId,
+          return dashboard;
+        },
+      );
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case "P2002":
+            throw new ApiError(
+              ErrorCode.CONFLICT.status,
+              ErrorCode.CONFLICT.code,
+              "이미 존재하는 대시보드입니다.",
             );
 
-            return {
-              dashboardId: dashboard.dashboardId,
+          case "P2025":
+            throw new ApiError(
+              ErrorCode.NOT_FOUND.status,
+              ErrorCode.NOT_FOUND.code,
+              "대시보드 데이터를 찾을 수 없습니다.",
+            );
 
-              tagId: tagInfo.tagId,
-              tagName: tagInfo.tagName,
-              color: tagInfo.color,
+          default:
+            throw new ApiError(
+              ErrorCode.INTERNAL_SERVER_ERROR.status,
+              ErrorCode.INTERNAL_SERVER_ERROR.code,
+              "대시보드 처리 중 오류가 발생했습니다.",
+            );
+        }
+      }
 
-              goal: tagInfo.goal,
-              expectedOutcome: tagInfo.expectedOutcome,
-              achievementStatus: analysis?.achievementStatus ?? "",
-              insight: analysis?.insight ?? "",
-
-              taskCount: tagTaskCountMap.get(tagInfo.tagId) ?? 0,
-
-              periodStart: new Date(request.startDate),
-              periodEnd: new Date(request.endDate),
-            };
-          }),
-        });
-
-        return dashboard;
-      });
+      throw error;
+}
 
     // 9. Response 반환
     return {
