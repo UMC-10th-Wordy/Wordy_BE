@@ -116,6 +116,10 @@ export const getMonthlyDashboardDetail = async (
     startDate: toDateStr(d.startDate),
     endDate: toDateStr(d.endDate),
     summary: d.summary,
+    keyAchievement: d.keyAchievement,
+    focusedTags: Array.isArray(d.focusedTags)
+      ? (d.focusedTags as { tagId: string; tagName: string }[])
+      : [],
     journalDays: d.journalDays,
     performanceCount: d.performanceCount,
     tagCount: d.tagCount,
