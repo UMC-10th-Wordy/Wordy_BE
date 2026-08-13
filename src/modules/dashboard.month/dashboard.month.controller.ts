@@ -122,7 +122,8 @@ export class MonthlyDashboardController extends Controller {
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
-      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5, completionRate: 85 }],
+      completionRate: 85,
+      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5 }],
       kpis: [{ kpiName: "월간 핵심 목표 달성률", progress: "85% 달성" }],
       tagAnalyses: [
         {
@@ -229,7 +230,8 @@ export class MonthlyDashboardController extends Controller {
       journalDays: 20,
       performanceCount: 30,
       tagCount: 5,
-      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5, completionRate: 85 }],
+      completionRate: 85,
+      insights: [{ journalDays: 20, performanceCount: 30, tagCount: 5 }],
 
       kpis: [
         {
