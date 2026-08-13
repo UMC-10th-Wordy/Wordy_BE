@@ -244,14 +244,15 @@ export const getMonthlyEntries = async (
   workspaceId: string,
   yearMonth: string,
 ): Promise<DailyRecordItem[]> => {
-  const [year, month] = yearMonth.split("-").map(Number);
-  if (!year || !month) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) {
     throw new ApiError(
       ErrorCode.BAD_REQUEST.status,
       ErrorCode.BAD_REQUEST.code,
-      "yearMonth 형식이 올바르지 않습니다. (예: 2026-08)"
+      "yearMonth 형식이 올바르지 않습니다. (예: 2026-08)",
     );
   }
+
+  const [year, month] = yearMonth.split("-").map(Number);
 
   const { start, end } = getMonthRange(year, month);
   const entries = await findEntriesByMonth(userId, workspaceId, start, end);
