@@ -98,6 +98,9 @@ export class MonthlyDashboardDetail {
   @Example(5)
   tagCount!: number;
 
+  @Example(85)
+  completionRate!: number;    // 완료율 %
+
   @Example([
     {
       journalDays: 20,
@@ -169,9 +172,6 @@ export class MonthlyInsight {
 
   @Example(5)
   tagCount!: number;
-
-  @Example(75)
-  completionRate!: number;    // 추가
 }
 
 

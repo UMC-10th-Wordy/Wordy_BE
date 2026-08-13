@@ -105,9 +105,8 @@ export class DashboardController extends Controller {
       journalDays: 5,
       performanceCount: 8,
       tagCount: 3,
-      insights: [
-        { journalDays: 5, performanceCount: 8, tagCount: 3, completionRate: 75 },
-      ],
+      completionRate: 75,
+      insights: [{ journalDays: 5, performanceCount: 8, tagCount: 3 }],
       kpis: [
         {
           kpiName: "API 성능 개선",
@@ -249,9 +248,8 @@ export class DashboardController extends Controller {
       performanceCount: 8,
       tagCount: 3,
 
-      insights: [
-        { journalDays: 5, performanceCount: 8, tagCount: 3, completionRate: 75 },
-      ],
+      completionRate: 75,
+      insights: [{ journalDays: 5, performanceCount: 8, tagCount: 3 }],
 
       kpis: [
         {

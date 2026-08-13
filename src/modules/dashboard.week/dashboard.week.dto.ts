@@ -69,6 +69,9 @@ export class DashboardDetail {
   @Example(3)
   tagCount!: number;
 
+  @Example(75)
+  completionRate!: number;    // 완료율 %
+  
   @Example([
     {
       journalDays: 5,
@@ -133,9 +136,6 @@ export class Insight {
 
   @Example(3)
   tagCount!: number;
-
-  @Example(75)
-  completionRate!: number;    //  추가 (완료율 %)
 }
 
 export class Kpi {
