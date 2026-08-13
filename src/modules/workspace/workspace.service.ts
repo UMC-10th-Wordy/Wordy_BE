@@ -65,10 +65,9 @@ export class WorkspaceService {
 
   // 프로필 최초 등록 시 기본 Workspace 생성
   async createDefaultWorkspace(
-    authorization: string | undefined,
+    userId: string,
     userName: string,
   ): Promise<WorkspaceResponseDto> {
-    const userId = this.extractUserId(authorization);
 
     const existingDefault =
       await this.workspaceRepository.findDefaultByUserId(userId);
@@ -102,10 +101,9 @@ export class WorkspaceService {
 
   // 프로필 닉네임 변경 시 기본 Workspace 이름 변경
   async updateDefaultWorkspaceName(
-    authorization: string | undefined,
+    userId: string,
     userName: string,
   ): Promise<void> {
-    const userId = this.extractUserId(authorization);
 
     const workspace =
       await this.workspaceRepository.findDefaultByUserId(userId);
@@ -180,7 +178,7 @@ export class WorkspaceService {
     workspaceId: string,
   ): Promise<void> {
     const userId = this.extractUserId(authorization);
-    
+
     const workspace =
       await this.workspaceRepository.findByIdAndUserId(
         workspaceId,
