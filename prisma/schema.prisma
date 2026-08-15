@@ -209,10 +209,13 @@ model Notification {
   readAt         DateTime?        @map("read_at") @db.DateTime(0)
   createdAt      DateTime         @default(now()) @map("created_at") @db.DateTime(0)
   userId         String           @map("user_id") @db.Char(36)
+  workspaceId    String?          @map("workspace_id") @db.Char(36)
 
-  user User @relation(fields: [userId], references: [userId])
+  user      User       @relation(fields: [userId], references: [userId])
+  workspace Workspace? @relation(fields: [workspaceId], references: [workspaceId])
 
   @@index([userId, createdAt])
+  @@index([workspaceId, createdAt])
   @@map("Notification")
 }
 
@@ -232,6 +235,7 @@ model Workspace {
   dailyPerformances DailyPerformance[]
   dashboards        Dashboard[]
   reflectionDrafts  ReflectionDraft[]
+  notifications     Notification[]
 
   @@index([userId])
   @@map("Workspace")

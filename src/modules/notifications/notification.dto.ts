@@ -67,6 +67,7 @@ export class MarkNotificationReadResponse {
 
 export interface CreateNotificationParams {
   userId: string;
+  workspaceId?: string;
   type: NotificationType;
   title: string;
   content: string;
