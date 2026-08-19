@@ -10,7 +10,7 @@ export const findNotificationsByUserId = async (
   return prisma.notification.findMany({
     where: {
       userId,
-      workspaceId,
+      OR: [{ workspaceId }, { workspaceId: null }],
       ...(options.isRead !== undefined ? { isRead: options.isRead } : {}),
     },
     orderBy: [{ createdAt: "desc" }, { notificationId: "desc" }],
@@ -27,7 +27,7 @@ export const countNotificationsByUserId = async (
   return prisma.notification.count({
     where: {
       userId,
-      workspaceId,
+      OR: [{ workspaceId }, { workspaceId: null }],
       ...(isRead !== undefined ? { isRead } : {}),
     },
   });
@@ -39,7 +39,7 @@ export const findNotificationById = async (
   notificationId: string
 ) => {
   return prisma.notification.findFirst({
-    where: { notificationId, userId, workspaceId },
+    where: { notificationId, userId, OR: [{ workspaceId }, { workspaceId: null }] },
   });
 };
 
