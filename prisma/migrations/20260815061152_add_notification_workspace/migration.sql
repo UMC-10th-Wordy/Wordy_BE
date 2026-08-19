@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `notification` ADD COLUMN `workspace_id` CHAR(36) NULL;
+ALTER TABLE `Notification` ADD COLUMN `workspace_id` CHAR(36) NULL;
 
 -- CreateIndex
 CREATE INDEX `Notification_workspace_id_created_at_idx` ON `Notification`(`workspace_id`, `created_at`);
