@@ -26,11 +26,13 @@ import { ApiResponse } from "../../common/responses/api.response.js";
 import { success } from "../../common/responses/response.js";
 import { SuccessCode } from "../../common/responses/success.code.js";
 
-@Route("notifications")
+@Route("workspaces/{workspaceId}/notifications")
 @Tags("Notifications")
 export class NotificationController extends Controller {
   /**
    * @summary 알림 목록 조회 (읽음/안읽음 상태 포함, 페이지네이션)
+   * @param authorization
+   * @param workspaceId
    * @param status 조회 범위. all(기본값) / read / unread
    * @param page 페이지 번호 (1부터 시작, 기본값 1)
    * @param size 페이지당 항목 수 (기본값 10, 최대 50)
@@ -62,11 +64,18 @@ export class NotificationController extends Controller {
   })
   public async getNotifications(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Query() status?: NotificationStatusFilter,
     @Query() page?: number,
     @Query() size?: number
   ): Promise<ApiResponse<NotificationListResponse>> {
-    const data = await listNotifications(authorization, status, page, size);
+    const data = await listNotifications(
+      authorization,
+      workspaceId,
+      status,
+      page,
+      size
+    );
     return success(
       SuccessCode.GET_SUCCESS.code,
       SuccessCode.GET_SUCCESS.message,
@@ -91,9 +100,14 @@ export class NotificationController extends Controller {
   })
   public async markAsRead(
     @Header("Authorization") authorization: string | undefined,
+    @Path() workspaceId: string,
     @Path() notificationId: string
   ): Promise<ApiResponse<MarkNotificationReadResponse>> {
-    const data = await markNotificationRead(authorization, notificationId);
+    const data = await markNotificationRead(
+      authorization,
+      workspaceId,
+      notificationId
+    );
 
     return success(
       SuccessCode.UPDATED.code,

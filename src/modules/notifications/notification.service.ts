@@ -19,6 +19,9 @@ import {
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
 import { verifyAccessToken } from "../../auth.config.js";
+import { WorkspaceRepository } from "../workspace/workspace.repository.js";
+
+const workspaceRepository = new WorkspaceRepository();
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
@@ -60,11 +63,24 @@ const getUserIdFromAuthorization = (
 
 export const listNotifications = async (
   authorization: string | undefined,
+  workspaceId: string,
   status: NotificationStatusFilter = NotificationStatusFilter.ALL,
   page: number = DEFAULT_PAGE,
   size: number = DEFAULT_SIZE
 ): Promise<NotificationListResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
+
+  const workspace = await workspaceRepository.findByIdAndUserId(
+    workspaceId,
+    userId
+  );
+  if (!workspace) {
+    throw new ApiError(
+      ErrorCode.NOT_FOUND.status,
+      ErrorCode.NOT_FOUND.code,
+      "워크스페이스를 찾을 수 없습니다."
+    );
+  }
 
   const isRead = statusToIsRead(status);
   const safePage = Math.max(1, Math.floor(page));
@@ -72,8 +88,12 @@ export const listNotifications = async (
   const skip = (safePage - 1) * safeSize;
 
   const [notifications, totalCount] = await Promise.all([
-    findNotificationsByUserId(userId, { isRead, skip, take: safeSize }),
-    countNotificationsByUserId(userId, isRead),
+    findNotificationsByUserId(userId, workspaceId, {
+      isRead,
+      skip,
+      take: safeSize,
+    }),
+    countNotificationsByUserId(userId, workspaceId, isRead),
   ]);
 
   const totalPages = Math.ceil(totalCount / safeSize);
@@ -98,11 +118,12 @@ export const listNotifications = async (
 
 export const markNotificationRead = async (
   authorization: string | undefined,
+  workspaceId: string,
   notificationId: string
 ): Promise<MarkNotificationReadResponse> => {
   const userId = getUserIdFromAuthorization(authorization);
 
-  const found = await findNotificationById(userId, notificationId);
+  const found = await findNotificationById(userId, workspaceId, notificationId);
 
   if (!found) {
     throw new ApiError(

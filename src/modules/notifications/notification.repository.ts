@@ -4,11 +4,13 @@ import { CreateNotificationParams } from "./notification.dto.js";
 
 export const findNotificationsByUserId = async (
   userId: string,
+  workspaceId: string,
   options: { isRead?: boolean; skip: number; take: number }
 ) => {
   return prisma.notification.findMany({
     where: {
       userId,
+      OR: [{ workspaceId }, { workspaceId: null }],
       ...(options.isRead !== undefined ? { isRead: options.isRead } : {}),
     },
     orderBy: [{ createdAt: "desc" }, { notificationId: "desc" }],
@@ -19,19 +21,25 @@ export const findNotificationsByUserId = async (
 
 export const countNotificationsByUserId = async (
   userId: string,
+  workspaceId: string,
   isRead?: boolean
 ) => {
   return prisma.notification.count({
-    where: { userId, ...(isRead !== undefined ? { isRead } : {}) },
+    where: {
+      userId,
+      OR: [{ workspaceId }, { workspaceId: null }],
+      ...(isRead !== undefined ? { isRead } : {}),
+    },
   });
 };
 
 export const findNotificationById = async (
   userId: string,
+  workspaceId: string,
   notificationId: string
 ) => {
   return prisma.notification.findFirst({
-    where: { notificationId, userId },
+    where: { notificationId, userId, OR: [{ workspaceId }, { workspaceId: null }] },
   });
 };
 
@@ -48,6 +56,7 @@ export const createNotificationRecord = async (
   return prisma.notification.create({
     data: {
       userId: params.userId,
+      workspaceId: params.workspaceId ?? null,
       type: params.type as unknown as PrismaNotificationType,
       title: params.title,
       content: params.content,
