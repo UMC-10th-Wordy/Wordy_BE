@@ -92,7 +92,6 @@ export class DashboardService {
         workspaceId: workspaceId,
       },
       select: {
-        id: true,
         userId: true,
       },
     });
