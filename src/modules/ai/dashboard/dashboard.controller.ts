@@ -14,6 +14,9 @@ import { DashboardService } from "./dashboard.service.js";
 import { ApiResponse } from "../../../common/responses/api.response.js";
 import { success } from "../../../common/responses/response.js";
 import { SuccessCode } from "../../../common/responses/success.code.js";
+import { verifyAccessToken } from "../../../auth.config.js";
+import { createNotification } from "../../notifications/notification.service.js";
+import { NotificationType } from "../../notifications/notification.dto.js";
 
 @Route("ai/workspaces/{workspaceId}/dashboard")
 @Tags("AI")
@@ -102,6 +105,28 @@ export class DashboardAiController extends Controller {
         workspaceId,
         request,
       );
+
+    // 대시보드 생성 완료 알림 (실패해도 생성은 성공)
+    try {
+      const token = authorization?.startsWith("Bearer ")
+        ? authorization.slice(7)
+        : null;
+
+      if (token) {
+        const { userId } = verifyAccessToken(token);
+
+        await createNotification({
+          userId,
+          workspaceId,
+          type: NotificationType.DASHBOARD_COMPLETED,
+          title: "주간 성과 리포트 발행 완료",
+          content: "회원님의 주간 성과 리포트가 발행되었어요.\n[성과 대시보드]에서 확인해 주세요.",
+          redirectUrl: `/dashboard/weekly/${result.dashboardId}`,
+        });
+      }
+    } catch (e) {
+      console.error("주간 대시보드 완성 알림 발행 실패:", e);
+    }
 
     return success(
       SuccessCode.OK.code,
