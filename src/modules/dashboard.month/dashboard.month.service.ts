@@ -17,6 +17,9 @@ import { prisma } from "../../db.config.js";
 import { verifyAccessToken } from "../../auth.config.js"; // 인증토큰 받아오기
 import { ApiError } from "../../common/errors/api.error.js";
 import { ErrorCode } from "../../common/errors/error.code.js";
+import { createNotification } from "../notifications/notification.service.js";
+import { NotificationType } from "../notifications/notification.dto.js";
+
 
 const REQUIRED_COUNT = 3; // 월간 생성에 필요한 최소 주간 대시보드 수
 
@@ -204,7 +207,20 @@ export const createMonthlyDashboardWithAI = async (
     endDate,
   });
 
- // AI service가 이미 대시보드 생성/저장(재생성 시 update)하므로 여기서 중복 저장하지 않음
+  // 대시보드 생성 완료 알림 (실패해도 생성은 성공)
+  try {
+    await createNotification({
+      userId,
+      workspaceId,
+      type: NotificationType.DASHBOARD_COMPLETED,
+      title: "월간 성과 리포트 발행 완료",
+      content: "회원님의 월간 성과 리포트가 발행되었어요.\n[성과 대시보드]에서 확인해 주세요.",
+      redirectUrl: `/dashboard/monthly/${aiResult.dashboardId}`,
+    });
+  } catch (e) {
+    console.error("월간 대시보드 완성 알림 발행 실패:", e);
+  }
+
   return { dashboardId: aiResult.dashboardId };
 };
 
